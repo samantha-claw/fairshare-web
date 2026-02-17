@@ -1,10 +1,7 @@
 "use client";
 
 import React, { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-
-/* ─── Reusable input field ──────────────────────────────── */
 
 interface FieldProps {
   id: string;
@@ -54,22 +51,16 @@ function Field({
   );
 }
 
-/* ─── Main form ─────────────────────────────────────────── */
-
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const router = useRouter();
-
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
-
-    /* ── Validation ──────────────────────────────────── */
 
     if (!email.trim() || !password) {
       setError("Email and password are required.");
@@ -90,7 +81,10 @@ export function LoginForm() {
         return;
       }
 
-      router.push("/dashboard");
+      // IMPORTANT: Use window.location.href instead of router.push
+      // This forces a full page reload so the middleware
+      // picks up the new auth cookies.
+      window.location.href = "/dashboard";
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "An unexpected error occurred."
@@ -102,7 +96,6 @@ export function LoginForm() {
 
   return (
     <div className="w-full max-w-sm">
-      {/* ── Header ──────────────────────────────────── */}
       <div className="mb-8 text-center">
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
           <svg
@@ -125,12 +118,9 @@ export function LoginForm() {
         <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
           Sign in to FairShare
         </h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Welcome back
-        </p>
+        <p className="mt-1 text-sm text-gray-500">Welcome back</p>
       </div>
 
-      {/* ── Form card ───────────────────────────────── */}
       <form
         onSubmit={handleSubmit}
         noValidate
@@ -170,8 +160,7 @@ export function LoginForm() {
           className="
             flex w-full items-center justify-center rounded-md
             bg-blue-600 px-4 py-2 text-sm font-medium text-white
-            shadow-sm transition-colors
-            hover:bg-blue-700
+            shadow-sm transition-colors hover:bg-blue-700
             focus:outline-none focus:ring-2 focus:ring-blue-500
             focus:ring-offset-2
             disabled:cursor-not-allowed disabled:opacity-50
@@ -186,8 +175,11 @@ export function LoginForm() {
               >
                 <circle
                   className="opacity-25"
-                  cx="12" cy="12" r="10"
-                  stroke="currentColor" strokeWidth="4"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
                 />
                 <path
                   className="opacity-75"
@@ -203,7 +195,6 @@ export function LoginForm() {
         </button>
       </form>
 
-      {/* ── Footer ──────────────────────────────────── */}
       <p className="mt-6 text-center text-sm text-gray-500">
         Don&apos;t have an account?{" "}
         <a
