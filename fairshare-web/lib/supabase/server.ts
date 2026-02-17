@@ -1,4 +1,4 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 export async function createClient() {
@@ -12,14 +12,15 @@ export async function createClient() {
         getAll() {
           return cookieStore.getAll();
         },
-        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
+        setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
             );
           } catch {
-            // يتم تجاهل الخطأ هنا لأنه يحدث أحياناً عند استدعاء الدالة من Server Component
-            // والميدل وير (Middleware) يتولى تحديث الجلسة.
+            // The `cookies()` API can only set cookies in
+            // Server Actions or Route Handlers.
+            // Ignore when called during page rendering.
           }
         },
       },
