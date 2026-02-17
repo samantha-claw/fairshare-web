@@ -2,7 +2,7 @@
 
 import React, { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 /* ─── Reusable input field ──────────────────────────────── */
 
@@ -64,7 +64,6 @@ export function RegisterForm() {
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
-  const supabase = createClient();
 
   function usernameFromEmail(raw: string): string {
     return raw

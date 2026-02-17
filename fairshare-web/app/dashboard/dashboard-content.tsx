@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 
 /* ─── Placeholder card (reused for each feature block) ─── */
@@ -55,7 +55,7 @@ export function DashboardContent() {
   const [checking, setChecking] = useState(true);
 
   const router = useRouter();
-  const supabase = createClient();
+
 
   /* ── Check session on mount ────────────────────────────── */
 
