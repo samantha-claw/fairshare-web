@@ -1,10 +1,7 @@
 "use client";
 
 import React, { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-
-/* ─── Reusable input field ──────────────────────────────── */
+import { createClient } from "@/lib/supabase/client";
 
 interface FieldProps {
   id: string;
@@ -54,8 +51,6 @@ function Field({
   );
 }
 
-/* ─── Main form ─────────────────────────────────────────── */
-
 export function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -63,7 +58,7 @@ export function RegisterForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const router = useRouter();
+  const supabase = createClient();
 
   function usernameFromEmail(raw: string): string {
     return raw
@@ -76,8 +71,6 @@ export function RegisterForm() {
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
-
-    /* ── Validation ──────────────────────────────────── */
 
     if (!email.trim() || !password || !confirmPassword) {
       setError("All fields are required.");
@@ -97,8 +90,6 @@ export function RegisterForm() {
     setLoading(true);
 
     try {
-      /* ── 1. Create auth user ───────────────────────── */
-
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
         password,
@@ -114,30 +105,42 @@ export function RegisterForm() {
         return;
       }
 
-      /* ── 2. Update the profile the trigger created ── */
-
-      const username = usernameFromEmail(email);
-
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({
-          username,
-          display_name: username,
-          is_public: false,
-        })
-        .eq("id", data.user.id);
-
-      if (profileError) {
-        console.error("Profile update failed:", profileError.message);
-        // Non-fatal — skeleton row exists, user can fix later
+      // Check if email confirmation is required
+      if (data.user.identities?.length === 0) {
+        setError(
+          "This email is already registered. Please sign in instead."
+        );
+        return;
       }
 
-      /* ── 3. Redirect ───────────────────────────────── */
+      // If session exists, user is immediately logged in
+      // (email confirmation disabled in Supabase settings)
+      if (data.session) {
+        const username = usernameFromEmail(email);
 
-      router.push("/dashboard");
+        await supabase
+          .from("profiles")
+          .update({
+            username,
+            display_name: username,
+            is_public: false,
+          })
+          .eq("id", data.user.id);
+
+        // Full page reload to pick up cookies
+        window.location.href = "/dashboard";
+        return;
+      }
+
+      // If no session, email confirmation is required
+      setError(
+        "Check your email for a confirmation link, then sign in."
+      );
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "An unexpected error occurred."
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred."
       );
     } finally {
       setLoading(false);
@@ -146,7 +149,6 @@ export function RegisterForm() {
 
   return (
     <div className="w-full max-w-sm">
-      {/* ── Header ──────────────────────────────────── */}
       <div className="mb-8 text-center">
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
           <svg
@@ -159,31 +161,16 @@ export function RegisterForm() {
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0
-                 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17
-                 0-4.207-.576-5.963-1.584A6.062 6.062 0
-                 016 18.719m12 0a5.971 5.971 0
-                 00-.941-3.197m0 0A5.995 5.995 0 0012
-                 12.75a5.995 5.995 0
-                 00-5.058 2.772m0 0a3 3 0 00-4.681
-                 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971
-                 5.971 0 00-.94 3.197M15 6.75a3 3 0
-                 11-6 0 3 3 0 016 0zm6
-                 3a2.25 2.25 0 11-4.5 0 2.25 2.25
-                 0 014.5 0zm-13.5 0a2.25 2.25 0
-                 11-4.5 0 2.25 2.25 0 014.5 0z"
+              d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"
             />
           </svg>
         </div>
         <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
           Create your account
         </h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Welcome to FairShare
-        </p>
+        <p className="mt-1 text-sm text-gray-500">Welcome to FairShare</p>
       </div>
 
-      {/* ── Form card ───────────────────────────────── */}
       <form
         onSubmit={handleSubmit}
         noValidate
@@ -232,8 +219,7 @@ export function RegisterForm() {
           className="
             flex w-full items-center justify-center rounded-md
             bg-blue-600 px-4 py-2 text-sm font-medium text-white
-            shadow-sm transition-colors
-            hover:bg-blue-700
+            shadow-sm transition-colors hover:bg-blue-700
             focus:outline-none focus:ring-2 focus:ring-blue-500
             focus:ring-offset-2
             disabled:cursor-not-allowed disabled:opacity-50
@@ -248,8 +234,11 @@ export function RegisterForm() {
               >
                 <circle
                   className="opacity-25"
-                  cx="12" cy="12" r="10"
-                  stroke="currentColor" strokeWidth="4"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
                 />
                 <path
                   className="opacity-75"
@@ -265,7 +254,6 @@ export function RegisterForm() {
         </button>
       </form>
 
-      {/* ── Footer ──────────────────────────────────── */}
       <p className="mt-6 text-center text-sm text-gray-500">
         Already have an account?{" "}
         <a
