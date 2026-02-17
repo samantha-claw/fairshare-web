@@ -15,7 +15,7 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
           supabaseResponse = NextResponse.next({
@@ -29,13 +29,17 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Refresh the session (important for Server Components)
+  // IMPORTANT: Do not remove this line.
+  // Refreshes the auth token and sets cookies.
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protect all /dashboard routes
-  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
+  // Protected routes
+  if (
+    !user &&
+    request.nextUrl.pathname.startsWith("/dashboard")
+  ) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
@@ -45,7 +49,8 @@ export async function middleware(request: NextRequest) {
   if (
     user &&
     (request.nextUrl.pathname === "/login" ||
-      request.nextUrl.pathname === "/register")
+      request.nextUrl.pathname === "/register" ||
+      request.nextUrl.pathname === "/")
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
@@ -58,11 +63,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization)
-     * - favicon.ico
-     * - public files (images, etc.)
+     * Match all paths except static files
      */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
