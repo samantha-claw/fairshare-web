@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase";
 import { CreateGroupForm } from "@/app/dashboard/groups/create/create-group-form";
 
 export default async function CreateGroupPage() {
-  const supabase = await createClient();
+  
 
   // ── Auth guard ──────────────────────────────────────────
   const {
