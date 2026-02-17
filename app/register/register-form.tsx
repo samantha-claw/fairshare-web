@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, type FormEvent } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 interface FieldProps {
   id: string;
@@ -58,7 +58,6 @@ export function RegisterForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const supabase = createClient();
 
   function usernameFromEmail(raw: string): string {
     return raw
