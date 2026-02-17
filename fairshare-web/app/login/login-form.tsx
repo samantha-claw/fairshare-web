@@ -2,7 +2,7 @@
 
 import React, { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 /* ─── Reusable input field ──────────────────────────────── */
 
@@ -63,7 +63,7 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
-  const supabase = createClient();
+
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
