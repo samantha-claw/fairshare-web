@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 
 /* ─── Placeholder card (reused for each feature block) ─── */
