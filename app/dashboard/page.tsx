@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 
 /* ────────────────────────────────────────────────────────────
    Types
@@ -38,7 +38,7 @@ function formatDate(dateStr: string): string {
    ──────────────────────────────────────────────────────────── */
 
 export default async function DashboardPage() {
-  
+  const supabase = createClient();
 
   // ── Auth guard ──────────────────────────────────────────
   const {
