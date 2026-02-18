@@ -1,66 +1,19 @@
 "use client";
 
 import React, { useState, type FormEvent } from "react";
-import { supabase } from "@/lib/supabase";
-
-interface FieldProps {
-  id: string;
-  label: string;
-  type: string;
-  value: string;
-  placeholder?: string;
-  autoComplete?: string;
-  onChange: (value: string) => void;
-}
-
-function Field({
-  id,
-  label,
-  type,
-  value,
-  placeholder,
-  autoComplete,
-  onChange,
-}: FieldProps) {
-  return (
-    <div>
-      <label
-        htmlFor={id}
-        className="mb-1 block text-sm font-medium text-gray-700"
-      >
-        {label}
-      </label>
-      <input
-        id={id}
-        name={id}
-        type={type}
-        required
-        value={value}
-        placeholder={placeholder}
-        autoComplete={autoComplete}
-        onChange={(e) => onChange(e.target.value)}
-        className="
-          block w-full rounded-md border border-gray-300 bg-white
-          px-3 py-2 text-sm text-gray-900 placeholder-gray-400
-          shadow-sm transition-colors
-          focus:border-blue-500 focus:outline-none focus:ring-1
-          focus:ring-blue-500
-        "
-      />
-    </div>
-  );
-}
+import { createClient } from "@/lib/supabase/client";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
+  const [debug, setDebug] = useState<string | null>(null);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    setDebug(null);
 
     if (!email.trim() || !password) {
       setError("Email and password are required.");
@@ -70,26 +23,39 @@ export function LoginForm() {
     setLoading(true);
 
     try {
-      const { error: signInError } =
+      const supabase = createClient();
+
+      setDebug("Attempting sign in...");
+
+      const { data, error: signInError } =
         await supabase.auth.signInWithPassword({
           email: email.trim(),
           password,
         });
 
       if (signInError) {
+        setDebug(`Sign in error: ${signInError.message}`);
         setError(signInError.message);
+        setLoading(false);
         return;
       }
 
-      // IMPORTANT: Use window.location.href instead of router.push
-      // This forces a full page reload so the middleware
-      // picks up the new auth cookies.
+      if (!data.session) {
+        setDebug("No session returned after sign in");
+        setError("Login succeeded but no session was created.");
+        setLoading(false);
+        return;
+      }
+
+      setDebug(`Session created! User: ${data.user?.email}. Redirecting...`);
+
+      // CRITICAL: Full page reload, not client-side navigation
+      // This ensures middleware picks up the new cookies
       window.location.href = "/dashboard";
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "An unexpected error occurred."
-      );
-    } finally {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      setDebug(`Catch block: ${message}`);
+      setError(message);
       setLoading(false);
     }
   }
@@ -97,24 +63,6 @@ export function LoginForm() {
   return (
     <div className="w-full max-w-sm">
       <div className="mb-8 text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
-          <svg
-            className="h-6 w-6 text-blue-600"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15.75 5.25a3 3 0 11-6 0 3 3 0 016
-                 0zM4.501 20.118a7.5 7.5 0 0114.998
-                 0A17.933 17.933 0 0112 21.75c-2.676
-                 0-5.216-.584-7.499-1.632z"
-            />
-          </svg>
-        </div>
         <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
           Sign in to FairShare
         </h1>
@@ -126,6 +74,13 @@ export function LoginForm() {
         noValidate
         className="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
       >
+        {/* Debug info — REMOVE IN PRODUCTION */}
+        {debug && (
+          <div className="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-700 font-mono break-all">
+            DEBUG: {debug}
+          </div>
+        )}
+
         {error && (
           <div
             role="alert"
@@ -135,24 +90,55 @@ export function LoginForm() {
           </div>
         )}
 
-        <Field
-          id="email"
-          label="Email address"
-          type="email"
-          value={email}
-          placeholder="you@example.com"
-          autoComplete="email"
-          onChange={setEmail}
-        />
-        <Field
-          id="password"
-          label="Password"
-          type="password"
-          value={password}
-          placeholder="Your password"
-          autoComplete="current-password"
-          onChange={setPassword}
-        />
+        <div>
+          <label
+            htmlFor="email"
+            className="mb-1 block text-sm font-medium text-gray-700"
+          >
+            Email address
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            value={email}
+            placeholder="you@example.com"
+            autoComplete="email"
+            onChange={(e) => setEmail(e.target.value)}
+            className="
+              block w-full rounded-md border border-gray-300 bg-white
+              px-3 py-2 text-sm text-gray-900 placeholder-gray-400
+              shadow-sm focus:border-blue-500 focus:outline-none
+              focus:ring-1 focus:ring-blue-500
+            "
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="password"
+            className="mb-1 block text-sm font-medium text-gray-700"
+          >
+            Password
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            required
+            value={password}
+            placeholder="Your password"
+            autoComplete="current-password"
+            onChange={(e) => setPassword(e.target.value)}
+            className="
+              block w-full rounded-md border border-gray-300 bg-white
+              px-3 py-2 text-sm text-gray-900 placeholder-gray-400
+              shadow-sm focus:border-blue-500 focus:outline-none
+              focus:ring-1 focus:ring-blue-500
+            "
+          />
+        </div>
 
         <button
           type="submit"
@@ -161,8 +147,6 @@ export function LoginForm() {
             flex w-full items-center justify-center rounded-md
             bg-blue-600 px-4 py-2 text-sm font-medium text-white
             shadow-sm transition-colors hover:bg-blue-700
-            focus:outline-none focus:ring-2 focus:ring-blue-500
-            focus:ring-offset-2
             disabled:cursor-not-allowed disabled:opacity-50
           "
         >
@@ -175,11 +159,8 @@ export function LoginForm() {
               >
                 <circle
                   className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
+                  cx="12" cy="12" r="10"
+                  stroke="currentColor" strokeWidth="4"
                 />
                 <path
                   className="opacity-75"
