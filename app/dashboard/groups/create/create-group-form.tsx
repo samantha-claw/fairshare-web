@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 
 /* ────────────────────────────────────────────────────────────
