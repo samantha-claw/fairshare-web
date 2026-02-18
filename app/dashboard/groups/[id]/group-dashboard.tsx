@@ -2,8 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-import { GroupMembersList } from "./group-members-list";
+import { createClient } from "@/lib/supabase/client";
 
 interface GroupRow {
   id: string;
@@ -23,6 +22,8 @@ export function GroupDashboard({ groupId }: { groupId: string }) {
 
   useEffect(() => {
     async function load() {
+      const supabase = createClient();
+
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -49,7 +50,7 @@ export function GroupDashboard({ groupId }: { groupId: string }) {
     }
 
     load();
-  }, [groupId, router, supabase]);
+  }, [groupId, router]);
 
   if (loading) {
     return (
@@ -59,8 +60,19 @@ export function GroupDashboard({ groupId }: { groupId: string }) {
           fill="none"
           viewBox="0 0 24 24"
         >
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+          />
         </svg>
       </div>
     );
@@ -70,9 +82,14 @@ export function GroupDashboard({ groupId }: { groupId: string }) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4">
         <div className="rounded-lg border border-red-200 bg-red-50 px-6 py-4 text-center">
-          <p className="text-sm font-medium text-red-700">{error ?? "Something went wrong."}</p>
+          <p className="text-sm font-medium text-red-700">
+            {error ?? "Something went wrong."}
+          </p>
         </div>
-        <button onClick={() => router.push("/dashboard")} className="mt-4 text-sm text-blue-600 hover:text-blue-500">
+        <button
+          onClick={() => router.push("/dashboard")}
+          className="mt-4 text-sm text-blue-600 hover:text-blue-500"
+        >
           ← Back to dashboard
         </button>
       </div>
@@ -81,57 +98,46 @@ export function GroupDashboard({ groupId }: { groupId: string }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Top bar */}
       <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.push("/dashboard")}
-              className="text-gray-400 transition-colors hover:text-gray-600"
+              className="text-gray-400 hover:text-gray-600"
             >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 19.5L8.25 12l7.5-7.5"
+                />
               </svg>
             </button>
             <div>
-              <h1 className="text-lg font-semibold text-gray-900">{group.name}</h1>
+              <h1 className="text-lg font-semibold text-gray-900">
+                {group.name}
+              </h1>
               <p className="text-xs text-gray-500">{group.currency}</p>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Body */}
-      <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-5xl px-4 py-10">
         {group.description && (
           <p className="mb-8 text-sm text-gray-500">{group.description}</p>
         )}
 
-        {/* ── Members list (NEW) ──────────────────────── */}
-        <div className="mb-10">
-          <GroupMembersList groupId={groupId} />
-        </div>
-
-        {/* Placeholder cards */}
-        <h2 className="mb-4 text-base font-semibold text-gray-900">
-          Coming soon
-        </h2>
-        <div className="grid gap-5 sm:grid-cols-2">
-          {[
-            { title: "Expenses", desc: "Add and view shared expenses." },
-            { title: "Settlements", desc: "See who owes whom." },
-          ].map((card) => (
-            <div
-              key={card.title}
-              className="rounded-lg border border-dashed border-gray-300 bg-white p-6 text-center"
-            >
-              <h3 className="text-sm font-semibold text-gray-900">{card.title}</h3>
-              <p className="mt-1 text-xs text-gray-400">{card.desc}</p>
-              <span className="mt-3 inline-block rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-gray-500">
-                Coming soon
-              </span>
-            </div>
-          ))}
+        <div className="rounded-lg border border-dashed border-gray-300 bg-white p-6 text-center">
+          <p className="text-sm text-gray-500">
+            Group dashboard — features coming soon.
+          </p>
         </div>
       </main>
     </div>

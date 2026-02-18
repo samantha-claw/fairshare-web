@@ -9,12 +9,10 @@ export function RegisterForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [debug, setDebug] = useState<string | null>(null);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
-    setDebug(null);
 
     if (!email.trim() || !password || !confirmPassword) {
       setError("All fields are required.");
@@ -36,38 +34,30 @@ export function RegisterForm() {
     try {
       const supabase = createClient();
 
-      setDebug("Creating account...");
-
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
         password,
       });
 
       if (signUpError) {
-        setDebug(`Sign up error: ${signUpError.message}`);
         setError(signUpError.message);
         setLoading(false);
         return;
       }
 
       if (!data.user) {
-        setDebug("No user returned");
         setError("Signup failed — no user returned.");
         setLoading(false);
         return;
       }
 
-      // Check if email confirmation is required
       if (!data.session) {
-        setDebug("No session — email confirmation may be required");
         setError(
-          "Check your email for a confirmation link. If you don't see one, go to Supabase Dashboard → Auth → Settings and disable email confirmations."
+          "Check your email for a confirmation link. Or disable email confirmations in Supabase Dashboard → Auth → Settings."
         );
         setLoading(false);
         return;
       }
-
-      setDebug(`Account created! User: ${data.user.email}. Redirecting...`);
 
       // Update profile
       const username = email
@@ -88,9 +78,9 @@ export function RegisterForm() {
       // Full page reload
       window.location.href = "/dashboard";
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      setDebug(`Catch: ${message}`);
-      setError(message);
+      setError(
+        err instanceof Error ? err.message : "An unexpected error occurred."
+      );
       setLoading(false);
     }
   }
@@ -109,12 +99,6 @@ export function RegisterForm() {
         noValidate
         className="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
       >
-        {debug && (
-          <div className="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-700 font-mono break-all">
-            DEBUG: {debug}
-          </div>
-        )}
-
         {error && (
           <div
             role="alert"
@@ -125,7 +109,10 @@ export function RegisterForm() {
         )}
 
         <div>
-          <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="email"
+            className="mb-1 block text-sm font-medium text-gray-700"
+          >
             Email address
           </label>
           <input
@@ -141,7 +128,10 @@ export function RegisterForm() {
         </div>
 
         <div>
-          <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="password"
+            className="mb-1 block text-sm font-medium text-gray-700"
+          >
             Password
           </label>
           <input
@@ -157,7 +147,10 @@ export function RegisterForm() {
         </div>
 
         <div>
-          <label htmlFor="confirm" className="mb-1 block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="confirm"
+            className="mb-1 block text-sm font-medium text-gray-700"
+          >
             Confirm password
           </label>
           <input
@@ -179,9 +172,24 @@ export function RegisterForm() {
         >
           {loading ? (
             <>
-              <svg className="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+              <svg
+                className="mr-2 h-4 w-4 animate-spin"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                />
               </svg>
               Creating account…
             </>
@@ -193,7 +201,10 @@ export function RegisterForm() {
 
       <p className="mt-6 text-center text-sm text-gray-500">
         Already have an account?{" "}
-        <a href="/login" className="font-medium text-blue-600 hover:text-blue-500">
+        <a
+          href="/login"
+          className="font-medium text-blue-600 hover:text-blue-500"
+        >
           Sign in
         </a>
       </p>
