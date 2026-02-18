@@ -8,12 +8,10 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [debug, setDebug] = useState<string | null>(null);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
-    setDebug(null);
 
     if (!email.trim() || !password) {
       setError("Email and password are required.");
@@ -25,8 +23,6 @@ export function LoginForm() {
     try {
       const supabase = createClient();
 
-      setDebug("Attempting sign in...");
-
       const { data, error: signInError } =
         await supabase.auth.signInWithPassword({
           email: email.trim(),
@@ -34,28 +30,23 @@ export function LoginForm() {
         });
 
       if (signInError) {
-        setDebug(`Sign in error: ${signInError.message}`);
         setError(signInError.message);
         setLoading(false);
         return;
       }
 
       if (!data.session) {
-        setDebug("No session returned after sign in");
         setError("Login succeeded but no session was created.");
         setLoading(false);
         return;
       }
 
-      setDebug(`Session created! User: ${data.user?.email}. Redirecting...`);
-
-      // CRITICAL: Full page reload, not client-side navigation
-      // This ensures middleware picks up the new cookies
+      // Full page reload so middleware picks up cookies
       window.location.href = "/dashboard";
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      setDebug(`Catch block: ${message}`);
-      setError(message);
+      setError(
+        err instanceof Error ? err.message : "An unexpected error occurred."
+      );
       setLoading(false);
     }
   }
@@ -74,13 +65,6 @@ export function LoginForm() {
         noValidate
         className="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
       >
-        {/* Debug info — REMOVE IN PRODUCTION */}
-        {debug && (
-          <div className="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-700 font-mono break-all">
-            DEBUG: {debug}
-          </div>
-        )}
-
         {error && (
           <div
             role="alert"
@@ -99,19 +83,13 @@ export function LoginForm() {
           </label>
           <input
             id="email"
-            name="email"
             type="email"
             required
             value={email}
             placeholder="you@example.com"
             autoComplete="email"
             onChange={(e) => setEmail(e.target.value)}
-            className="
-              block w-full rounded-md border border-gray-300 bg-white
-              px-3 py-2 text-sm text-gray-900 placeholder-gray-400
-              shadow-sm focus:border-blue-500 focus:outline-none
-              focus:ring-1 focus:ring-blue-500
-            "
+            className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
 
@@ -124,31 +102,20 @@ export function LoginForm() {
           </label>
           <input
             id="password"
-            name="password"
             type="password"
             required
             value={password}
             placeholder="Your password"
             autoComplete="current-password"
             onChange={(e) => setPassword(e.target.value)}
-            className="
-              block w-full rounded-md border border-gray-300 bg-white
-              px-3 py-2 text-sm text-gray-900 placeholder-gray-400
-              shadow-sm focus:border-blue-500 focus:outline-none
-              focus:ring-1 focus:ring-blue-500
-            "
+            className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="
-            flex w-full items-center justify-center rounded-md
-            bg-blue-600 px-4 py-2 text-sm font-medium text-white
-            shadow-sm transition-colors hover:bg-blue-700
-            disabled:cursor-not-allowed disabled:opacity-50
-          "
+          className="flex w-full items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? (
             <>
@@ -159,8 +126,11 @@ export function LoginForm() {
               >
                 <circle
                   className="opacity-25"
-                  cx="12" cy="12" r="10"
-                  stroke="currentColor" strokeWidth="4"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
                 />
                 <path
                   className="opacity-75"
