@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
+
+  // 1. جلب بيانات المستخدم الأساسية (Auth)
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -12,9 +14,19 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  // استخراج الحرف الأول من البريد الإلكتروني لعرضه في الأفاتار
-  const userInitial = user.email?.charAt(0).toUpperCase() || "U";
-  const userName = user.email?.split("@")[0] || "User";
+  // 2. جلب بيانات البروفايل (الاسم والصورة) من جدول profiles
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name, avatar_url")
+    .eq("id", user.id)
+    .single();
+
+  // 3. تحديد البيانات التي سنعرضها (نستخدم بيانات البروفايل، وإذا لم توجد نستخدم الإيميل كاحتياط)
+  const displayName = profile?.display_name || user.email?.split("@")[0] || "User";
+  const avatarUrl = profile?.avatar_url;
+  
+  // الحرف الأول (يستخدم فقط في حال عدم وجود صورة)
+  const userInitial = displayName.charAt(0).toUpperCase();
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
@@ -24,16 +36,31 @@ export default async function DashboardPage() {
           <h1 className="text-xl font-bold text-blue-600">FairShare</h1>
 
           <div className="flex items-center gap-4">
-            {/* Desktop Profile Link (Hidden on mobile usually, but kept here for access) */}
+            {/* Desktop Profile Link */}
             <Link 
               href="/dashboard/profile"
               className="group flex items-center gap-2 rounded-full py-1 pr-3 pl-1 transition-colors hover:bg-gray-100"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700 ring-2 ring-white">
-                {userInitial}
+              {/* الدائرة الخاصة بالصورة */}
+              <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-blue-100 ring-2 ring-white">
+                {avatarUrl ? (
+                  // إذا كانت هناك صورة، اعرضها
+                  <img 
+                    src={avatarUrl} 
+                    alt="Avatar" 
+                    className="h-full w-full object-cover" 
+                  />
+                ) : (
+                  // إذا لم توجد صورة، اعرض الحرف الأول
+                  <span className="text-sm font-semibold text-blue-700">
+                    {userInitial}
+                  </span>
+                )}
               </div>
+              
+              {/* الاسم الحقيقي */}
               <span className="hidden text-sm font-medium text-gray-700 sm:block">
-                {userName}
+                {displayName}
               </span>
             </Link>
 
@@ -53,7 +80,7 @@ export default async function DashboardPage() {
       <main className="mx-auto max-w-5xl px-4 py-10">
         <div className="mb-8">
           <h2 className="text-2xl font-semibold tracking-tight text-gray-900">
-            Welcome back, {userName} 👋
+            Welcome back, {displayName} 👋
           </h2>
           <p className="mt-1 text-sm text-gray-500">
             Manage your groups and shared expenses.
@@ -99,7 +126,7 @@ export default async function DashboardPage() {
             <span className="text-xs font-medium">Home</span>
           </Link>
 
-          {/* Create Group Tab (Center Highlighted) */}
+          {/* Create Group Tab */}
           <Link
             href="/dashboard/groups/new"
             className="flex flex-col items-center justify-center"
@@ -111,14 +138,21 @@ export default async function DashboardPage() {
             </div>
           </Link>
 
-          {/* Profile Tab */}
+          {/* Profile Tab - مع تحديث الصورة هنا أيضاً */}
           <Link
             href="/dashboard/profile"
             className="flex flex-1 flex-col items-center justify-center gap-1 py-2 text-gray-500 hover:text-blue-600"
           >
-            <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-            </svg>
+             {/* هنا نعرض الصورة المصغرة بدلاً من أيقونة الشخص العادية إذا كانت موجودة */}
+             {avatarUrl ? (
+                <div className="h-6 w-6 overflow-hidden rounded-full ring-1 ring-gray-200">
+                    <img src={avatarUrl} alt="Me" className="h-full w-full object-cover" />
+                </div>
+             ) : (
+                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
+             )}
             <span className="text-xs font-medium">Profile</span>
           </Link>
         </div>
