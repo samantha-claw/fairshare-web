@@ -48,11 +48,11 @@ interface SearchResult {
 }
 
 interface InvitableFriend {
-  id: string;
-  username: string;
-  full_name: string;
-  display_name: string;
-  avatar_url: string;
+  friend_id: string;
+  friend_username: string;
+  friend_full_name: string;
+  friend_display_name: string;
+  friend_avatar_url: string;
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -242,7 +242,7 @@ export default function GroupDetailsPage() {
       }
 
       // Remove from invitable list immediately
-      setInvitableFriends((prev) => prev.filter((f) => f.id !== targetUserId));
+      setInvitableFriends((prev) => prev.filter((f) => f.friend_id !== targetUserId));
       // Remove from search results too
       setSearchResults((prev) => prev.filter((u) => u.id !== targetUserId));
       // Refresh full data
@@ -503,28 +503,28 @@ export default function GroupDetailsPage() {
                     <ul className="space-y-2">
                       {invitableFriends.map((friend) => (
                         <li
-                          key={friend.id}
+                          key={friend.friend_id}
                           className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 p-3 transition-colors hover:border-blue-200 hover:bg-blue-50/30"
                         >
                           <div className="flex items-center gap-3">
                             <Avatar
-                              src={friend.avatar_url}
-                              name={friend.display_name || friend.full_name || friend.username}
+                              src={friend.friend_avatar_url}
+                              name={friend.friend_display_name || friend.friend_full_name || friend.friend_username}
                               size="sm"
                             />
                             <div className="min-w-0">
                               <p className="truncate text-sm font-medium text-gray-900">
-                                {friend.display_name || friend.full_name}
+                                {friend.friend_display_name || friend.friend_full_name}
                               </p>
-                              <p className="truncate text-xs text-gray-500">@{friend.username}</p>
+                              <p className="truncate text-xs text-gray-500">@{friend.friend_username}</p>
                             </div>
                           </div>
                           <button
-                            onClick={() => handleAddMember(friend.id)}
-                            disabled={addingMember === friend.id}
+                            onClick={() => handleAddMember(friend.friend_id)}
+                            disabled={addingMember === friend.friend_id}
                             className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                           >
-                            {addingMember === friend.id ? (
+                            {addingMember === friend.friend_id ? (
                               <svg className="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
@@ -534,7 +534,7 @@ export default function GroupDetailsPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                               </svg>
                             )}
-                            {addingMember === friend.id ? "Adding…" : "Add"}
+                            {addingMember === friend.friend_id ? "Adding…" : "Add"}
                           </button>
                         </li>
                       ))}
