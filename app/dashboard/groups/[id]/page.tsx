@@ -55,6 +55,15 @@ interface InvitableFriend {
   friend_avatar_url: string;
 }
 
+interface Balance {
+  user_id: string;
+  display_name: string;
+  avatar_url: string;
+  total_paid: number;
+  total_owed: number;
+  net_balance: number;
+}
+
 /* ════════════════════════════════════════════════════════════
    HELPERS
    ════════════════════════════════════════════════════════════ */
@@ -77,18 +86,16 @@ function Avatar({
   name: string;
   size?: "sm" | "md" | "lg";
 }) {
-  const sizeMap = { sm: "h-8 w-8 text-xs", md: "h-10 w-10 text-sm", lg: "h-12 w-12 text-base" };
+  const sizeMap = {
+    sm: "h-8 w-8 text-xs",
+    md: "h-10 w-10 text-sm",
+    lg: "h-12 w-12 text-base",
+  };
   const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e0e7ff&color=4338ca&bold=true`;
 
-  return src ? (
+  return (
     <img
-      src={src}
-      alt={name}
-      className={`${sizeMap[size]} rounded-full object-cover ring-1 ring-gray-200`}
-    />
-  ) : (
-    <img
-      src={fallback}
+      src={src || fallback}
       alt={name}
       className={`${sizeMap[size]} rounded-full object-cover ring-1 ring-gray-200`}
     />
@@ -112,6 +119,7 @@ export default function GroupDetailsPage() {
   const [members, setMembers] = useState<Member[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const [balances, setBalances] = useState<Balance[]>([]);
 
   /* ── Member modal state ──────────────────────────────── */
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
@@ -161,7 +169,6 @@ export default function GroupDetailsPage() {
         .eq("group_id", groupId);
 
       if (membersData) {
-        // @ts-ignore – join shape
         setMembers(
           membersData.map((m: any) => ({
             id: m.user_id,
@@ -185,6 +192,15 @@ export default function GroupDetailsPage() {
       if (expensesData) {
         // @ts-ignore
         setExpenses(expensesData);
+      }
+
+      // 4. Balances
+      const { data: balancesData } = await supabase.rpc("get_group_balances", {
+        _group_id: groupId,
+      });
+      if (balancesData) {
+        // @ts-ignore
+        setBalances(balancesData);
       }
     } catch (err) {
       console.error(err);
@@ -241,11 +257,8 @@ export default function GroupDetailsPage() {
         return;
       }
 
-      // Remove from invitable list immediately
       setInvitableFriends((prev) => prev.filter((f) => f.friend_id !== targetUserId));
-      // Remove from search results too
       setSearchResults((prev) => prev.filter((u) => u.id !== targetUserId));
-      // Refresh full data
       await fetchData();
     } catch (err) {
       console.error(err);
@@ -262,7 +275,6 @@ export default function GroupDetailsPage() {
       const { data } = await supabase.rpc("search_users", {
         search_term: searchTerm.toLowerCase(),
       });
-      // Filter out users already in the group
       const memberIds = new Set(members.map((m) => m.id));
       setSearchResults((data || []).filter((u: SearchResult) => !memberIds.has(u.id)));
     } catch (err) {
@@ -292,6 +304,21 @@ export default function GroupDetailsPage() {
       fetchData();
     }
     setSubmittingExpense(false);
+  }
+
+  async function handleRemoveMember(memberId: string, memberName: string) {
+    if (!confirm(`Are you sure you want to remove ${memberName} from the group?`)) return;
+
+    const { error } = await supabase.rpc("remove_member_from_group", {
+      _group_id: groupId,
+      _user_id: memberId,
+    });
+
+    if (error) {
+      alert("Error: " + error.message);
+    } else {
+      fetchData();
+    }
   }
 
   /* ════════════════════════════════════════════════════════
@@ -386,9 +413,58 @@ export default function GroupDetailsPage() {
                     Owner
                   </span>
                 )}
+                {isOwner && m.id !== group.owner_id && (
+                  <button
+                    onClick={() => handleRemoveMember(m.id, m.display_name || m.username)}
+                    className="shrink-0 rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-500 transition-colors hover:text-red-700"
+                  >
+                    Remove
+                  </button>
+                )}
               </div>
             ))}
           </div>
+        </section>
+
+        {/* ── Balances Section ─────────────────────────── */}
+        <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-gray-800">Balances</h2>
+          </div>
+
+          {balances.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50/50 px-4 py-6 text-center">
+              <p className="text-sm text-gray-500">No balances to show yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {balances.map((bal) => (
+                <div
+                  key={bal.user_id}
+                  className="flex items-center justify-between border-b border-gray-50 pb-3 last:border-0 last:pb-0"
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar src={bal.avatar_url} name={bal.display_name} size="md" />
+                    <span className="text-sm font-medium text-gray-900">{bal.display_name}</span>
+                  </div>
+
+                  <div className="text-right text-sm font-bold">
+                    {bal.net_balance > 0 ? (
+                      <span className="text-green-600">
+                        Gets back {bal.net_balance} {group.currency || "USD"}
+                      </span>
+                    ) : bal.net_balance < 0 ? (
+                      <span className="text-red-600">
+                        Owes {Math.abs(bal.net_balance)} {group.currency || "USD"}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400">Settled up</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* ── Expenses Section ─────────────────────────── */}
@@ -443,18 +519,16 @@ export default function GroupDetailsPage() {
       </main>
 
       {/* ════════════════════════════════════════════════════
-         MODAL: ADD MEMBER (Updated with Quick Add)
+         MODAL: ADD MEMBER
          ════════════════════════════════════════════════════ */}
       {isMemberModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-screen items-end justify-center p-4 text-center sm:items-center sm:p-0">
-            {/* Backdrop */}
             <div
               className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"
               onClick={() => setIsMemberModalOpen(false)}
             />
 
-            {/* Panel */}
             <div className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8">
               {/* Header */}
               <div className="border-b border-gray-100 px-6 pb-4 pt-6">
@@ -469,9 +543,7 @@ export default function GroupDetailsPage() {
                     </svg>
                   </button>
                 </div>
-                <p className="mt-1 text-sm text-gray-500">
-                  Invite friends or search for any user
-                </p>
+                <p className="mt-1 text-sm text-gray-500">Invite friends or search for any user</p>
               </div>
 
               <div className="max-h-[70vh] overflow-y-auto px-6 py-5">
@@ -588,7 +660,6 @@ export default function GroupDetailsPage() {
                   </button>
                 </form>
 
-                {/* Search Results */}
                 {searchResults.length > 0 && (
                   <ul className="mt-4 space-y-2">
                     {searchResults.map((user) => (
@@ -597,11 +668,7 @@ export default function GroupDetailsPage() {
                         className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 p-3 transition-colors hover:border-blue-200"
                       >
                         <div className="flex items-center gap-3">
-                          <Avatar
-                            src={user.avatar_url}
-                            name={user.full_name || user.username}
-                            size="sm"
-                          />
+                          <Avatar src={user.avatar_url} name={user.full_name || user.username} size="sm" />
                           <div className="min-w-0">
                             <p className="truncate text-sm font-medium text-gray-900">
                               {user.full_name || user.username}
@@ -631,15 +698,13 @@ export default function GroupDetailsPage() {
                   </ul>
                 )}
 
-                {/* No results feedback */}
                 {!searching && searchTerm.trim() && searchResults.length === 0 && (
                   <p className="mt-3 text-center text-sm text-gray-400">
-                    No users found for "{searchTerm}"
+                    No users found for &ldquo;{searchTerm}&rdquo;
                   </p>
                 )}
               </div>
 
-              {/* Footer */}
               <div className="border-t border-gray-100 bg-gray-50 px-6 py-3">
                 <button
                   onClick={() => setIsMemberModalOpen(false)}
