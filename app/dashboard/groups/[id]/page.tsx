@@ -137,6 +137,7 @@ export default function GroupDetailsPage() {
   const [expenseName, setExpenseName] = useState("");
   const [expenseAmount, setExpenseAmount] = useState("");
   const [submittingExpense, setSubmittingExpense] = useState(false);
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
 
   /* ════════════════════════════════════════════════════════
      DATA FETCHING
@@ -287,12 +288,18 @@ export default function GroupDetailsPage() {
   async function handleAddExpense(e: FormEvent) {
     e.preventDefault();
     if (!expenseName || !expenseAmount) return;
+    if (selectedMembers.length === 0) {
+      alert("Please select at least one member to split with.");
+      return;
+    }
+
     setSubmittingExpense(true);
 
-    const { error } = await supabase.rpc("add_expense_equal_split", {
+    const { error } = await supabase.rpc("add_expense_custom_split", {
       _group_id: groupId,
       _name: expenseName,
       _amount: parseFloat(expenseAmount),
+      _participant_ids: selectedMembers,
     });
 
     if (error) {
@@ -301,9 +308,23 @@ export default function GroupDetailsPage() {
       setIsExpenseModalOpen(false);
       setExpenseName("");
       setExpenseAmount("");
+      setSelectedMembers([]);
       fetchData();
     }
     setSubmittingExpense(false);
+  }
+
+  async function handleDeleteExpense(expenseId: string, expenseName: string) {
+    if (!confirm(`Are you sure you want to delete "${expenseName}"? This will recalculate all balances.`))
+      return;
+
+    const { error } = await supabase.rpc("delete_expense", { _expense_id: expenseId });
+
+    if (error) {
+      alert("Error deleting expense: " + error.message);
+    } else {
+      fetchData();
+    }
   }
 
   async function handleRemoveMember(memberId: string, memberName: string) {
@@ -472,7 +493,10 @@ export default function GroupDetailsPage() {
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-bold text-gray-800">Expenses</h2>
             <button
-              onClick={() => setIsExpenseModalOpen(true)}
+              onClick={() => {
+                setSelectedMembers(members.map((m) => m.id));
+                setIsExpenseModalOpen(true);
+              }}
               className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-green-700"
             >
               <span>💸</span> Add Expense
@@ -503,13 +527,32 @@ export default function GroupDetailsPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
+
+                  {/* ── Expense right side: amount + actions ── */}
+                  <div className="flex flex-col items-end gap-2 text-right">
                     <p className="text-lg font-bold text-gray-900">
                       {exp.amount} {group.currency || "USD"}
                     </p>
-                    <p className="inline-block rounded-full bg-green-50 px-2 py-0.5 text-xs text-green-600">
-                      Equal Split
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-block rounded-full bg-green-50 px-2 py-0.5 text-xs text-green-600">
+                        Custom Split
+                      </span>
+                      {(currentUser === exp.paid_by || isOwner) && (
+                        <button
+                          onClick={() => handleDeleteExpense(exp.id, exp.name)}
+                          className="p-1 text-gray-400 transition-colors hover:text-red-600"
+                          title="Delete Expense"
+                        >
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -551,7 +594,11 @@ export default function GroupDetailsPage() {
                 <div className="mb-6">
                   <div className="mb-3 flex items-center gap-2">
                     <svg className="h-4 w-4 text-amber-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.562.562 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.562.562 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.562.562 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.562.562 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"
+                      />
                     </svg>
                     <h4 className="text-sm font-semibold text-gray-800">Quick Add</h4>
                     <span className="text-xs text-gray-400">— Your friends not in this group</span>
@@ -567,7 +614,11 @@ export default function GroupDetailsPage() {
                   ) : invitableFriends.length === 0 ? (
                     <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50/50 px-4 py-6 text-center">
                       <svg className="mx-auto mb-2 h-8 w-8 text-gray-300" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"
+                        />
                       </svg>
                       <p className="text-sm text-gray-500">All your friends are already in this group</p>
                     </div>
@@ -719,7 +770,7 @@ export default function GroupDetailsPage() {
       )}
 
       {/* ════════════════════════════════════════════════════
-         MODAL: ADD EXPENSE
+         MODAL: ADD EXPENSE (with member selection)
          ════════════════════════════════════════════════════ */}
       {isExpenseModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -732,7 +783,7 @@ export default function GroupDetailsPage() {
             <div className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8">
               <div className="px-6 pb-6 pt-6">
                 <h3 className="text-xl font-bold text-gray-900">Add Expense</h3>
-                <p className="mt-1 text-sm text-gray-500">Split equally among all members.</p>
+                <p className="mt-1 text-sm text-gray-500">Split among selected members.</p>
 
                 <form onSubmit={handleAddExpense} className="mt-6 space-y-4">
                   <div>
@@ -758,6 +809,61 @@ export default function GroupDetailsPage() {
                       onChange={(e) => setExpenseAmount(e.target.value)}
                     />
                   </div>
+
+                  {/* ── Split With: Member Selection ────── */}
+                  <div className="pt-2">
+                    <label className="mb-2 block text-sm font-medium text-gray-700">Split with:</label>
+                    <div className="max-h-40 space-y-1 overflow-y-auto rounded-xl border border-gray-200 bg-gray-50 p-2">
+                      {members.map((m) => (
+                        <label
+                          key={m.id}
+                          className="flex cursor-pointer items-center gap-3 rounded-lg p-2 transition-colors hover:bg-gray-100"
+                        >
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                            checked={selectedMembers.includes(m.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedMembers([...selectedMembers, m.id]);
+                              } else {
+                                setSelectedMembers(selectedMembers.filter((id) => id !== m.id));
+                              }
+                            }}
+                          />
+                          <div className="flex items-center gap-2">
+                            <Avatar src={m.avatar_url} name={m.display_name || m.username} size="sm" />
+                            <span className="text-sm font-medium text-gray-700">
+                              {m.display_name || m.username}
+                            </span>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">
+                      {selectedMembers.length} of {members.length} selected ·{" "}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedMembers(members.map((m) => m.id))}
+                        className="text-blue-600 hover:underline"
+                      >
+                        Select All
+                      </button>
+                      {selectedMembers.length > 0 && (
+                        <>
+                          {" · "}
+                          <button
+                            type="button"
+                            onClick={() => setSelectedMembers([])}
+                            className="text-red-500 hover:underline"
+                          >
+                            Clear
+                          </button>
+                        </>
+                      )}
+                    </p>
+                  </div>
+
                   <div className="flex gap-3 pt-2">
                     <button
                       type="button"
@@ -768,7 +874,7 @@ export default function GroupDetailsPage() {
                     </button>
                     <button
                       type="submit"
-                      disabled={submittingExpense}
+                      disabled={submittingExpense || selectedMembers.length === 0}
                       className="flex-1 rounded-xl bg-green-600 py-3 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {submittingExpense ? (
