@@ -38,6 +38,7 @@ interface Expense {
   created_at: string;
   paid_by: string;
   profiles: { full_name: string; username: string; display_name: string };
+  expense_splits?: { user_id: string }[];
 }
 
 interface SearchResult {
@@ -138,6 +139,7 @@ export default function GroupDetailsPage() {
   const [expenseAmount, setExpenseAmount] = useState("");
   const [submittingExpense, setSubmittingExpense] = useState(false);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
 
   /* ════════════════════════════════════════════════════════
      DATA FETCHING
@@ -184,7 +186,8 @@ export default function GroupDetailsPage() {
         .from("expenses")
         .select(
           `id, name, amount, created_at, paid_by,
-           profiles:paid_by ( full_name, username, display_name )`
+           profiles:paid_by ( full_name, username, display_name ),
+           expense_splits ( user_id )`
         )
         .eq("group_id", groupId)
         .order("created_at", { ascending: false });
@@ -242,6 +245,27 @@ export default function GroupDetailsPage() {
   }
 
   /* ════════════════════════════════════════════════════════
+     EXPENSE MODAL HELPERS
+     ════════════════════════════════════════════════════════ */
+
+  function openAddExpenseModal() {
+    setEditingExpenseId(null);
+    setExpenseName("");
+    setExpenseAmount("");
+    setSelectedMembers(members.map((m) => m.id));
+    setIsExpenseModalOpen(true);
+  }
+
+  function openEditExpenseModal(exp: Expense) {
+    setEditingExpenseId(exp.id);
+    setExpenseName(exp.name);
+    setExpenseAmount(exp.amount.toString());
+    const participantIds = exp.expense_splits?.map((split) => split.user_id) || [];
+    setSelectedMembers(participantIds);
+    setIsExpenseModalOpen(true);
+  }
+
+  /* ════════════════════════════════════════════════════════
      HANDLERS
      ════════════════════════════════════════════════════════ */
 
@@ -285,7 +309,7 @@ export default function GroupDetailsPage() {
     }
   }
 
-  async function handleAddExpense(e: FormEvent) {
+  async function handleSaveExpense(e: FormEvent) {
     e.preventDefault();
     if (!expenseName || !expenseAmount) return;
     if (selectedMembers.length === 0) {
@@ -294,18 +318,31 @@ export default function GroupDetailsPage() {
     }
 
     setSubmittingExpense(true);
+    let rpcError;
 
-    const { error } = await supabase.rpc("add_expense_custom_split", {
-      _group_id: groupId,
-      _name: expenseName,
-      _amount: parseFloat(expenseAmount),
-      _participant_ids: selectedMembers,
-    });
+    if (editingExpenseId) {
+      const res = await supabase.rpc("edit_expense_custom_split", {
+        _expense_id: editingExpenseId,
+        _name: expenseName,
+        _amount: parseFloat(expenseAmount),
+        _participant_ids: selectedMembers,
+      });
+      rpcError = res.error;
+    } else {
+      const res = await supabase.rpc("add_expense_custom_split", {
+        _group_id: groupId,
+        _name: expenseName,
+        _amount: parseFloat(expenseAmount),
+        _participant_ids: selectedMembers,
+      });
+      rpcError = res.error;
+    }
 
-    if (error) {
-      alert("Error adding expense: " + error.message);
+    if (rpcError) {
+      alert("Error saving expense: " + rpcError.message);
     } else {
       setIsExpenseModalOpen(false);
+      setEditingExpenseId(null);
       setExpenseName("");
       setExpenseAmount("");
       setSelectedMembers([]);
@@ -314,8 +351,8 @@ export default function GroupDetailsPage() {
     setSubmittingExpense(false);
   }
 
-  async function handleDeleteExpense(expenseId: string, expenseName: string) {
-    if (!confirm(`Are you sure you want to delete "${expenseName}"? This will recalculate all balances.`))
+  async function handleDeleteExpense(expenseId: string, name: string) {
+    if (!confirm(`Are you sure you want to delete "${name}"? This will recalculate all balances.`))
       return;
 
     const { error } = await supabase.rpc("delete_expense", { _expense_id: expenseId });
@@ -493,10 +530,7 @@ export default function GroupDetailsPage() {
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-bold text-gray-800">Expenses</h2>
             <button
-              onClick={() => {
-                setSelectedMembers(members.map((m) => m.id));
-                setIsExpenseModalOpen(true);
-              }}
+              onClick={openAddExpenseModal}
               className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-green-700"
             >
               <span>💸</span> Add Expense
@@ -534,23 +568,39 @@ export default function GroupDetailsPage() {
                       {exp.amount} {group.currency || "USD"}
                     </p>
                     <div className="flex items-center gap-2">
-                      <span className="inline-block rounded-full bg-green-50 px-2 py-0.5 text-xs text-green-600">
-                        Custom Split
+                      <span className="inline-block rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-600">
+                        {exp.expense_splits?.length} members
                       </span>
+
                       {(currentUser === exp.paid_by || isOwner) && (
-                        <button
-                          onClick={() => handleDeleteExpense(exp.id, exp.name)}
-                          className="p-1 text-gray-400 transition-colors hover:text-red-600"
-                          title="Delete Expense"
-                        >
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                          </svg>
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => openEditExpenseModal(exp)}
+                            className="p-1 text-gray-400 transition-colors hover:text-blue-600"
+                            title="Edit"
+                          >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+                              />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteExpense(exp.id, exp.name)}
+                            className="p-1 text-gray-400 transition-colors hover:text-red-600"
+                            title="Delete"
+                          >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -573,7 +623,6 @@ export default function GroupDetailsPage() {
             />
 
             <div className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8">
-              {/* Header */}
               <div className="border-b border-gray-100 px-6 pb-4 pt-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-bold text-gray-900">Add Member</h3>
@@ -590,7 +639,7 @@ export default function GroupDetailsPage() {
               </div>
 
               <div className="max-h-[70vh] overflow-y-auto px-6 py-5">
-                {/* ── Quick Add: Friends List ──────────── */}
+                {/* ── Quick Add ────────────────────────── */}
                 <div className="mb-6">
                   <div className="mb-3 flex items-center gap-2">
                     <svg className="h-4 w-4 text-amber-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -770,7 +819,7 @@ export default function GroupDetailsPage() {
       )}
 
       {/* ════════════════════════════════════════════════════
-         MODAL: ADD EXPENSE (with member selection)
+         MODAL: ADD / EDIT EXPENSE
          ════════════════════════════════════════════════════ */}
       {isExpenseModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -782,17 +831,19 @@ export default function GroupDetailsPage() {
 
             <div className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8">
               <div className="px-6 pb-6 pt-6">
-                <h3 className="text-xl font-bold text-gray-900">Add Expense</h3>
+                <h3 className="text-xl font-bold text-gray-900">
+                  {editingExpenseId ? "Edit Expense" : "Add Expense"}
+                </h3>
                 <p className="mt-1 text-sm text-gray-500">Split among selected members.</p>
 
-                <form onSubmit={handleAddExpense} className="mt-6 space-y-4">
+                <form onSubmit={handleSaveExpense} className="mt-6 space-y-4">
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">Description</label>
                     <input
                       type="text"
                       required
                       placeholder="e.g. Dinner"
-                      className="w-full rounded-xl border border-gray-300 p-3 text-sm transition-colors focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+                      className="w-full rounded-xl border border-gray-300 p-3 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                       value={expenseName}
                       onChange={(e) => setExpenseName(e.target.value)}
                     />
@@ -804,7 +855,7 @@ export default function GroupDetailsPage() {
                       required
                       step="0.01"
                       placeholder="0.00"
-                      className="w-full rounded-xl border border-gray-300 p-3 font-mono text-lg transition-colors focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+                      className="w-full rounded-xl border border-gray-300 p-3 font-mono text-lg transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                       value={expenseAmount}
                       onChange={(e) => setExpenseAmount(e.target.value)}
                     />
@@ -812,7 +863,16 @@ export default function GroupDetailsPage() {
 
                   {/* ── Split With: Member Selection ────── */}
                   <div className="pt-2">
-                    <label className="mb-2 block text-sm font-medium text-gray-700">Split with:</label>
+                    <label className="mb-2 flex items-center justify-between text-sm font-medium text-gray-700">
+                      <span>Split equally between:</span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedMembers(members.map((m) => m.id))}
+                        className="text-xs text-blue-600 hover:underline"
+                      >
+                        Select All
+                      </button>
+                    </label>
                     <div className="max-h-40 space-y-1 overflow-y-auto rounded-xl border border-gray-200 bg-gray-50 p-2">
                       {members.map((m) => (
                         <label
@@ -821,7 +881,7 @@ export default function GroupDetailsPage() {
                         >
                           <input
                             type="checkbox"
-                            className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                             checked={selectedMembers.includes(m.id)}
                             onChange={(e) => {
                               if (e.target.checked) {
@@ -841,14 +901,7 @@ export default function GroupDetailsPage() {
                       ))}
                     </div>
                     <p className="mt-1 text-xs text-gray-500">
-                      {selectedMembers.length} of {members.length} selected ·{" "}
-                      <button
-                        type="button"
-                        onClick={() => setSelectedMembers(members.map((m) => m.id))}
-                        className="text-blue-600 hover:underline"
-                      >
-                        Select All
-                      </button>
+                      {selectedMembers.length} of {members.length} selected
                       {selectedMembers.length > 0 && (
                         <>
                           {" · "}
@@ -864,7 +917,7 @@ export default function GroupDetailsPage() {
                     </p>
                   </div>
 
-                  <div className="flex gap-3 pt-2">
+                  <div className="mt-4 flex gap-3 border-t border-gray-100 pt-4">
                     <button
                       type="button"
                       onClick={() => setIsExpenseModalOpen(false)}
@@ -875,19 +928,13 @@ export default function GroupDetailsPage() {
                     <button
                       type="submit"
                       disabled={submittingExpense || selectedMembers.length === 0}
-                      className="flex-1 rounded-xl bg-green-600 py-3 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex-1 rounded-xl bg-blue-600 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      {submittingExpense ? (
-                        <span className="inline-flex items-center gap-2">
-                          <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                          </svg>
-                          Adding…
-                        </span>
-                      ) : (
-                        "Confirm Split"
-                      )}
+                      {submittingExpense
+                        ? "Saving…"
+                        : editingExpenseId
+                          ? "Save Changes"
+                          : "Add Expense"}
                     </button>
                   </div>
                 </form>
