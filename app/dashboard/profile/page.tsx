@@ -67,9 +67,6 @@ export default function ProfilePage() {
   const [bio, setBio] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
 
-  // ── Original username for comparison ────────────────────
-  const [originalUsername, setOriginalUsername] = useState("");
-
   // ── Avatar upload state ─────────────────────────────────
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -113,7 +110,6 @@ export default function ProfilePage() {
       setFullName(p.full_name || "");
       setBio(p.bio || "");
       setAvatarUrl(p.avatar_url || "");
-      setOriginalUsername(p.username || "");
       setLoading(false);
     }
 
@@ -144,29 +140,10 @@ export default function ProfilePage() {
     setSuccess(null);
   }
 
-  async function handleUsernameBlur() {
+  function handleUsernameBlur() {
     const validationError = validateUsername(username);
     if (validationError) {
       setUsernameError(validationError);
-      return;
-    }
-
-    // Skip check if username hasn't changed
-    if (username.toLowerCase() === originalUsername.toLowerCase()) {
-      setUsernameError(null);
-      return;
-    }
-
-    // Check uniqueness
-    const { data: existing } = await supabase
-      .from("profiles")
-      .select("id")
-      .ilike("username", username)
-      .neq("id", user?.id ?? "")
-      .single();
-
-    if (existing) {
-      setUsernameError("This username is already taken.");
     }
   }
 
@@ -225,11 +202,7 @@ export default function ProfilePage() {
         data: { publicUrl },
       } = supabase.storage.from("avatars").getPublicUrl(filePath);
 
-      const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
-
-      return urlWithCacheBust;
-    } catch (err) {
-      throw err;
+      return `${publicUrl}?t=${Date.now()}`;
     } finally {
       setUploadingAvatar(false);
     }
@@ -247,26 +220,11 @@ export default function ProfilePage() {
       return;
     }
 
-    // Validate username
+    // Validate username format only — no pre-flight uniqueness check
     const validationError = validateUsername(username);
     if (validationError) {
       setUsernameError(validationError);
       return;
-    }
-
-    // Check username uniqueness if changed
-    if (username.toLowerCase() !== originalUsername.toLowerCase()) {
-      const { data: existing } = await supabase
-        .from("profiles")
-        .select("id")
-        .ilike("username", username)
-        .neq("id", user.id)
-        .single();
-
-      if (existing) {
-        setUsernameError("This username is already taken.");
-        return;
-      }
     }
 
     setSaving(true);
@@ -281,7 +239,7 @@ export default function ProfilePage() {
         }
       }
 
-      // Update profile
+      // Attempt update — let the DB enforce uniqueness
       const { error: updateError } = await supabase
         .from("profiles")
         .update({
@@ -293,18 +251,21 @@ export default function ProfilePage() {
         .eq("id", user.id);
 
       if (updateError) {
-        setError(updateError.message);
+        // Postgres unique-violation code
+        if (updateError.code === "23505") {
+          setUsernameError("Username already taken.");
+        } else {
+          setError(updateError.message);
+        }
         return;
       }
 
-      // Update local state
+      // Update local state on success
       setAvatarUrl(newAvatarUrl);
       setAvatarFile(null);
       setAvatarPreview(null);
-      setOriginalUsername(username.trim().toLowerCase());
       setSuccess("Profile updated successfully!");
 
-      // Clear success after 3 seconds
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       setError(
