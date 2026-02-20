@@ -66,7 +66,7 @@ export default function UserProfilePage() {
         const { data: friendshipData } = await supabase
           .from("friendships") 
           .select("status")
-          .or(`and(user_id1.eq.${session.user.id},user_id2.eq.${userId}),and(user_id1.eq.${userId},user_id2.eq.${session.user.id})`)
+          .or(`and(requester_id.eq.${session.user.id},receiver_id.eq.${userId}),and(requester_id.eq.${userId},receiver_id.eq.${session.user.id})`)
           .maybeSingle(); // maybeSingle عشان لو مفيش علاقة ميرجعش إيرور
 
         if (friendshipData) {
