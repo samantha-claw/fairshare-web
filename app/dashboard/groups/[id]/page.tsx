@@ -169,6 +169,8 @@ export default function GroupDetailsPage() {
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
 
+  /* ── Expense modal state ─────────────────────────────── */  const [isSettlementMode, setIsSettlementMode] = useState(false); // 👈 السطر الجديد
+
   /* ════════════════════════════════════════════════════════
      DATA FETCHING
      ════════════════════════════════════════════════════════ */
@@ -281,6 +283,7 @@ export default function GroupDetailsPage() {
     setExpenseName("");
     setExpenseAmount("");
     setSelectedMembers(members.map((m) => m.id));
+    setIsSettlementMode(false);
     setIsExpenseModalOpen(true);
   }
 
@@ -290,6 +293,7 @@ export default function GroupDetailsPage() {
     setExpenseAmount(exp.amount.toString());
     const participantIds = exp.expense_splits?.map((split) => split.user_id) || [];
     setSelectedMembers(participantIds);
+    setIsSettlementMode(false);
     setIsExpenseModalOpen(true);
   }
 
@@ -303,6 +307,8 @@ export default function GroupDetailsPage() {
     } else {
       setSelectedMembers([]);
     }
+
+    setIsSettlementMode(true); // set settlment mode to true 
 
     setIsExpenseModalOpen(true);
   }
@@ -362,6 +368,22 @@ export default function GroupDetailsPage() {
     setSubmittingExpense(true);
     let rpcError;
 
+  if (isSettlementMode) { 
+    const receiverId = selectedMembers[0]; // person reciving the payment
+    const { error: settleerror } = await supabase
+      .from("settlements")
+      .insert({
+        group_id: groupId,
+        from_user: currentUser, // person making the payment       
+         amount: parseFloat(expenseAmount),
+         created_by: currentUser,
+         notes: "Settle up"
+      });
+    
+      rpcError = settleerror;
+  } 
+  else {
+    // if not settlment, then it is a normal expense
     if (editingExpenseId) {
       const res = await supabase.rpc("edit_expense_custom_split", {
         _expense_id: editingExpenseId,
@@ -379,6 +401,7 @@ export default function GroupDetailsPage() {
       });
       rpcError = res.error;
     }
+  }
 
     if (rpcError) {
       alert("Error saving expense: " + rpcError.message);
@@ -388,6 +411,7 @@ export default function GroupDetailsPage() {
       setExpenseName("");
       setExpenseAmount("");
       setSelectedMembers([]);
+      setIsSettlementMode(false); // rest settlment mode to false 
       fetchData();
     }
     setSubmittingExpense(false);
