@@ -137,7 +137,8 @@ export default function GroupDetailsPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [balances, setBalances] = useState<Balance[]>([]);
-  const [settlements, setSettlements] = useState<Settlement[]>([]);
+  const [pendingSettlements, setPendingSettlements] = useState<Settlement[]>([]);
+  const [completedSettlements, setCompletedSettlements] = useState<Settlement[]>([]);
 
   /* ── Member modal state ──────────────────────────────── */
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
@@ -259,8 +260,8 @@ export default function GroupDetailsPage() {
         setBalances(balancesData);
       }
 
-      // 5. Pending Settlements
-      const { data: settlementsData } = await supabase
+      // 5. Pending Settlements (for the pending section)
+      const { data: pendingSettlementsData } = await supabase
         .from("settlements")
         .select(
           `*,
@@ -271,8 +272,24 @@ export default function GroupDetailsPage() {
         .eq("status", "pending")
         .order("created_at", { ascending: false });
 
-      if (settlementsData) {
-        setSettlements(settlementsData as unknown as Settlement[]);
+      if (pendingSettlementsData) {
+        setPendingSettlements(pendingSettlementsData as unknown as Settlement[]);
+      }
+
+      // 6. Completed Settlements (for activity log)
+      const { data: completedSettlementsData } = await supabase
+        .from("settlements")
+        .select(
+          `*,
+           from_profile:from_user ( display_name, username, avatar_url ),
+           to_profile:to_user ( display_name, username, avatar_url )`
+        )
+        .eq("group_id", groupId)
+        .eq("status", "completed")
+        .order("created_at", { ascending: false });
+
+      if (completedSettlementsData) {
+        setCompletedSettlements(completedSettlementsData as unknown as Settlement[]);
       }
     } catch (err) {
       console.error(err);
@@ -449,7 +466,7 @@ export default function GroupDetailsPage() {
         return;
       }
 
-      // 2. Log activity
+      // 2. Log activity (only for initiated)
       await supabase.from("activity_log").insert({
         group_id: groupId,
         user_id: currentUser,
@@ -489,6 +506,7 @@ export default function GroupDetailsPage() {
         return;
       }
 
+      // Log approved settlement
       await supabase.from("activity_log").insert({
         group_id: groupId,
         user_id: currentUser,
@@ -510,23 +528,18 @@ export default function GroupDetailsPage() {
     setProcessingSettlementId(settlementId);
 
     try {
-      const { error: updateError } = await supabase
+      // Delete rejected settlement (do not log)
+      const { error: deleteError } = await supabase
         .from("settlements")
-        .update({ status: "rejected" })
+        .delete()
         .eq("id", settlementId)
-        .eq("to_user", currentUser);
+        .eq("to_user", currentUser)
+        .eq("status", "pending");
 
-      if (updateError) {
-        alert("Error: " + updateError.message);
+      if (deleteError) {
+        alert("Error: " + deleteError.message);
         return;
       }
-
-      await supabase.from("activity_log").insert({
-        group_id: groupId,
-        user_id: currentUser,
-        action: "settlement_rejected",
-        metadata: { settlement_id: settlementId },
-      });
 
       fetchData();
     } catch (err) {
@@ -554,6 +567,7 @@ export default function GroupDetailsPage() {
         return;
       }
 
+      // Log deletion
       await supabase.from("activity_log").insert({
         group_id: groupId,
         user_id: currentUser,
@@ -626,9 +640,13 @@ export default function GroupDetailsPage() {
   }
 
   const isOwner = currentUser === group.owner_id;
-
-  // Members excluding current user (for settle up selection)
   const otherMembers = members.filter((m) => m.id !== currentUser);
+
+  // Combine expenses and completed settlements for activity timeline
+  const allActivities = [
+    ...expenses.map((e) => ({ ...e, type: "expense" as const })),
+    ...completedSettlements.map((s) => ({ ...s, type: "settlement" as const })),
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -734,17 +752,17 @@ export default function GroupDetailsPage() {
         </section>
 
         {/* ── Pending Settlements Section ──────────────── */}
-        {settlements.length > 0 && (
+        {pendingSettlements.length > 0 && (
           <section className="rounded-xl border border-amber-200 bg-amber-50/30 p-6 shadow-sm">
             <div className="mb-4 flex items-center gap-2">
               <span className="text-lg">⏳</span>
               <h2 className="text-sm font-semibold text-amber-800">
-                Pending Settlements ({settlements.length})
+                Pending Settlements ({pendingSettlements.length})
               </h2>
             </div>
 
             <div className="space-y-3">
-              {settlements.map((s) => {
+              {pendingSettlements.map((s) => {
                 const isSender = currentUser === s.from_user;
                 const isReceiver = currentUser === s.to_user;
                 const isProcessing = processingSettlementId === s.id;
@@ -924,56 +942,90 @@ export default function GroupDetailsPage() {
           )}
         </section>
 
-        {/* ── Activity Timeline ────────────────────────── */}
+        {/* ── Activity Timeline (Expenses + Settlements) ── */}
         <section className="mt-10 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-6">
             <h2 className="text-lg font-bold text-gray-800">Recent Activity</h2>
             <p className="text-xs text-gray-500">Timeline of all group expenses and settlements.</p>
           </div>
 
-          {expenses.length === 0 ? (
+          {allActivities.length === 0 ? (
             <p className="py-4 text-center text-sm text-gray-500">No activity to show yet.</p>
           ) : (
             <div className="relative ml-4 space-y-6 border-l-2 border-gray-100 pb-4">
-              {expenses.map((exp) => {
-                const isSettleUp =
-                  exp.name.toLowerCase().includes("settle up") ||
-                  exp.name.toLowerCase().includes("cash payment");
-
-                return (
-                  <div key={`timeline-${exp.id}`} className="relative pl-6">
-                    <span
-                      className={`absolute -left-[17px] top-1 flex h-8 w-8 items-center justify-center rounded-full ring-4 ring-white ${
-                        isSettleUp ? "bg-green-100 text-green-600" : "bg-blue-100 text-blue-600"
-                      }`}
-                    >
-                      {isSettleUp ? "🤝" : "💸"}
-                    </span>
-                    <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-start">
-                      <div>
-                        <p className="text-sm text-gray-800">
-                          <span className="font-semibold text-gray-900">
-                            {exp.profiles?.display_name || exp.profiles?.full_name || "Someone"}
-                          </span>{" "}
-                          {isSettleUp ? "settled up" : "added"}{" "}
-                          <span className="font-semibold text-gray-900">{exp.name}</span>
-                        </p>
-                        <p className="mt-0.5 text-xs text-gray-400">
-                          {new Date(exp.created_at).toLocaleString("en-US", {
-                            weekday: "short",
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </p>
-                      </div>
-                      <div className={`whitespace-nowrap text-sm font-bold ${isSettleUp ? "text-green-600" : "text-gray-900"}`}>
-                        {exp.amount} {group?.currency || "USD"}
+              {allActivities.map((item) => {
+                if (item.type === "expense") {
+                  const exp = item as Expense;
+                  const isSettleUp = exp.name.toLowerCase().includes("settle up") || exp.name.toLowerCase().includes("cash payment");
+                  return (
+                    <div key={`expense-${exp.id}`} className="relative pl-6">
+                      <span
+                        className={`absolute -left-[17px] top-1 flex h-8 w-8 items-center justify-center rounded-full ring-4 ring-white ${
+                          isSettleUp ? "bg-green-100 text-green-600" : "bg-blue-100 text-blue-600"
+                        }`}
+                      >
+                        {isSettleUp ? "🤝" : "💸"}
+                      </span>
+                      <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-start">
+                        <div>
+                          <p className="text-sm text-gray-800">
+                            <span className="font-semibold text-gray-900">
+                              {exp.profiles?.display_name || exp.profiles?.full_name || "Someone"}
+                            </span>{" "}
+                            {isSettleUp ? "settled up" : "added"}{" "}
+                            <span className="font-semibold text-gray-900">{exp.name}</span>
+                          </p>
+                          <p className="mt-0.5 text-xs text-gray-400">
+                            {new Date(exp.created_at).toLocaleString("en-US", {
+                              weekday: "short",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        </div>
+                        <div className={`whitespace-nowrap text-sm font-bold ${isSettleUp ? "text-green-600" : "text-gray-900"}`}>
+                          {exp.amount} {group?.currency || "USD"}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
+                  );
+                } else {
+                  const s = item as Settlement;
+                  return (
+                    <div key={`settlement-${s.id}`} className="relative pl-6">
+                      <span className="absolute -left-[17px] top-1 flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600 ring-4 ring-white">
+                        🤝
+                      </span>
+                      <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-start">
+                        <div>
+                          <p className="text-sm text-gray-800">
+                            <span className="font-semibold text-gray-900">
+                              {s.from_profile.display_name || s.from_profile.username}
+                            </span>{" "}
+                            paid{" "}
+                            <span className="font-semibold text-gray-900">
+                              {s.to_profile.display_name || s.to_profile.username}
+                            </span>
+                          </p>
+                          <p className="mt-0.5 text-xs text-gray-400">
+                            {new Date(s.created_at).toLocaleString("en-US", {
+                              weekday: "short",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        </div>
+                        <div className="whitespace-nowrap text-sm font-bold text-green-600">
+                          {s.amount} {group?.currency || "USD"}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
               })}
             </div>
           )}
@@ -1104,7 +1156,7 @@ export default function GroupDetailsPage() {
       )}
 
       {/* ════════════════════════════════════════════════════
-         MODAL: ADD / EDIT EXPENSE (No settlement logic)
+         MODAL: ADD/EDIT EXPENSE (No settlement logic)
          ════════════════════════════════════════════════════ */}
       {isExpenseModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -1174,7 +1226,9 @@ export default function GroupDetailsPage() {
                       {selectedMembers.length > 0 && (
                         <>
                           {" · "}
-                          <button type="button" onClick={() => setSelectedMembers([])} className="text-red-500 hover:underline">Clear</button>
+                          <button type="button" onClick={() => setSelectedMembers([])} className="text-red-500 hover:underline">
+                            Clear
+                          </button>
                         </>
                       )}
                     </p>
@@ -1209,7 +1263,6 @@ export default function GroupDetailsPage() {
 
             <div className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl sm:my-8">
               <div className="px-6 pb-6 pt-6">
-                {/* Header */}
                 <div className="mb-1 flex items-center gap-2">
                   <span className="text-2xl">🤝</span>
                   <h3 className="text-xl font-bold text-gray-900">Settle Up</h3>
