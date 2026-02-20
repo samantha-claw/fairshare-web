@@ -111,16 +111,23 @@ export function RegisterForm() {
       });
 
       if (signUpError) {
-        // ── معالجة خطأ الإيميل المستخدم بالفعل ──
-        if (signUpError.message.toLowerCase().includes("already registered")) {
-          setError("This email is already registered. Please sign in instead.");
-        } else {
-          setError(signUpError.message);
+        let friendlyMessage = signUpError.message;
+        const errStr = friendlyMessage.toLowerCase();
+
+        if (errStr.includes("database error saving new user")) {
+          friendlyMessage = "This username is already taken. Please choose another one.";
+          setUsernameStatus("taken"); // عشان نظهرله الاقتراحات فوراً
+        } else if (errStr.includes("already registered") || errStr.includes("user already exists")) {
+          friendlyMessage = "This email is already registered. Please sign in.";
+        } else if (errStr.includes("rate limit")) {
+          friendlyMessage = "Too many attempts. Please try again later.";
         }
+
+        setError(friendlyMessage);
         setLoading(false);
         return;
       }
-
+      
       if (!data.user) {
         setError("Signup failed — no user returned.");
         setLoading(false);
