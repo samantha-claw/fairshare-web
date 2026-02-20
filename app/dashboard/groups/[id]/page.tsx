@@ -265,6 +265,22 @@ export default function GroupDetailsPage() {
     setIsExpenseModalOpen(true);
   }
 
+  // دالة زرار تسوية الديون
+  function openSettleUpModal() {
+   setEditingExpenseId(null);
+   setExpenseName("Settle Up 💵"); // اسم افتراضي مميز
+   setExpenseAmount(""); 
+  
+  // لو المجموعة ليها مالك، خليه هو المحدد الافتراضي للتسديد (أو سيبها فاضية تختار براحتك)
+   if (group?.owner_id) {
+     setSelectedMembers([group.owner_id]);
+   } else {
+     setSelectedMembers([]);
+   }
+  
+   setIsExpenseModalOpen(true);
+  }
+
   /* ════════════════════════════════════════════════════════
      HANDLERS
      ════════════════════════════════════════════════════════ */
@@ -528,14 +544,28 @@ export default function GroupDetailsPage() {
         {/* ── Expenses Section ─────────────────────────── */}
         <section>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-gray-800">Expenses</h2>
-            <button
-              onClick={openAddExpenseModal}
-              className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-green-700"
-            >
-              <span>💸</span> Add Expense
-            </button>
-          </div>
+  <h2 className="text-lg font-bold text-gray-800">Expenses</h2>
+  <div className="flex items-center gap-2">
+    
+    {/* ── زر تسوية الديون ── */}
+    <button
+      onClick={openSettleUpModal}
+      className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
+    >
+      <span>🤝</span> Settle Up
+    </button>
+    
+    {/* ── زر إضافة المصروف العادي ── */}
+    <button
+      onClick={openAddExpenseModal}
+      className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-green-700"
+    >
+      <span>💸</span> Add Expense
+    </button>
+
+  </div>
+</div>
+
 
           {expenses.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-300 bg-white py-12 text-center">
