@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback, type FormEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
 
 /* ════════════════════════════════════════════════════════════
    INTERFACES
@@ -45,6 +46,7 @@ interface SearchResult {
   id: string;
   username: string;
   full_name: string;
+  display_name: string;
   avatar_url: string;
 }
 
@@ -132,6 +134,32 @@ export default function GroupDetailsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [searching, setSearching] = useState(false);
+
+  /* ── Debounced live search ───────────────────────────── */
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    const delayDebounceFn = setTimeout(async () => {
+      setSearching(true);
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, username, full_name, display_name, avatar_url")
+        .ilike("username", `%${searchTerm.trim()}%`)
+        .limit(5);
+
+      if (!error && data) {
+        const existingMemberIds = members.map((m) => m.id);
+        const newUsers = data.filter((user: any) => !existingMemberIds.includes(user.id));
+        setSearchResults(newUsers as SearchResult[]);
+      }
+      setSearching(false);
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, members, supabase]);
 
   /* ── Expense modal state ─────────────────────────────── */
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
@@ -265,20 +293,18 @@ export default function GroupDetailsPage() {
     setIsExpenseModalOpen(true);
   }
 
-  // دالة زرار تسوية الديون
   function openSettleUpModal() {
-   setEditingExpenseId(null);
-   setExpenseName("Settle Up 💵"); // اسم افتراضي مميز
-   setExpenseAmount(""); 
-  
-  // لو المجموعة ليها مالك، خليه هو المحدد الافتراضي للتسديد (أو سيبها فاضية تختار براحتك)
-   if (group?.owner_id) {
-     setSelectedMembers([group.owner_id]);
-   } else {
-     setSelectedMembers([]);
-   }
-  
-   setIsExpenseModalOpen(true);
+    setEditingExpenseId(null);
+    setExpenseName("Settle Up 💵");
+    setExpenseAmount("");
+
+    if (group?.owner_id) {
+      setSelectedMembers([group.owner_id]);
+    } else {
+      setSelectedMembers([]);
+    }
+
+    setIsExpenseModalOpen(true);
   }
 
   /* ════════════════════════════════════════════════════════
@@ -544,28 +570,22 @@ export default function GroupDetailsPage() {
         {/* ── Expenses Section ─────────────────────────── */}
         <section>
           <div className="mb-4 flex items-center justify-between">
-  <h2 className="text-lg font-bold text-gray-800">Expenses</h2>
-  <div className="flex items-center gap-2">
-    
-    {/* ──Settle up زر تسوية الديون ── */}
-    <button
-      onClick={openSettleUpModal}
-      className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
-    >
-      <span>🤝</span> Settle Up
-    </button>
-    
-    {/* ── Add Expense زر إضافة المنصرفات العادي ── */}
-    <button
-      onClick={openAddExpenseModal}
-      className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-green-700"
-    >
-      <span>💸</span> Add Expense
-    </button>
-
-  </div>
-</div>
-
+            <h2 className="text-lg font-bold text-gray-800">Expenses</h2>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={openSettleUpModal}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
+              >
+                <span>🤝</span> Settle Up
+              </button>
+              <button
+                onClick={openAddExpenseModal}
+                className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-green-700"
+              >
+                <span>💸</span> Add Expense
+              </button>
+            </div>
+          </div>
 
           {expenses.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-300 bg-white py-12 text-center">
@@ -592,7 +612,6 @@ export default function GroupDetailsPage() {
                     </div>
                   </div>
 
-                  {/* ── Expense right side: amount + actions ── */}
                   <div className="flex flex-col items-end gap-2 text-right">
                     <p className="text-lg font-bold text-gray-900">
                       {exp.amount} {group.currency || "USD"}
@@ -639,61 +658,67 @@ export default function GroupDetailsPage() {
             </div>
           )}
         </section>
-{/* ── سجل النشاطات (Activity Timeline) ── */}
-<section className="mt-10 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-  <div className="mb-6">
-    <h2 className="text-lg font-bold text-gray-800">Recent Activity</h2>
-    <p className="text-xs text-gray-500">Timeline of all group expenses and settlements.</p>
-  </div>
 
-  {expenses.length === 0 ? (
-    <p className="text-sm text-gray-500 text-center py-4">No activity to show yet.</p>
-  ) : (
-    <div className="relative border-l-2 border-gray-100 ml-4 space-y-6 pb-4">
-      {expenses.map((exp) => {
-        // تحديد هل ده مصروف عادي ولا تسوية ديون بناءً على الاسم
-        const isSettleUp = exp.name.toLowerCase().includes("settle up") || exp.name.toLowerCase().includes("cash payment");
-        
-        return (
-          <div key={`timeline-${exp.id}`} className="relative pl-6">
-            {/* أيقونة التايم لاين */}
-            <span className={`absolute -left-[17px] top-1 flex h-8 w-8 items-center justify-center rounded-full ring-4 ring-white ${
-              isSettleUp ? "bg-green-100 text-green-600" : "bg-blue-100 text-blue-600"
-            }`}>
-              {isSettleUp ? "🤝" : "💸"}
-            </span>
-
-            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
-              <div>
-                <p className="text-sm text-gray-800">
-                  <span className="font-semibold text-gray-900">
-                    {exp.profiles?.display_name || exp.profiles?.full_name || "Someone"}
-                  </span>{" "}
-                  {isSettleUp ? "settled up an amount of" : "added"}
-                  {" "}
-                  <span className="font-semibold text-gray-900">
-                    {exp.name}
-                  </span>
-                </p>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {new Date(exp.created_at).toLocaleString('en-US', { 
-                    weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
-                  })}
-                </p>
-              </div>
-              
-              <div className={`text-sm font-bold whitespace-nowrap ${isSettleUp ? "text-green-600" : "text-gray-900"}`}>
-                {exp.amount} {group?.currency || "USD"}
-              </div>
-            </div>
+        {/* ── Activity Timeline ────────────────────────── */}
+        <section className="mt-10 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="mb-6">
+            <h2 className="text-lg font-bold text-gray-800">Recent Activity</h2>
+            <p className="text-xs text-gray-500">Timeline of all group expenses and settlements.</p>
           </div>
-        );
-      })}
-    </div>
-  )}
-</section>
 
+          {expenses.length === 0 ? (
+            <p className="py-4 text-center text-sm text-gray-500">No activity to show yet.</p>
+          ) : (
+            <div className="relative ml-4 space-y-6 border-l-2 border-gray-100 pb-4">
+              {expenses.map((exp) => {
+                const isSettleUp =
+                  exp.name.toLowerCase().includes("settle up") ||
+                  exp.name.toLowerCase().includes("cash payment");
 
+                return (
+                  <div key={`timeline-${exp.id}`} className="relative pl-6">
+                    <span
+                      className={`absolute -left-[17px] top-1 flex h-8 w-8 items-center justify-center rounded-full ring-4 ring-white ${
+                        isSettleUp ? "bg-green-100 text-green-600" : "bg-blue-100 text-blue-600"
+                      }`}
+                    >
+                      {isSettleUp ? "🤝" : "💸"}
+                    </span>
+
+                    <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-start">
+                      <div>
+                        <p className="text-sm text-gray-800">
+                          <span className="font-semibold text-gray-900">
+                            {exp.profiles?.display_name || exp.profiles?.full_name || "Someone"}
+                          </span>{" "}
+                          {isSettleUp ? "settled up an amount of" : "added"}{" "}
+                          <span className="font-semibold text-gray-900">{exp.name}</span>
+                        </p>
+                        <p className="mt-0.5 text-xs text-gray-400">
+                          {new Date(exp.created_at).toLocaleString("en-US", {
+                            weekday: "short",
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      </div>
+
+                      <div
+                        className={`whitespace-nowrap text-sm font-bold ${
+                          isSettleUp ? "text-green-600" : "text-gray-900"
+                        }`}
+                      >
+                        {exp.amount} {group?.currency || "USD"}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
       </main>
 
       {/* ════════════════════════════════════════════════════
@@ -708,6 +733,7 @@ export default function GroupDetailsPage() {
             />
 
             <div className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8">
+              {/* Header */}
               <div className="border-b border-gray-100 px-6 pb-4 pt-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-bold text-gray-900">Add Member</h3>
@@ -723,6 +749,7 @@ export default function GroupDetailsPage() {
                 <p className="mt-1 text-sm text-gray-500">Invite friends or search for any user</p>
               </div>
 
+              {/* Scrollable content */}
               <div className="max-h-[70vh] overflow-y-auto px-6 py-5">
                 {/* ── Quick Add ────────────────────────── */}
                 <div className="mb-6">
@@ -810,7 +837,7 @@ export default function GroupDetailsPage() {
                 </div>
 
                 {/* ── Manual Search ────────────────────── */}
-                <form onSubmit={handleSearch} className="flex gap-2">
+                <div className="mb-4">
                   <div className="relative flex-1">
                     <svg
                       className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
@@ -826,25 +853,20 @@ export default function GroupDetailsPage() {
                       placeholder="Search username…"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-10 text-sm text-gray-900 placeholder-gray-400 shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={searching || !searchTerm.trim()}
-                    className="inline-flex items-center rounded-lg bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {searching ? (
-                      <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                      </svg>
-                    ) : (
-                      "Search"
+                    {searching && (
+                      <div className="absolute right-3 top-2.5">
+                        <svg className="h-5 w-5 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                        </svg>
+                      </div>
                     )}
-                  </button>
-                </form>
+                  </div>
+                </div>
 
+                {/* Search Results */}
                 {searchResults.length > 0 && (
                   <ul className="mt-4 space-y-2">
                     {searchResults.map((user) => (
@@ -852,19 +874,28 @@ export default function GroupDetailsPage() {
                         key={user.id}
                         className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 p-3 transition-colors hover:border-blue-200"
                       >
-                        <div className="flex items-center gap-3">
-                          <Avatar src={user.avatar_url} name={user.full_name || user.username} size="sm" />
+                        <Link
+                          href={`/dashboard/profile/${user.id}`}
+                          target="_blank"
+                          className="flex flex-1 items-center gap-3 transition-colors hover:opacity-80"
+                        >
+                          <Avatar
+                            src={user.avatar_url}
+                            name={user.display_name || user.full_name || user.username}
+                            size="sm"
+                          />
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-medium text-gray-900">
-                              {user.full_name || user.username}
+                            <p className="truncate text-sm font-medium text-gray-900 transition-colors hover:text-blue-600">
+                              {user.display_name || user.full_name || user.username}
                             </p>
                             <p className="truncate text-xs text-gray-500">@{user.username}</p>
                           </div>
-                        </div>
+                        </Link>
+
                         <button
                           onClick={() => handleAddMember(user.id)}
                           disabled={addingMember === user.id}
-                          className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="ml-4 inline-flex shrink-0 items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           {addingMember === user.id ? (
                             <svg className="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -890,6 +921,7 @@ export default function GroupDetailsPage() {
                 )}
               </div>
 
+              {/* Footer */}
               <div className="border-t border-gray-100 bg-gray-50 px-6 py-3">
                 <button
                   onClick={() => setIsMemberModalOpen(false)}
