@@ -53,18 +53,11 @@ function Avatar({
     lg: "h-10 w-10 text-sm",
   };
 
-  const initial = name?.charAt(0).toUpperCase() || "?";
   const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=dbeafe&color=1d4ed8&bold=true&size=80`;
 
-  return src ? (
+  return (
     <img
-      src={src}
-      alt={name}
-      className={`${sizeMap[size]} rounded-full object-cover ring-2 ring-white shadow-sm`}
-    />
-  ) : (
-    <img
-      src={fallback}
+      src={src || fallback}
       alt={name}
       className={`${sizeMap[size]} rounded-full object-cover ring-2 ring-white shadow-sm`}
     />
@@ -86,7 +79,6 @@ function formatCurrency(amount: number, currency = "USD"): string {
 function DashboardSkeleton() {
   return (
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
-      {/* Header skeleton */}
       <div className="sticky top-0 z-10 border-b border-gray-200 bg-white shadow-sm">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
           <div className="h-7 w-28 animate-pulse rounded bg-gray-200" />
@@ -103,14 +95,12 @@ function DashboardSkeleton() {
           <div className="h-4 w-56 animate-pulse rounded bg-gray-200" />
         </div>
 
-        {/* Summary cards skeleton */}
         <div className="mb-8 grid gap-4 sm:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-28 animate-pulse rounded-xl border border-gray-200 bg-white shadow-sm" />
           ))}
         </div>
 
-        {/* Groups skeleton */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-44 animate-pulse rounded-xl border border-gray-200 bg-white shadow-sm" />
@@ -144,57 +134,60 @@ export default function DashboardPage() {
   const avatarUrl = profile?.avatar_url || "";
 
   /* ── Fetch ───────────────────────────────────────────── */
-const fetchDashboard = useCallback(async () => {
-  try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+  const fetchDashboard = useCallback(async () => {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-    if (!session) {
-      router.replace("/login");
-      return;
+      if (!session) {
+        router.replace("/login");
+        return;
+      }
+
+      setUserId(session.user.id);
+
+      // 1. Profile
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("display_name, avatar_url")
+        .eq("id", session.user.id)
+        .single();
+
+      if (profileData) {
+        setProfile({
+          display_name: profileData.display_name || session.user.email?.split("@")[0] || "User",
+          avatar_url: profileData.avatar_url || "",
+        });
+      }
+
+      // 2. Dashboard balances via RPC
+      const { data: balancesData, error: balancesError } = await supabase.rpc(
+        "get_user_dashboard_balances",
+        { _user_id: session.user.id }
+      );
+
+      if (balancesError) {
+        console.error("Failed to fetch balances:", balancesError);
+      }
+
+      if (balancesData) {
+        const formattedData = (balancesData as any[]).map((g) => ({
+          ...g,
+          net_balance: Number(g.net_balance) || 0,
+        }));
+        setGroups(formattedData as GroupBalance[]);
+      }
+    } catch (err) {
+      console.error("Dashboard fetch error:", err);
+    } finally {
+      setLoading(false);
     }
+  }, [supabase, router]);
 
-    setUserId(session.user.id);
-
-    // 1. Profile
-    const { data: profileData } = await supabase
-      .from("profiles")
-      .select("display_name, avatar_url")
-      .eq("id", session.user.id)
-      .single();
-
-    if (profileData) {
-      setProfile({
-        display_name: profileData.display_name || session.user.email?.split("@")[0] || "User",
-        avatar_url: profileData.avatar_url || "",
-      });
-    }
-
-    // 2. Dashboard balances via RPC
-    const { data: balancesData, error: balancesError } = await supabase.rpc(
-      "get_user_dashboard_balances",
-      { _user_id: session.user.id }
-    );
-
-    if (balancesError) {
-      console.error("Failed to fetch balances:", balancesError);
-    }
-
-    if (balancesData) {
-      // نتأكد أن الأرقام تأتي كـ Number لكي تعمل حسابات الـ Reduce فوق بشكل سليم
-      const formattedData = (balancesData as any[]).map(g => ({
-        ...g,
-        net_balance: Number(g.net_balance) || 0
-      }));
-      setGroups(formattedData as GroupBalance[]);
-    }
-  } catch (error) {
-    console.error("Failed to fetch dashboard:", error);
-  } finally {
-    setLoading(false);
-  }
-}, [supabase, router]);
+  useEffect(() => {
+    fetchDashboard();
+  }, [fetchDashboard]);
 
   /* ── Sign out ────────────────────────────────────────── */
   async function handleSignOut() {
@@ -301,7 +294,6 @@ const fetchDashboard = useCallback(async () => {
                 </p>
               </div>
             </div>
-            {/* Decorative gradient */}
             <div
               className={`absolute -right-4 -top-4 h-24 w-24 rounded-full opacity-10 ${
                 totalNet > 0 ? "bg-green-500" : totalNet < 0 ? "bg-red-500" : "bg-gray-400"
@@ -369,7 +361,6 @@ const fetchDashboard = useCallback(async () => {
         </div>
 
         {groups.length === 0 ? (
-          /* ── Empty State ─────────────────────────────── */
           <div className="rounded-xl border border-dashed border-gray-300 bg-white py-16 text-center shadow-sm">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50">
               <FolderOpen className="h-8 w-8 text-blue-400" />
@@ -394,7 +385,6 @@ const fetchDashboard = useCallback(async () => {
                 href={`/dashboard/groups/${group.group_id}`}
                 className="group relative flex flex-col justify-between rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
               >
-                {/* Top row */}
                 <div>
                   <div className="flex items-start justify-between">
                     <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-100 text-lg font-bold text-blue-600">
@@ -411,7 +401,6 @@ const fetchDashboard = useCallback(async () => {
                     {group.group_name}
                   </h3>
 
-                  {/* Balance indicator */}
                   <div className="mt-2">
                     {group.net_balance > 0 ? (
                       <div className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700 ring-1 ring-inset ring-green-600/20">
@@ -432,7 +421,6 @@ const fetchDashboard = useCallback(async () => {
                   </div>
                 </div>
 
-                {/* Bottom row */}
                 <div className="mt-4 flex items-center justify-between border-t border-gray-50 pt-3">
                   <span className="text-xs text-gray-400">{group.currency || "USD"}</span>
                   <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 opacity-0 transition-opacity group-hover:opacity-100">
@@ -448,7 +436,6 @@ const fetchDashboard = useCallback(async () => {
       {/* ── Mobile Bottom Navigation ──────────────────────── */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white pb-safe md:hidden">
         <div className="mx-auto flex h-16 max-w-md items-center justify-around px-2">
-          {/* Home */}
           <Link
             href="/dashboard"
             className="flex flex-1 flex-col items-center justify-center gap-1 py-2 text-blue-600"
@@ -457,7 +444,6 @@ const fetchDashboard = useCallback(async () => {
             <span className="text-xs font-medium">Home</span>
           </Link>
 
-          {/* Friends */}
           <Link
             href="/dashboard/friends"
             className="flex flex-1 flex-col items-center justify-center gap-1 py-2 text-gray-500 transition-colors hover:text-blue-600"
@@ -466,7 +452,6 @@ const fetchDashboard = useCallback(async () => {
             <span className="text-xs font-medium">Friends</span>
           </Link>
 
-          {/* Create Group (FAB) */}
           <Link
             href="/dashboard/groups/new"
             className="flex flex-col items-center justify-center"
@@ -476,7 +461,6 @@ const fetchDashboard = useCallback(async () => {
             </div>
           </Link>
 
-          {/* Profile */}
           <Link
             href="/dashboard/profile"
             className="flex flex-1 flex-col items-center justify-center gap-1 py-2 text-gray-500 transition-colors hover:text-blue-600"
@@ -485,7 +469,6 @@ const fetchDashboard = useCallback(async () => {
             <span className="text-xs font-medium">Profile</span>
           </Link>
 
-          {/* Sign out (mobile) */}
           <button
             onClick={handleSignOut}
             className="flex flex-1 flex-col items-center justify-center gap-1 py-2 text-gray-500 transition-colors hover:text-red-600"
