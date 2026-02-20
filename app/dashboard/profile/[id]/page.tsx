@@ -129,7 +129,7 @@ export default function UserProfilePage() {
       const { error } = await supabase
         .from("friendships") // 🟢 تأكد من اسم الجدول
         .delete()
-        .or(`and(user_id1.eq.${currentUserId},user_id2.eq.${userId}),and(user_id1.eq.${userId},user_id2.eq.${currentUserId})`);
+        .or(`and(requester_id.eq.${currentUserId},receiver_id.eq.${userId}),and(requester_id.eq.${userId},receiver_id.eq.${currentUserId})`);
       
       if (error) throw error;
       setFriendStatus("none");
