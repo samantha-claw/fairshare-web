@@ -547,7 +547,7 @@ export default function GroupDetailsPage() {
   <h2 className="text-lg font-bold text-gray-800">Expenses</h2>
   <div className="flex items-center gap-2">
     
-    {/* ── زر تسوية الديون ── */}
+    {/* ──Settle up زر تسوية الديون ── */}
     <button
       onClick={openSettleUpModal}
       className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
@@ -555,7 +555,7 @@ export default function GroupDetailsPage() {
       <span>🤝</span> Settle Up
     </button>
     
-    {/* ── زر إضافة المصروف العادي ── */}
+    {/* ── Add Expense زر إضافة المنصرفات العادي ── */}
     <button
       onClick={openAddExpenseModal}
       className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-green-700"
@@ -639,6 +639,61 @@ export default function GroupDetailsPage() {
             </div>
           )}
         </section>
+{/* ── سجل النشاطات (Activity Timeline) ── */}
+<section className="mt-10 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+  <div className="mb-6">
+    <h2 className="text-lg font-bold text-gray-800">Recent Activity</h2>
+    <p className="text-xs text-gray-500">Timeline of all group expenses and settlements.</p>
+  </div>
+
+  {expenses.length === 0 ? (
+    <p className="text-sm text-gray-500 text-center py-4">No activity to show yet.</p>
+  ) : (
+    <div className="relative border-l-2 border-gray-100 ml-4 space-y-6 pb-4">
+      {expenses.map((exp) => {
+        // تحديد هل ده مصروف عادي ولا تسوية ديون بناءً على الاسم
+        const isSettleUp = exp.name.toLowerCase().includes("settle up") || exp.name.toLowerCase().includes("cash payment");
+        
+        return (
+          <div key={`timeline-${exp.id}`} className="relative pl-6">
+            {/* أيقونة التايم لاين */}
+            <span className={`absolute -left-[17px] top-1 flex h-8 w-8 items-center justify-center rounded-full ring-4 ring-white ${
+              isSettleUp ? "bg-green-100 text-green-600" : "bg-blue-100 text-blue-600"
+            }`}>
+              {isSettleUp ? "🤝" : "💸"}
+            </span>
+
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+              <div>
+                <p className="text-sm text-gray-800">
+                  <span className="font-semibold text-gray-900">
+                    {exp.profiles?.display_name || exp.profiles?.full_name || "Someone"}
+                  </span>{" "}
+                  {isSettleUp ? "settled up an amount of" : "added"}
+                  {" "}
+                  <span className="font-semibold text-gray-900">
+                    {exp.name}
+                  </span>
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {new Date(exp.created_at).toLocaleString('en-US', { 
+                    weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                  })}
+                </p>
+              </div>
+              
+              <div className={`text-sm font-bold whitespace-nowrap ${isSettleUp ? "text-green-600" : "text-gray-900"}`}>
+                {exp.amount} {group?.currency || "USD"}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  )}
+</section>
+
+
       </main>
 
       {/* ════════════════════════════════════════════════════
@@ -975,57 +1030,4 @@ export default function GroupDetailsPage() {
       )}
     </div>
   );
-{/* ── سجل النشاطات (Activity Timeline) ── */}
-<section className="mt-10 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-  <div className="mb-6">
-    <h2 className="text-lg font-bold text-gray-800">Recent Activity</h2>
-    <p className="text-xs text-gray-500">Timeline of all group expenses and settlements.</p>
-  </div>
-
-  {expenses.length === 0 ? (
-    <p className="text-sm text-gray-500 text-center py-4">No activity to show yet.</p>
-  ) : (
-    <div className="relative border-l-2 border-gray-100 ml-4 space-y-6 pb-4">
-      {expenses.map((exp) => {
-        // تحديد هل ده مصروف عادي ولا تسوية ديون بناءً على الاسم
-        const isSettleUp = exp.name.toLowerCase().includes("settle up") || exp.name.toLowerCase().includes("cash payment");
-        
-        return (
-          <div key={`timeline-${exp.id}`} className="relative pl-6">
-            {/* أيقونة التايم لاين */}
-            <span className={`absolute -left-[17px] top-1 flex h-8 w-8 items-center justify-center rounded-full ring-4 ring-white ${
-              isSettleUp ? "bg-green-100 text-green-600" : "bg-blue-100 text-blue-600"
-            }`}>
-              {isSettleUp ? "🤝" : "💸"}
-            </span>
-
-            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
-              <div>
-                <p className="text-sm text-gray-800">
-                  <span className="font-semibold text-gray-900">
-                    {exp.profiles?.display_name || exp.profiles?.full_name || "Someone"}
-                  </span>{" "}
-                  {isSettleUp ? "settled up an amount of" : "added"}
-                  {" "}
-                  <span className="font-semibold text-gray-900">
-                    {exp.name}
-                  </span>
-                </p>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {new Date(exp.created_at).toLocaleString('en-US', { 
-                    weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
-                  })}
-                </p>
-              </div>
-              
-              <div className={`text-sm font-bold whitespace-nowrap ${isSettleUp ? "text-green-600" : "text-gray-900"}`}>
-                {exp.amount} {group?.currency || "USD"}
-              </div>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  )}
-</section>
 }
