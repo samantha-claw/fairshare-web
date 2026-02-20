@@ -144,55 +144,57 @@ export default function DashboardPage() {
   const avatarUrl = profile?.avatar_url || "";
 
   /* ── Fetch ───────────────────────────────────────────── */
-  const fetchDashboard = useCallback(async () => {
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+const fetchDashboard = useCallback(async () => {
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-      if (!session) {
-        router.replace("/login");
-        return;
-      }
-
-      setUserId(session.user.id);
-
-      // 1. Profile
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("display_name, avatar_url")
-        .eq("id", session.user.id)
-        .single();
-
-      if (profileData) {
-        setProfile({
-          display_name: profileData.display_name || session.user.email?.split("@")[0] || "User",
-          avatar_url: profileData.avatar_url || "",
-        });
-      }
-
-      // 2. Dashboard balances via RPC
-      const { data: balancesData, error: balancesError } = await supabase.rpc(
-        "get_user_dashboard_balances"
-      );
-
-      if (balancesError) {
-        console.error("Failed to fetch balances:", balancesError);
-      }
-
-      if (balancesData) {
-        setGroups(balancesData as GroupBalance[]);
-      }
-    } catch (err) {
-      console.error("Dashboard fetch error:", err);
-    } finally {
-      setLoading(false);
+    if (!session) {
+      router.replace("/login");
+      return;
     }
-  }, [supabase, router]);
 
-  useEffect(() => {
-    fetchDashboard();
-  }, [fetchDashboard]);
+    setUserId(session.user.id);
+
+    // 1. Profile
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("display_name, avatar_url")
+      .eq("id", session.user.id)
+      .single();
+
+    if (profileData) {
+      setProfile({
+        display_name: profileData.display_name || session.user.email?.split("@")[0] || "User",
+        avatar_url: profileData.avatar_url || "",
+      });
+    }
+
+    // 2. Dashboard balances via RPC
+    const { data: balancesData, error: balancesError } = await supabase.rpc(
+      "get_user_dashboard_balances",
+      { _user_id: session.user.id }
+    );
+
+    if (balancesError) {
+      console.error("Failed to fetch balances:", balancesError);
+    }
+
+    if (balancesData) {
+      // نتأكد أن الأرقام تأتي كـ Number لكي تعمل حسابات الـ Reduce فوق بشكل سليم
+      const formattedData = (balancesData as any[]).map(g => ({
+        ...g,
+        net_balance: Number(g.net_balance) || 0
+      }));
+      setGroups(formattedData as GroupBalance[]);
+    }
+  } catch (error) {
+    console.error("Failed to fetch dashboard:", error);
+  } finally {
+    setLoading(false);
+  }
+}, [supabase, router]);
 
   /* ── Sign out ────────────────────────────────────────── */
   async function handleSignOut() {
