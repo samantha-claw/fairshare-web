@@ -64,60 +64,72 @@ export default function DashboardPage() {
   const avatarUrl = profile?.avatar_url || "";
 
   const fetchDashboard = useCallback(async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { router.replace("/login"); return; }
-      
-      const uid = session.user.id;
-      setUserId(uid);
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { router.replace("/login"); return; }
+    const uid = session.user.id;
+    setUserId(uid);
 
-      // 1. Profile
-      const { data: profileData } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", uid).single();
-      if (profileData) setProfile({ display_name: profileData.display_name || "User", avatar_url: profileData.avatar_url || "" });
+    // 1. Profile
+    const { data: profileData } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", uid).single();
+    if (profileData) setProfile({ display_name: profileData.display_name || "User", avatar_url: profileData.avatar_url || "" });
 
-      // 2. Fetch Groups EXACTLY like your old working code!
-      const { data: memberships } = await supabase
-        .from("group_members")
-        .select(`group_id, groups ( id, name, currency, created_at, owner_id )`)
-        .eq("user_id", uid);
+    // 2. Fetch Groups
+    const { data: memberships } = await supabase
+      .from("group_members")
+      .select(`group_id, groups ( id, name, currency, created_at, owner_id )`)
+      .eq("user_id", uid);
 
-      if (!memberships || memberships.length === 0) {
-        setGroups([]);
-        return;
-      }
+    if (!memberships || memberships.length === 0) {
+      setGroups([]);
+      return;
+    }
 
-      // 3. Fetch expenses for all these groups to calculate balances manually
-      const groupIds = memberships.map(m => m.group_id);
-      
-      const { data: expensesPaidByMe } = await supabase.from("expenses").select("group_id, amount").in("group_id", groupIds).eq("paid_by", uid);
-      const { data: mySplits } = await supabase.from("expense_splits").select("amount, expenses(group_id)").eq("user_id", uid);
+    const groupIds = memberships.map(m => m.group_id);
 
-      // 4. Combine data
-      const processedGroups: GroupBalance[] = memberships.map((m: any) => {
-        const groupInfo = m.groups;
-        
-        // Calculate what I paid
-        const paid = expensesPaidByMe?.filter(e => e.group_id === groupInfo.id).reduce((sum, e) => sum + Number(e.amount), 0) || 0;
-        
-        // Calculate what I owe
-        const owed = mySplits?.filter((s: any) => s.expenses.group_id === groupInfo.id).reduce((sum, s) => sum + Number(s.amount), 0) || 0;
+    // 3. 🔴 جلب كل البيانات المالية (المصاريف + التسويات الجديدة)
+    const { data: expensesPaidByMe } = await supabase.from("expenses").select("group_id, amount").in("group_id", groupIds).eq("paid_by", uid);
+    const { data: mySplits } = await supabase.from("expense_splits").select("amount, expenses(group_id)").eq("user_id", uid);
+    
+    // جلب التسويات التي سددتها أنت (from_user) والتي استلمتها أنت (to_user)
+    const { data: settlementsPaidByMe } = await supabase.from("settlements").select("group_id, amount").in("group_id", groupIds).eq("from_user", uid);
+    const { data: settlementsReceivedByMe } = await supabase.from("settlements").select("group_id, amount").in("group_id", groupIds).eq("to_user", uid);
 
-        return {
-          group_id: groupInfo.id,
-          group_name: groupInfo.name,
-          currency: groupInfo.currency || "USD",
-          owner_id: groupInfo.owner_id,
-          created_at: groupInfo.created_at,
-          net_balance: paid - owed
-        };
-      });
 
-      // Sort by newest
-      setGroups(processedGroups.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+    // 4. 🔴 دمج البيانات وحساب الرصيد الصافي الصحيح
+    const processedGroups: GroupBalance[] = memberships.map((m: any) => {
+      const groupInfo = m.groups;
 
-    } catch (err) { console.error(err); } 
-    finally { setLoading(false); }
-  }, [supabase, router]);
+      // أ) حساب ما دفعته (المصاريف التي دفعتها + التسويات التي سددتها للآخرين)
+      const expPaid = expensesPaidByMe?.filter(e => e.group_id === groupInfo.id).reduce((sum, e) => sum + Number(e.amount), 0) || 0;
+      const setPaid = settlementsPaidByMe?.filter(s => s.group_id === groupInfo.id).reduce((sum, s) => sum + Number(s.amount), 0) || 0;
+      const totalPaid = expPaid + setPaid;
+
+      // ب) حساب ما تدين به (نصيبك من المصاريف + التسويات التي استلمتها من الآخرين)
+      const expOwed = mySplits?.filter((s: any) => s.expenses.group_id === groupInfo.id).reduce((sum, s) => sum + Number(s.amount), 0) || 0;
+      const setRcvd = settlementsReceivedByMe?.filter(s => s.group_id === groupInfo.id).reduce((sum, s) => sum + Number(s.amount), 0) || 0;
+      const totalOwed = expOwed + setRcvd;
+
+      return {
+        group_id: groupInfo.id,
+        group_name: groupInfo.name,
+        currency: groupInfo.currency || "USD",
+        owner_id: groupInfo.owner_id,
+        created_at: groupInfo.created_at,
+        net_balance: totalPaid - totalOwed // الرصيد النهائي الصحيح
+      };
+    });
+
+    // Sort by newest
+    setGroups(processedGroups.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+
+  } catch (err) { 
+    console.error(err); 
+  } finally { 
+    setLoading(false); 
+  }
+}, [supabase, router]);
+
 
   useEffect(() => { fetchDashboard(); }, [fetchDashboard]);
 
