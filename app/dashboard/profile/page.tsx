@@ -245,6 +245,7 @@ export default function ProfilePage() {
         .update({
           username: username.trim().toLowerCase(),
           full_name: fullName.trim(),
+          display_name: fullName,    // 👈 🟢 
           bio: bio.trim(),
           avatar_url: newAvatarUrl,
         })
