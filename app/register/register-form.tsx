@@ -7,6 +7,8 @@ export function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [username, setUsername] = useState(""); // 👈
+  const [fullName, setFullName] = useState(""); // 👈
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -14,7 +16,8 @@ export function RegisterForm() {
     e.preventDefault();
     setError(null);
 
-    if (!email.trim() || !password || !confirmPassword) {
+    // 1. التأكد إن كل الحقول مليانة
+    if (!email.trim() || !password || !confirmPassword || !username.trim() || !fullName.trim()) {
       setError("All fields are required.");
       return;
     }
@@ -34,9 +37,24 @@ export function RegisterForm() {
     try {
       const supabase = createClient();
 
+      // تنسيق الـ username (حروف صغيرة وبدون مسافات)
+      const formattedUsername = username
+        .trim()
+        .replace(/[^a-zA-Z0-9_]/g, "_")
+        .slice(0, 30)
+        .toLowerCase();
+
+      // 2. التسجيل وإرسال الـ Metadata عشان الـ Trigger يلقطها
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
         password,
+        options: {
+          data: {
+            username: formattedUsername,
+            full_name: fullName.trim(),
+            display_name: fullName.trim(), // عشان يظهر باسمه الحقيقي في التطبيق
+          },
+        },
       });
 
       if (signUpError) {
@@ -59,23 +77,7 @@ export function RegisterForm() {
         return;
       }
 
-      // Update profile
-      const username = email
-        .split("@")[0]
-        .replace(/[^a-zA-Z0-9_]/g, "_")
-        .slice(0, 30)
-        .toLowerCase();
-
-      await supabase
-        .from("profiles")
-        .update({
-          username,
-          display_name: username,
-          is_public: false,
-        })
-        .eq("id", data.user.id);
-
-      // Full page reload
+      // توجيه المستخدم للداشبورد مباشرة
       window.location.href = "/dashboard";
     } catch (err) {
       setError(
@@ -108,11 +110,41 @@ export function RegisterForm() {
           </div>
         )}
 
+        {/* ── Full Name Field ── */}
         <div>
-          <label
-            htmlFor="email"
-            className="mb-1 block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="fullName" className="mb-1 block text-sm font-medium text-gray-700">
+            Full Name
+          </label>
+          <input
+            id="fullName"
+            type="text"
+            required
+            value={fullName}
+            placeholder="e.g. Ahmed Ali"
+            onChange={(e) => setFullName(e.target.value)}
+            className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* ── Username Field ── */}
+        <div>
+          <label htmlFor="username" className="mb-1 block text-sm font-medium text-gray-700">
+            Username
+          </label>
+          <input
+            id="username"
+            type="text"
+            required
+            value={username}
+            placeholder="e.g. ahmed_99"
+            onChange={(e) => setUsername(e.target.value)}
+            className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* ── Email Field ── */}
+        <div>
+          <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
             Email address
           </label>
           <input
@@ -127,11 +159,9 @@ export function RegisterForm() {
           />
         </div>
 
+        {/* ── Password Field ── */}
         <div>
-          <label
-            htmlFor="password"
-            className="mb-1 block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
             Password
           </label>
           <input
@@ -146,11 +176,9 @@ export function RegisterForm() {
           />
         </div>
 
+        {/* ── Confirm Password Field ── */}
         <div>
-          <label
-            htmlFor="confirm"
-            className="mb-1 block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="confirm" className="mb-1 block text-sm font-medium text-gray-700">
             Confirm password
           </label>
           <input
@@ -172,24 +200,9 @@ export function RegisterForm() {
         >
           {loading ? (
             <>
-              <svg
-                className="mr-2 h-4 w-4 animate-spin"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                />
+              <svg className="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
               </svg>
               Creating account…
             </>
@@ -201,10 +214,7 @@ export function RegisterForm() {
 
       <p className="mt-6 text-center text-sm text-gray-500">
         Already have an account?{" "}
-        <a
-          href="/login"
-          className="font-medium text-blue-600 hover:text-blue-500"
-        >
+        <a href="/login" className="font-medium text-blue-600 hover:text-blue-500">
           Sign in
         </a>
       </p>
