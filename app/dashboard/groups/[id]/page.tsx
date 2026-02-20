@@ -369,12 +369,28 @@ export default function GroupDetailsPage() {
     let rpcError;
 
   if (isSettlementMode) { 
-    const receiverId = selectedMembers[0]; // person reciving the payment
+    const receiverId = selectedMembers.find(id => id !== null && id !== undefined && id !== ""); // person reciving the payment
+    
+    // 2. التحقق من وجود المستلم
+    if (!receiverId) {
+      alert("❌ يرجى تحديد الشخص الذي تريد تسديد المبلغ له من القائمة.");
+      setSubmittingExpense(false);
+      return;
+    }
+
+    // 3. التحقق من وجود المستخدم الحالي (الدافع)
+    if (!currentUser) {
+      alert("❌ لم يتم العثور على بيانات حسابك، يرجى تحديث الصفحة.");
+      setSubmittingExpense(false);
+      return;
+    }
+
     const { error: settleerror } = await supabase
       .from("settlements")
       .insert({
         group_id: groupId,
         from_user: currentUser, // person making the payment       
+        to_user: receiverId, // person reciving the payment
          amount: parseFloat(expenseAmount),
          created_by: currentUser,
          notes: "Settle up"
