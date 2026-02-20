@@ -301,7 +301,7 @@ export default function ProfilePage() {
         {/* ── Back link ───────────────────────────────── */}
         <button
           type="button"
-          onClick={() => router.push("/profile")}
+          onClick={() => router.push("/dashboard/profile")}
           className="mb-6 inline-flex items-center gap-1 text-sm text-gray-500 transition-colors hover:text-gray-900"
         >
           <svg
