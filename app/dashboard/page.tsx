@@ -161,6 +161,22 @@ export default function DashboardPage() {
         });
       }
 
+      //--groups 
+  const { data: groupsData } = await supabase
+    .from("group_members")
+    .select(`
+      group_id,
+      groups (
+        id,
+        name,
+        created_at,
+        owner_id
+      )
+    `)
+    .eq("user_id", userId);
+
+
+
       // 2. Dashboard balances via RPC
       const { data: balancesData, error: balancesError } = await supabase.rpc(
         "get_user_dashboard_balances",
