@@ -876,8 +876,7 @@ export default function GroupDetailsPage() {
                       >
                         <Link
                           href={`/dashboard/profile/${user.id}`}
-                          target="_blank"
-                          className="flex flex-1 items-center gap-3 transition-colors hover:opacity-80"
+                         className="flex flex-1 items-center gap-3 transition-colors hover:opacity-80"
                         >
                           <Avatar
                             src={user.avatar_url}
