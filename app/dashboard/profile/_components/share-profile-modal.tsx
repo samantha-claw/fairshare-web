@@ -1,0 +1,198 @@
+"use client";
+
+// ==========================================
+// 📦 IMPORTS
+// ==========================================
+import { useState, useRef, useEffect } from "react";
+import QRCode from "react-qr-code";
+import {
+  X,
+  Copy,
+  Check,
+  Share2,
+  QrCode,
+  ExternalLink,
+} from "lucide-react";
+
+// ==========================================
+// 🧩 TYPES
+// ==========================================
+interface ShareProfileModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  profileUrl: string;
+  displayName: string;
+  username: string;
+}
+
+// ==========================================
+// 🎨 UI RENDER
+// ==========================================
+export function ShareProfileModal({
+  isOpen,
+  onClose,
+  profileUrl,
+  displayName,
+  username,
+}: ShareProfileModalProps) {
+  const [copied, setCopied] = useState(false);
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  /* ── Escape key close ────────────────────────────── */
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleEsc);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handleEsc);
+      document.body.style.overflow = "";
+    };
+  }, [isOpen, onClose]);
+
+  /* ── Copy to clipboard ───────────────────────────── */
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(profileUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // Fallback for older browsers
+      const textarea = document.createElement("textarea");
+      textarea.value = profileUrl;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
+  }
+
+  /* ── Native share ────────────────────────────────── */
+  async function handleNativeShare() {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${displayName} on FairShare`,
+          text: `Check out @${username}'s profile on FairShare`,
+          url: profileUrl,
+        });
+      } catch {
+        // User cancelled share
+      }
+    }
+  }
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex min-h-screen items-center justify-center p-4">
+        {/* Backdrop */}
+        <div
+          ref={overlayRef}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+          onClick={onClose}
+        />
+
+        {/* Modal */}
+        <div className="relative w-full max-w-sm transform overflow-hidden rounded-3xl bg-white shadow-2xl">
+          {/* Header Gradient */}
+          <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 px-6 pb-8 pt-6">
+            {/* Decorative */}
+            <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+            <div className="absolute -bottom-6 left-8 h-20 w-20 rounded-full bg-purple-400/20 blur-lg" />
+
+            {/* Close */}
+            <button
+              onClick={onClose}
+              className="absolute right-4 top-4 rounded-xl bg-white/15 p-1.5 text-white/80 backdrop-blur-sm transition-colors hover:bg-white/25 hover:text-white"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            {/* Title */}
+            <div className="relative flex items-center gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+                <QrCode className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">
+                  Share Profile
+                </h3>
+                <p className="text-xs text-indigo-200">
+                  @{username}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* QR Code */}
+          <div className="flex flex-col items-center px-6 py-6">
+            <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+              <QRCode
+                value={profileUrl}
+                size={180}
+                level="M"
+                bgColor="#FFFFFF"
+                fgColor="#312e81"
+              />
+            </div>
+
+            <p className="mt-3 text-center text-xs text-gray-400">
+              Scan to view {displayName}&apos;s profile
+            </p>
+          </div>
+
+          {/* URL + Actions */}
+          <div className="border-t border-gray-100 px-6 pb-6 pt-4">
+            {/* URL Preview */}
+            <div className="mb-4 flex items-center gap-2 rounded-xl bg-gray-50 px-3 py-2.5">
+              <ExternalLink className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" />
+              <p className="flex-1 truncate text-xs font-medium text-gray-600">
+                {profileUrl}
+              </p>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-2">
+              <button
+                onClick={handleCopy}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-300 ${
+                  copied
+                    ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                {copied ? (
+                  <>
+                    <Check className="h-4 w-4" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-4 w-4" />
+                    Copy Link
+                  </>
+                )}
+              </button>
+
+              {typeof navigator !== "undefined" && typeof navigator.share === "function" && (
+                <button
+                  onClick={handleNativeShare}
+                  className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:shadow-md hover:shadow-indigo-200"
+                >
+                  <Share2 className="h-4 w-4" />
+                  Share
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
