@@ -54,6 +54,7 @@ export function QRShareModal({
       requestAnimationFrame(() => setAnimateIn(true));
       // Reset internal state when modal opens
       setIsResetting(false);
+      setShowConfirm(false); // ✅ Reset confirmation state
     } else {
       setAnimateIn(false);
     }
@@ -126,24 +127,49 @@ export function QRShareModal({
   }, [title, subtitle, value, handleCopy]);
 
   // ── Reset invite token ──
+  // استبدل handleResetToken بالكامل
+  const [showConfirm, setShowConfirm] = useState(false);
   const handleResetToken = useCallback(async () => {
-    if (!onResetToken) return;
+  if (!onResetToken) return;
+  setShowConfirm(true); // فقط أظهر التأكيد - بدون blocking
+}, [onResetToken]);
 
-    const confirmed = window.confirm(
-      "Are you sure you want to reset the invite link?\n\nAll previously shared QR codes and links will stop working. Anyone who hasn't joined yet will need the new link."
-    );
+const confirmReset = useCallback(async () => {
+  if (!onResetToken) return;
+  setShowConfirm(false);
+  setIsResetting(true);
+  try {
+    await onResetToken();
+  } catch (err) {
+    console.error("Reset token error:", err);
+  } finally {
+    setIsResetting(false);
+  }
+}, [onResetToken]);
 
-    if (!confirmed) return;
 
-    setIsResetting(true);
-    try {
-      await onResetToken();
-    } catch (err) {
-      console.error("Reset token error:", err);
-    } finally {
-      setIsResetting(false);
-    }
-  }, [onResetToken]);
+{/* ✅ أضف هذا بعد زر Reset Invite Link مباشرة */}
+{showConfirm && (
+  <div className="mx-6 mt-2 rounded-xl border border-amber-200 bg-amber-50 p-3">
+    <p className="text-xs text-amber-800 mb-2">
+      Are you sure? All previously shared QR codes and links will stop working.
+    </p>
+    <div className="flex gap-2">
+      <button
+        onClick={() => setShowConfirm(false)}
+        className="flex-1 rounded-lg border border-gray-200 bg-white py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+      >
+        Cancel
+      </button>
+      <button
+        onClick={confirmReset}
+        className="flex-1 rounded-lg bg-red-600 py-1.5 text-xs font-medium text-white hover:bg-red-700"
+      >
+        Yes, Reset
+      </button>
+    </div>
+  </div>
+)} 
 
   // ── Close on Escape ──
   useEffect(() => {

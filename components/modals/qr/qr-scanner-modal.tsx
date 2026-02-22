@@ -396,7 +396,7 @@ export function QRScannerModal({
       </div>
 
       {/* ── Scanline keyframes ── */}
-      <style>{`
+      <style jsx global>{`
         @keyframes scanline {
           0%,
           100% {
