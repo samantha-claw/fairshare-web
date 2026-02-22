@@ -1,16 +1,1 @@
-{
-  "/_not-found/page": "app/_not-found/page.js",
-  "/auth/callback/route": "app/auth/callback/route.js",
-  "/auth/signout/route": "app/auth/signout/route.js",
-  "/dashboard/groups/[id]/page": "app/dashboard/groups/[id]/page.js",
-  "/dashboard/groups/new/page": "app/dashboard/groups/new/page.js",
-  "/dashboard/friends/page": "app/dashboard/friends/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/dashboard/profile/[id]/page": "app/dashboard/profile/[id]/page.js",
-  "/dashboard/profile/page": "app/dashboard/profile/page.js",
-  "/dashboard/profile/edit/page": "app/dashboard/profile/edit/page.js",
-  "/page": "app/page.js",
-  "/login/page": "app/login/page.js",
-  "/register/page": "app/register/page.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js"
-}
+{}
