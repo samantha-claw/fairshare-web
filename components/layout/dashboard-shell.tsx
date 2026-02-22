@@ -28,7 +28,7 @@ interface UserProfile {
 // ==========================================
 function ShellSkeleton() {
   return (
-    <div className="flex min-h-screen w-full items-center justify-center overflow-x-hidden bg-slate-50">
+    <div className="flex min-h-screen w-full items-center justify-center overflow-hidden bg-slate-50">
       <div className="flex flex-col items-center gap-3">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/20">
           <span className="text-lg font-black text-white">F</span>
@@ -118,12 +118,17 @@ export function DashboardShell({ children }: DashboardShellProps) {
   if (loading) return <ShellSkeleton />;
 
   return (
-    // ═══════════════════════════════════════════════════
-    // CRITICAL FIX: w-full + overflow-x-hidden kills the
-    // black strip / horizontal scroll on mobile
-    // ═══════════════════════════════════════════════════
-    <div className="relative min-h-screen w-full overflow-x-hidden bg-slate-50">
-      {/* ── Desktop Sidebar ──────────────────────── */}
+    /*
+     * ════════════════════════════════════════════════
+     * ROOT CONTAINER
+     *
+     * w-full          → fill viewport width
+     * max-w-full      → never exceed viewport
+     * overflow-x-hidden → kill any horizontal scroll
+     * ════════════════════════════════════════════════
+     */
+    <div className="relative min-h-screen w-full max-w-full overflow-x-hidden bg-slate-50">
+      {/* ── Desktop Sidebar (hidden on mobile) ───── */}
       <Sidebar
         displayName={profile.display_name}
         avatarUrl={profile.avatar_url}
@@ -133,16 +138,12 @@ export function DashboardShell({ children }: DashboardShellProps) {
       {/* ── Mobile Sidebar Overlay ───────────────── */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
-          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
             onClick={() => setMobileMenuOpen(false)}
           />
-
-          {/* Slide-in Sidebar */}
           <div className="absolute inset-y-0 left-0 w-[280px] animate-in slide-in-from-left duration-300">
             <div className="flex h-full flex-col border-r border-slate-800/50 bg-slate-950">
-              {/* Close Area */}
               <div className="flex h-16 items-center justify-between border-b border-slate-800/50 px-6">
                 <div className="flex items-center gap-2.5">
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600">
@@ -171,8 +172,6 @@ export function DashboardShell({ children }: DashboardShellProps) {
                   </svg>
                 </button>
               </div>
-
-              {/* Reuse Sidebar Content */}
               <div className="flex-1 overflow-y-auto">
                 <Sidebar
                   displayName={profile.display_name}
@@ -185,8 +184,18 @@ export function DashboardShell({ children }: DashboardShellProps) {
         </div>
       )}
 
-      {/* ── Main Content Area ────────────────────── */}
-      <div className="flex w-full flex-col md:pl-[260px]">
+      {/*
+       * ════════════════════════════════════════════════
+       * MAIN CONTENT COLUMN
+       *
+       * pl-0           → NO left push on mobile (CRITICAL)
+       * md:pl-[260px]  → offset for sidebar only on desktop
+       * w-full         → span full available width
+       * min-w-0        → allow flex children to shrink below content size
+       * overflow-x-hidden → secondary overflow guard
+       * ════════════════════════════════════════════════
+       */}
+      <div className="flex w-full min-w-0 flex-col overflow-x-hidden pl-0 md:pl-[260px]">
         {/* Header */}
         <Header
           displayName={profile.display_name}
@@ -194,10 +203,16 @@ export function DashboardShell({ children }: DashboardShellProps) {
           onMobileMenuToggle={() => setMobileMenuOpen(true)}
         />
 
-        {/* Page Content
-            pb-32 = enough room for floating MobileNav + FABs on mobile
-            md:pb-8 = normal padding on desktop (no bottom nav) */}
-        <main className="w-full flex-1 pb-32 md:pb-8">
+        {/*
+         * PAGE CONTENT WRAPPER
+         *
+         * w-full      → fill column
+         * min-w-0     → prevent content from forcing overflow
+         * px-4 … lg:px-8 → consistent horizontal padding at every breakpoint
+         * pb-32       → clear mobile nav + FABs
+         * md:pb-8     → normal on desktop
+         */}
+        <main className="w-full min-w-0 flex-1 px-4 pb-32 sm:px-6 md:pb-8 lg:px-8">
           {children}
         </main>
       </div>

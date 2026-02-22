@@ -16,20 +16,27 @@ import { Receipt, HandCoins } from "lucide-react";
 // ==========================================
 function DashboardSkeleton() {
   return (
-    <div className="w-full animate-pulse px-4 py-8 sm:px-6">
-      <div className="mb-2 h-8 w-72 rounded-lg bg-gray-200" />
-      <div className="mb-8 h-4 w-56 rounded bg-gray-200/70" />
-      <div className="mb-8 h-80 rounded-3xl bg-gray-200/60" />
-      <div className="mb-8 flex gap-3">
-        <div className="h-12 w-32 rounded-2xl bg-gray-200/50" />
-        <div className="h-12 w-32 rounded-2xl bg-gray-200/50" />
-        <div className="h-12 w-32 rounded-2xl bg-gray-200/50" />
+    <div className="w-full min-w-0 animate-pulse py-8">
+      {/* Welcome placeholder */}
+      <div className="mb-2 h-8 w-3/4 max-w-xs rounded-lg bg-gray-200" />
+      <div className="mb-8 h-4 w-1/2 max-w-[14rem] rounded bg-gray-200/70" />
+
+      {/* Overview placeholder */}
+      <div className="mb-8 h-80 w-full rounded-3xl bg-gray-200/60" />
+
+      {/* Quick actions placeholder */}
+      <div className="mb-8 flex w-full gap-3 overflow-hidden">
+        <div className="h-12 w-32 shrink-0 rounded-2xl bg-gray-200/50" />
+        <div className="h-12 w-32 shrink-0 rounded-2xl bg-gray-200/50" />
+        <div className="h-12 w-32 shrink-0 rounded-2xl bg-gray-200/50" />
       </div>
+
+      {/* Groups grid placeholder */}
       <div className="mb-5 h-6 w-40 rounded bg-gray-200" />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="h-56 rounded-3xl bg-gray-200/40" />
-        <div className="h-56 rounded-3xl bg-gray-200/40" />
-        <div className="h-56 rounded-3xl bg-gray-200/40" />
+      <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="h-56 w-full rounded-3xl bg-gray-200/40" />
+        <div className="h-56 w-full rounded-3xl bg-gray-200/40" />
+        <div className="hidden h-56 w-full rounded-3xl bg-gray-200/40 lg:block" />
       </div>
     </div>
   );
@@ -45,9 +52,23 @@ export default function DashboardPage() {
 
   return (
     <>
-      {/* ── Page Content ─────────────────────────── */}
-      <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6">
-        {/* Welcome */}
+      {/*
+       * ════════════════════════════════════════════════
+       * PAGE CONTENT
+       *
+       * w-full        → fill parent (main already has px padding)
+       * min-w-0       → allow shrinking inside flex parent
+       * max-w-6xl     → cap width on ultrawide screens
+       * mx-auto       → center when capped
+       * py-8          → vertical breathing room
+       *
+       * NOTE: Horizontal padding (px) is now handled by
+       * the <main> in dashboard-shell.tsx so we DON'T
+       * double-pad here. Only vertical + max-width.
+       * ════════════════════════════════════════════════
+       */}
+      <div className="mx-auto w-full min-w-0 max-w-6xl py-8">
+        {/* ── Welcome ────────────────────────────── */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
             Welcome back, {d.displayName}{" "}
@@ -60,8 +81,8 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        {/* Financial Overview */}
-        <div className="mb-8">
+        {/* ── Financial Overview ──────────────────── */}
+        <div className="mb-8 w-full min-w-0">
           <OverviewWidget
             totalNet={d.totalNet}
             totalOwedToMe={d.totalOwedToMe}
@@ -70,14 +91,24 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* Quick Actions */}
-        <div className="mb-8">
+        {/* ── Quick Actions ──────────────────────── */}
+        <div className="mb-8 w-full min-w-0">
           <QuickActions />
         </div>
 
-        {/* Groups + Activity Grid */}
-        <div className="grid gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2">
+        {/*
+         * ════════════════════════════════════════════
+         * GROUPS + ACTIVITY GRID
+         *
+         * grid-cols-1   → single column on mobile (CRITICAL)
+         * lg:grid-cols-3 → 3 columns only on large screens
+         * w-full        → never exceed parent
+         * min-w-0       → allow shrinking
+         * ════════════════════════════════════════════
+         */}
+        <div className="grid w-full min-w-0 grid-cols-1 gap-8 lg:grid-cols-3">
+          {/* Groups — 2 cols on desktop */}
+          <div className="min-w-0 lg:col-span-2">
             <div className="mb-5 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-bold text-gray-900">
@@ -99,24 +130,33 @@ export default function DashboardPage() {
               )}
             </div>
 
-            <GroupsBentoGrid groups={d.groups} userId={d.userId} />
+            {/*
+             * GroupsBentoGrid wrapper:
+             * w-full + min-w-0 ensures cards never push
+             * past the container edge
+             */}
+            <div className="w-full min-w-0">
+              <GroupsBentoGrid groups={d.groups} userId={d.userId} />
+            </div>
           </div>
 
-          <div>
+          {/* Recent Activity — 1 col */}
+          <div className="w-full min-w-0">
             <RecentActivityFeed expenses={d.recentExpenses} />
           </div>
         </div>
       </div>
 
-      {/* ══════════════════════════════════════════════
-          FLOATING ACTION BUTTONS
-          
-          CRITICAL FIX:
-          bottom-24  → hovers well above the floating MobileNav
-          right-4    → constrained within viewport (no overflow)
-          z-40       → below MobileNav (z-50) but above content
-          md:bottom-8 md:right-8 → normal on desktop
-          ══════════════════════════════════════════════ */}
+      {/*
+       * ════════════════════════════════════════════════
+       * FLOATING ACTION BUTTONS
+       *
+       * bottom-24   → above mobile nav
+       * right-4     → 1rem from right edge (safe)
+       * z-40        → below nav (z-50), above content
+       * md:bottom-8 md:right-8 → normal desktop position
+       * ════════════════════════════════════════════════
+       */}
       <div className="fixed bottom-24 right-4 z-40 flex flex-col gap-3 md:bottom-8 md:right-8">
         {/* Settle Up — Secondary FAB */}
         <Link
