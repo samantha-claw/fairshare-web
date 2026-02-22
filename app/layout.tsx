@@ -1,5 +1,7 @@
+// app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { RealtimeProvider } from "@/components/providers/realtime-provider";
 
 // 1. إعدادات الـ Metadata (الاسم، الوصف، الـ Manifest، وأيقونة الآيفون)
 export const metadata: Metadata = {
@@ -13,7 +15,7 @@ export const metadata: Metadata = {
 
 // 2. إعدادات شاشة الموبايل (لون شريط الهاتف من الأعلى) - خاص بـ Next.js 14
 export const viewport: Viewport = {
-  themeColor: "#2563eb", 
+  themeColor: "#2563eb",
 };
 
 export default function RootLayout({
@@ -24,7 +26,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-gray-50 text-gray-900 antialiased">
-        {children}
+        <RealtimeProvider>
+          {children}
+        </RealtimeProvider>
       </body>
     </html>
   );
