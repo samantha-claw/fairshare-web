@@ -7,12 +7,19 @@ import { createClient } from "@/lib/supabase/client";
 
 interface AuthError {
   message: string;
-  field?: "email" | "password" | "username" | "full_name" | "general";
+  field?:
+    | "email"
+    | "password"
+    | "confirm_password"
+    | "username"
+    | "full_name"
+    | "general";
 }
 
 interface SignUpPayload {
   email: string;
   password: string;
+  confirmPassword: string;
   username: string;
   fullName: string;
 }
@@ -37,7 +44,6 @@ export function useAuth() {
       setError(null);
 
       try {
-        // Basic client-side validation
         if (!email.trim()) {
           setError({ message: "Email is required.", field: "email" });
           setLoading(false);
@@ -57,7 +63,6 @@ export function useAuth() {
           });
 
         if (authError) {
-          // Map Supabase errors to user-friendly messages
           let friendlyMessage = authError.message;
           if (authError.message.includes("Invalid login credentials")) {
             friendlyMessage =
@@ -90,12 +95,19 @@ export function useAuth() {
 
   // ─── SIGN UP ────────────────────────────────────────────────
   const signUp = useCallback(
-    async ({ email, password, username, fullName }: SignUpPayload) => {
+    async ({
+      email,
+      password,
+      confirmPassword,
+      username,
+      fullName,
+    }: SignUpPayload) => {
       setLoading(true);
       setError(null);
 
       try {
-        // ── Validation ──
+        // ── Validation ──────────────────────────────────────────
+
         if (!fullName.trim()) {
           setError({ message: "Full name is required.", field: "full_name" });
           setLoading(false);
@@ -108,7 +120,6 @@ export function useAuth() {
           return;
         }
 
-        // Username: lowercase letters, numbers, underscores only
         const usernameRegex = /^[a-z0-9_]{3,30}$/;
         if (!usernameRegex.test(username.trim())) {
           setError({
@@ -140,6 +151,16 @@ export function useAuth() {
           setError({
             message: "Password must be at least 6 characters.",
             field: "password",
+          });
+          setLoading(false);
+          return;
+        }
+
+        // ── NEW: Confirm Password validation ──
+        if (password !== confirmPassword) {
+          setError({
+            message: "Passwords do not match.",
+            field: "confirm_password",
           });
           setLoading(false);
           return;
@@ -206,7 +227,7 @@ export function useAuth() {
         }
 
         // ── CRITICAL: Insert into profiles table ──
-        const { error: profileError } = await supabase.from("profiles").insert({
+        const profilePayload = {
           id: authData.user.id,
           username: username.trim().toLowerCase(),
           full_name: fullName.trim(),
@@ -214,37 +235,53 @@ export function useAuth() {
           avatar_url: null,
           bio: null,
           is_public: true,
-        });
+        };
+
+        console.log("PROFILE INSERT PAYLOAD:", profilePayload);
+
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .insert(profilePayload);
 
         if (profileError) {
-          // If profile creation fails, we should still inform the user
-          // The auth account was created but the profile wasn't
-          console.error("Profile creation error:", profileError);
+          // ── ENHANCED DEBUG LOGGING ──
+          console.error("PROFILE INSERT ERROR DETAILS:", profileError);
+          console.error("Error code:", profileError.code);
+          console.error("Error message:", profileError.message);
+          console.error("Error details:", profileError.details);
+          console.error("Error hint:", profileError.hint);
+          console.error(
+            "Auth user ID used:",
+            authData.user.id
+          );
+          console.error(
+            "Auth session present:",
+            !!authData.session
+          );
 
-          // Attempt cleanup: delete the auth user if profile insert fails
-          // (In production, handle this with a database trigger or edge function)
           setError({
-            message:
-              "Account created but profile setup failed. Please contact support or try signing in.",
+            message: `Account created but profile setup failed: ${profileError.message} (Code: ${profileError.code}). Check browser console for full details.`,
             field: "general",
           });
           setLoading(false);
           return;
         }
 
+        console.log(
+          "PROFILE INSERT SUCCESS for user:",
+          authData.user.id
+        );
+
         // ── Success: redirect ──
-        // If email confirmation is enabled, the session might be null
         if (authData.session) {
           router.push("/dashboard");
           router.refresh();
         } else {
-          // Email confirmation is required — we return success
-          // The calling component can check for this state
           setLoading(false);
           return { confirmEmail: true };
         }
       } catch (err) {
-        console.error("Sign up error:", err);
+        console.error("Sign up unexpected error:", err);
         setError({
           message: "An unexpected error occurred. Please try again.",
           field: "general",
