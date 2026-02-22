@@ -16,7 +16,7 @@ import { AddMemberModal } from "./_components/add-member-modal";
 import { ExpenseModal } from "./_components/expense-modal";
 import { SettleModal } from "./_components/settle-modal";
 import { SettingsModal } from "./_components/settings-modal";
-import { QRShareModal } from "@/components/qr/qr-share-modal";
+import { QRShareModal } from "@/components/modals/qr/qr-share-modal";
 import { Share2, QrCode } from "lucide-react";
 
 // ==========================================
