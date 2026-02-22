@@ -42,12 +42,12 @@ export function SettleModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div className="fixed inset-0 z-100 overflow-y-auto">
       <div className="flex min-h-screen items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose} />
 
-        <div className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl sm:my-8">
-          <div className="px-6 pb-6 pt-6">
+        <div className="relative mb-20 w-full max-w-md transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl sm:my-8">
+  <div className="px-6 pb-6 pt-6">
             <div className="mb-1 flex items-center gap-2">
               <span className="text-2xl">🤝</span>
               <h3 className="text-xl font-bold text-gray-900">Settle Up</h3>
