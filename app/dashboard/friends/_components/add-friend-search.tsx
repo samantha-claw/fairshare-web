@@ -109,9 +109,7 @@ export function AddFriendSearch({
                 <Search className="h-5 w-5 text-gray-300" />
               </div>
               <p className="text-sm font-medium text-gray-500">No users found</p>
-              <p className="mt-0.5 text-xs text-gray-400">
-                Try a different username
-              </p>
+              <p className="mt-0.5 text-xs text-gray-400">Try a different username</p>
             </div>
           ) : (
             <div className="grid gap-2 pt-2 sm:grid-cols-2">
@@ -119,69 +117,51 @@ export function AddFriendSearch({
                 const isPending = isOutgoingPending(user.id);
                 const outgoingId = getOutgoingRequestId(user.id);
                 const isSending = sendingToId === user.id;
-                const isCancelling = outgoingId
-                  ? cancellingId === outgoingId
-                  : false;
-                const displayName =
-                  user.display_name || user.full_name || user.username;
+                const isCancelling = outgoingId ? cancellingId === outgoingId : false;
+                
+                // 🛠️ تأكد من سحب الاسم الصحيح مع Fallback
+                const finalDisplayName = user.display_name || user.full_name || user.username || "User";
+                const finalUsername = user.username || "unknown";
 
                 return (
                   <div
                     key={user.id}
                     className="group relative flex items-center gap-3 rounded-2xl border border-gray-100 bg-gradient-to-br from-white to-gray-50/50 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-100/40"
                   >
-                    <Link
-                      href={`/dashboard/profile/${user.id}`}
-                      className="flex-shrink-0"
-                    >
-                      <Avatar
-                        src={user.avatar_url}
-                        name={displayName}
-                        size="md"
-                      />
+                    <Link href={`/dashboard/profile/${user.id}`} className="flex-shrink-0">
+                      <Avatar src={user.avatar_url} name={finalDisplayName} size="md" />
                     </Link>
 
+                    {/* 📍 هنا عرض الاسم واليوزر نيم */}
                     <div className="min-w-0 flex-1">
                       <Link
                         href={`/dashboard/profile/${user.id}`}
-                        className="block truncate text-sm font-semibold text-gray-900 transition-colors hover:text-indigo-600"
+                        className="block truncate text-sm font-bold text-gray-900 transition-colors hover:text-indigo-600"
                       >
-                        {displayName}
+                        {finalDisplayName}
                       </Link>
-                      <p className="truncate text-xs text-gray-500">
-                        @{user.username}
+                      <p className="truncate text-xs font-medium text-gray-500">
+                        @{finalUsername}
                       </p>
                     </div>
 
                     {/* Add / Cancel Button */}
                     {isPending ? (
                       <button
-                        onClick={() =>
-                          outgoingId && onCancelRequest(outgoingId)
-                        }
+                        onClick={() => outgoingId && onCancelRequest(outgoingId)}
                         disabled={isCancelling}
                         className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        {isCancelling ? (
-                          <Spinner className="h-3 w-3" />
-                        ) : (
-                          <Clock className="h-3 w-3" />
-                        )}
+                        {isCancelling ? <Spinner className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
                         {isCancelling ? "…" : "Pending"}
                       </button>
                     ) : (
                       <button
-                        onClick={() =>
-                          onSendRequest(user.username, user.id)
-                        }
+                        onClick={() => onSendRequest(user.username, user.id)}
                         disabled={isSending}
                         className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-all duration-200 hover:shadow-md hover:shadow-indigo-200 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        {isSending ? (
-                          <Spinner className="h-3 w-3" />
-                        ) : (
-                          <UserPlus className="h-3 w-3" />
-                        )}
+                        {isSending ? <Spinner className="h-3 w-3" /> : <UserPlus className="h-3 w-3" />}
                         {isSending ? "…" : "Add"}
                       </button>
                     )}
