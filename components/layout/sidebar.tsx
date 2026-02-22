@@ -138,7 +138,7 @@ export function Sidebar({ displayName, avatarUrl, onSignOut }: SidebarProps) {
             </p>
             <p className="truncate text-[11px] text-slate-500">View profile</p>
           </div>
-          <ChevronRight className="h-4 w-4 flex-shrink-0 text-slate-600 transition-transform group-hover:translate-x-0.5" />
+          <ChevronRight className="h-4 w-4 shrink-0 text-slate-600 transition-transform group-hover:translate-x-0.5" />
         </Link>
 
         {/* Sign Out */}
