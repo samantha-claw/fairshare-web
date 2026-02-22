@@ -329,8 +329,10 @@ export default function CreateGroupPage() {
       <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
         {/* ── Back Button ──────────────────────────── */}
         <button
+          type="button"
           onClick={g.handleCancel}
-          className="mb-6 inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-medium text-gray-500 transition-all hover:bg-white hover:text-gray-900 hover:shadow-sm"
+          disabled={g.saving}
+          className="mb-6 inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-medium text-gray-500 transition-all hover:bg-white hover:text-gray-900 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Groups
@@ -410,7 +412,8 @@ export default function CreateGroupPage() {
                     onChange={(ev) => g.setName(ev.target.value)}
                     placeholder='e.g. "Europe Trip 2025"'
                     maxLength={100}
-                    className={`block w-full rounded-2xl border bg-gray-50/50 py-3 pl-11 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 ${
+                    disabled={g.saving}
+                    className={`block w-full rounded-2xl border bg-gray-50/50 py-3 pl-11 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
                       g.errors.name
                         ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
                         : "border-gray-200 focus:border-indigo-300 focus:ring-indigo-100"
@@ -462,7 +465,8 @@ export default function CreateGroupPage() {
                     placeholder="What is this group for?"
                     rows={3}
                     maxLength={500}
-                    className={`block w-full resize-none rounded-2xl border bg-gray-50/50 py-3 pl-11 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 ${
+                    disabled={g.saving}
+                    className={`block w-full resize-none rounded-2xl border bg-gray-50/50 py-3 pl-11 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
                       g.errors.description
                         ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
                         : "border-gray-200 focus:border-indigo-300 focus:ring-indigo-100"
@@ -520,7 +524,8 @@ export default function CreateGroupPage() {
                         <button
                           type="button"
                           onClick={g.selectAllFriends}
-                          className="rounded-lg px-2 py-1 text-[10px] font-semibold text-indigo-600 transition-all hover:bg-indigo-50"
+                          disabled={g.saving}
+                          className="rounded-lg px-2 py-1 text-[10px] font-semibold text-indigo-600 transition-all hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           Select All
                         </button>
@@ -528,7 +533,8 @@ export default function CreateGroupPage() {
                         <button
                           type="button"
                           onClick={g.deselectAllFriends}
-                          className="rounded-lg px-2 py-1 text-[10px] font-semibold text-gray-500 transition-all hover:bg-gray-100"
+                          disabled={g.saving}
+                          className="rounded-lg px-2 py-1 text-[10px] font-semibold text-gray-500 transition-all hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           Deselect All
                         </button>
@@ -548,7 +554,8 @@ export default function CreateGroupPage() {
                           key={id}
                           type="button"
                           onClick={() => g.toggleFriend(id)}
-                          className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 py-1 pl-1 pr-2.5 text-xs font-medium text-emerald-700 transition-all hover:bg-emerald-100"
+                          disabled={g.saving}
+                          className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 py-1 pl-1 pr-2.5 text-xs font-medium text-emerald-700 transition-all hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           <img
                             src={
@@ -580,7 +587,8 @@ export default function CreateGroupPage() {
                       value={g.friendSearch}
                       onChange={(ev) => g.setFriendSearch(ev.target.value)}
                       placeholder="Search friends…"
-                      className="w-full rounded-xl border border-gray-200 bg-gray-50/50 py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all focus:border-indigo-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                      disabled={g.saving}
+                      className="w-full rounded-xl border border-gray-200 bg-gray-50/50 py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all focus:border-indigo-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
                 )}
@@ -604,7 +612,7 @@ export default function CreateGroupPage() {
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  <div className={`grid grid-cols-3 gap-2 sm:grid-cols-4 ${g.saving ? "pointer-events-none opacity-60" : ""}`}>
                     {g.filteredFriends.map((friend) => (
                       <FriendCard
                         key={friend.id}
@@ -654,7 +662,8 @@ export default function CreateGroupPage() {
               <button
                 type="button"
                 onClick={g.handleCancel}
-                className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-600 transition-all duration-200 hover:bg-gray-50"
+                disabled={g.saving}
+                className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-600 transition-all duration-200 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Cancel
