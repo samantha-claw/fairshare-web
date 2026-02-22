@@ -57,7 +57,6 @@ export function QRShareModal({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback for older browsers
       const textarea = document.createElement("textarea");
       textarea.value = value;
       document.body.appendChild(textarea);
@@ -152,9 +151,20 @@ export function QRShareModal({
         }`}
       >
         <div className="overflow-hidden rounded-3xl border border-white/20 bg-white shadow-2xl">
-          {/* ── Gradient Header ── */}
+          {/*
+           * ════════════════════════════════════════════
+           * GRADIENT HEADER
+           *
+           * FIX: Changed pb-16 → pb-12
+           * The header was extending too far down,
+           * causing the QR card (pulled up with -mt-6)
+           * to sit under a thick layer of gradient.
+           * Reducing pb gives the overlap a cleaner,
+           * shallower peek without clipping QR content.
+           * ════════════════════════════════════════════
+           */}
           <div
-            className={`relative bg-gradient-to-br ${gradientFrom} ${gradientTo} px-6 pb-16 pt-6`}
+            className={`relative bg-gradient-to-br ${gradientFrom} ${gradientTo} px-6 pb-12 pt-6`}
           >
             {/* Close button */}
             <button
@@ -179,31 +189,48 @@ export function QRShareModal({
             </div>
           </div>
 
-          {/* ── QR Code ── */}
-          <div className="-mt-10 px-6">
+          {/*
+           * ════════════════════════════════════════════
+           * QR CODE CONTAINER
+           *
+           * FIX SUMMARY (3 changes):
+           *
+           * 1. Negative margin: -mt-10 → -mt-6
+           *    The card was yanked up 2.5rem into the
+           *    header. Now it only peeks 1.5rem — enough
+           *    for elegant overlap without covering QR
+           *    modules.
+           *
+           * 2. Inner padding: p-4 → p-5
+           *    Extra 0.25rem on each side gives the QR
+           *    a wider "quiet zone" (the mandatory white
+           *    border scanners need to lock onto the
+           *    finder patterns).
+           *
+           * 3. Z-index: added relative z-10
+           *    Guarantees the white card renders ABOVE
+           *    the gradient tail, not behind it if the
+           *    browser composites layers differently.
+           * ════════════════════════════════════════════
+           */}
+          <div className="relative z-10 -mt-6 px-6">
             <div
               ref={qrRef}
-              className="mx-auto flex w-fit items-center justify-center rounded-2xl border-4 border-white bg-white p-4 shadow-lg"
+              className="mx-auto flex w-fit items-center justify-center rounded-2xl border-4 border-white bg-white p-5 shadow-lg"
             >
               <QRCodeSVG
                 value={value}
                 size={200}
                 level="H"
-                includeMargin={false}
+                includeMargin
                 bgColor="#ffffff"
                 fgColor="#1e1b4b"
-                imageSettings={{
-                  src: "",
-                  height: 0,
-                  width: 0,
-                  excavate: false,
-                }}
               />
             </div>
           </div>
 
           {/* ── URL Preview ── */}
-          <div className="mx-6 mt-4">
+          <div className="mx-6 mt-5">
             <div className="flex items-center gap-2 rounded-xl bg-gray-50 px-3 py-2.5">
               <p className="flex-1 truncate text-xs text-gray-500">{value}</p>
               <button
