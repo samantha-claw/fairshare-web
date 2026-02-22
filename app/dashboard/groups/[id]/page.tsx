@@ -59,6 +59,32 @@ export default function GroupDetailsPage() {
    */
   const [localToken, setLocalToken] = useState<string | null>(null);
 
+  const handleResetToken = useCallback(async () => {
+    if (!g.group?.id) return;
+
+    const { data, error } = await supabase.rpc(
+      "reset_group_invite_token",
+      { p_group_id: g.group.id }
+    );
+
+    if (error) {
+      console.error("Reset token RPC error:", error);
+      throw new Error(error.message);
+    }
+
+    // RPC returns the new token (UUID string)
+    const newToken =
+      typeof data === "string" ? data : data?.token;
+
+    if (newToken) {
+      setLocalToken(newToken);
+      console.log("Invite token reset successfully:", newToken);
+    } else {
+      console.warn("RPC returned unexpected data:", data);
+      throw new Error("No token returned from reset");
+    }
+  }, [supabase, g.group?.id]);
+
   /* ── Loading ─────────────────────────────────────────── */
   if (g.loading) {
     return (
@@ -127,32 +153,7 @@ export default function GroupDetailsPage() {
    * immediately. The old QR codes become invalid.
    * ════════════════════════════════════════════════
    */
-  const handleResetToken = useCallback(async () => {
-    if (!g.group?.id) return;
-
-    const { data, error } = await supabase.rpc(
-      "reset_group_invite_token",
-      { p_group_id: g.group.id }
-    );
-
-    if (error) {
-      console.error("Reset token RPC error:", error);
-      throw new Error(error.message);
-    }
-
-    // RPC returns the new token (UUID string)
-    const newToken =
-      typeof data === "string" ? data : data?.token;
-
-    if (newToken) {
-      setLocalToken(newToken);
-      console.log("Invite token reset successfully:", newToken);
-    } else {
-      console.warn("RPC returned unexpected data:", data);
-      throw new Error("No token returned from reset");
-    }
-  }, [supabase, g.group?.id]);
-
+  
   /*
    * ════════════════════════════════════════════════
    * IS OWNER CHECK
