@@ -239,9 +239,16 @@ export function useAuth() {
 
         console.log("PROFILE INSERT PAYLOAD:", profilePayload);
 
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .insert(profilePayload);
+        // ── استخدمنا update لأن الـ Trigger في قاعدة البيانات بيكريت البروفايل تلقائياً ──
+const { error: profileError } = await supabase
+.from("profiles")
+.update({
+  username: username.trim().toLowerCase(),
+  full_name: fullName.trim(),
+  display_name: fullName.trim(),
+  is_public: true,
+})
+.eq("id", authData.user.id); // بنحدد له البروفايل بتاع المستخدم الجديد بالظبط
 
         if (profileError) {
           // ── ENHANCED DEBUG LOGGING ──
