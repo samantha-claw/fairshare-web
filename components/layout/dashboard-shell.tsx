@@ -153,8 +153,18 @@ export function DashboardShell({ children }: DashboardShellProps) {
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
                 >
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
@@ -181,8 +191,8 @@ export function DashboardShell({ children }: DashboardShellProps) {
           onMobileMenuToggle={() => setMobileMenuOpen(true)}
         />
 
-        {/* Page Content */}
-        <main className="flex-1">
+        {/* Page Content — pb-28 clears mobile nav, md:pb-8 for desktop */}
+        <main className="flex-1 pb-28 md:pb-8">
           {children}
         </main>
       </div>
