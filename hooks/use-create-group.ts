@@ -299,7 +299,7 @@ export function useCreateGroup() {
       }
 
       // 4. Redirect to the new group
-      router.push(`/dashboard/groups/${groupId}`);
+      router.push(`/dashboard/${groupId}`);
     } catch (err: any) {
       console.error("Create group error:", err);
       setErrors({
@@ -315,7 +315,7 @@ export function useCreateGroup() {
   /* ── Cancel ──────────────────────────────────────── */
 
   function handleCancel() {
-    router.push("/dashboard/groups");
+    router.push("/dashboard");
   }
 
   /* ── Return ──────────────────────────────────────── */
