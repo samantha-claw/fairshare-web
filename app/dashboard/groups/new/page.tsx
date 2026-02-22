@@ -335,7 +335,7 @@ export default function CreateGroupPage() {
           className="mb-6 inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-medium text-gray-500 transition-all hover:bg-white hover:text-gray-900 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Groups
+          Back to Dashboard
         </button>
 
         {/* ── Main Form Card ───────────────────────── */}
