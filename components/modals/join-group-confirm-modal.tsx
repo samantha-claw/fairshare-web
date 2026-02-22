@@ -14,6 +14,8 @@ import {
   AlertCircle,
   LogIn,
   Globe,
+  ShieldCheck,
+  ShieldAlert,
 } from "lucide-react";
 
 // ==========================================
@@ -23,6 +25,7 @@ interface JoinGroupConfirmModalProps {
   isOpen: boolean;
   onClose: () => void;
   groupId: string;
+  token?: string | null;
 }
 
 interface GroupInfo {
@@ -39,6 +42,7 @@ type ModalState =
   | "joining"
   | "success"
   | "already_member"
+  | "invalid_token"
   | "error";
 
 // ==========================================
@@ -48,6 +52,7 @@ export function JoinGroupConfirmModal({
   isOpen,
   onClose,
   groupId,
+  token = null,
 }: JoinGroupConfirmModalProps) {
   const [state, setState] = useState<ModalState>("loading");
   const [groupInfo, setGroupInfo] = useState<GroupInfo | null>(null);
@@ -57,7 +62,22 @@ export function JoinGroupConfirmModal({
   const router = useRouter();
   const supabase = createClient();
 
-  // ── Fetch group details ──
+  /*
+   * ════════════════════════════════════════════════════
+   * FETCH GROUP DETAILS
+   *
+   * Two paths:
+   *
+   * 1. WITH token → call secure RPC:
+   *    get_group_preview_with_token(p_group_id, p_token)
+   *    → Returns group details ONLY if token matches
+   *    → Invalid token = rejection
+   *
+   * 2. WITHOUT token (legacy) → direct query:
+   *    SELECT from groups WHERE id = groupId
+   *    → Less secure, but backwards compatible
+   * ════════════════════════════════════════════════════
+   */
   useEffect(() => {
     if (!isOpen || !groupId) return;
 
@@ -78,20 +98,7 @@ export function JoinGroupConfirmModal({
           return;
         }
 
-        // 2. Get group details
-        const { data: group, error: groupErr } = await supabase
-          .from("groups")
-          .select("id, name, currency, owner_id")
-          .eq("id", groupId)
-          .single();
-
-        if (groupErr || !group) {
-          setErrorMsg("Group not found. The invite link may be expired.");
-          setState("error");
-          return;
-        }
-
-        // 3. Check if already a member
+        // 2. Check if already a member (fast-path)
         const { data: existing } = await supabase
           .from("group_members")
           .select("user_id")
@@ -99,37 +106,117 @@ export function JoinGroupConfirmModal({
           .eq("user_id", user.id)
           .maybeSingle();
 
+        let groupData: any = null;
+
+        // 3. Fetch group details via secure or legacy path
+        if (token) {
+          // ── SECURE PATH: Validate token via RPC ──
+          const { data: rpcResult, error: rpcError } = await supabase.rpc(
+            "get_group_preview_with_token",
+            {
+              p_group_id: groupId,
+              p_token: token,
+            }
+          );
+
+          if (rpcError) {
+            console.error("Token validation RPC error:", rpcError);
+
+            // Check if the error is specifically about an invalid token
+            if (
+              rpcError.message.includes("Invalid") ||
+              rpcError.message.includes("token") ||
+              rpcError.message.includes("expired")
+            ) {
+              setState("invalid_token");
+              setErrorMsg(
+                "This invite link is invalid or has been reset by the group owner. Please ask for a new link."
+              );
+              return;
+            }
+
+            setErrorMsg(rpcError.message || "Unable to verify invite link.");
+            setState("error");
+            return;
+          }
+
+          if (!rpcResult) {
+            setState("invalid_token");
+            setErrorMsg(
+              "This invite link is no longer valid. The group owner may have reset it."
+            );
+            return;
+          }
+
+          // RPC returns group details (adapt to your RPC return shape)
+          groupData =
+            typeof rpcResult === "object" && !Array.isArray(rpcResult)
+              ? rpcResult
+              : Array.isArray(rpcResult) && rpcResult.length > 0
+                ? rpcResult[0]
+                : null;
+
+          if (!groupData) {
+            setState("invalid_token");
+            setErrorMsg("Invalid invite token.");
+            return;
+          }
+        } else {
+          // ── LEGACY PATH: Direct query (no token) ──
+          const { data: group, error: groupErr } = await supabase
+            .from("groups")
+            .select("id, name, currency, owner_id")
+            .eq("id", groupId)
+            .single();
+
+          if (groupErr || !group) {
+            setErrorMsg("Group not found. The invite link may be expired.");
+            setState("error");
+            return;
+          }
+
+          groupData = group;
+        }
+
+        // 4. If already a member, show that state
         if (existing) {
           setState("already_member");
           setGroupInfo({
-            id: group.id,
-            name: group.name,
-            currency: group.currency || "USD",
+            id: groupData.id,
+            name: groupData.name,
+            currency: groupData.currency || "USD",
             memberCount: 0,
             ownerName: "",
           });
           return;
         }
 
-        // 4. Get member count
+        // 5. Get member count
         const { count } = await supabase
           .from("group_members")
           .select("*", { count: "exact", head: true })
           .eq("group_id", groupId);
 
-        // 5. Get owner name
-        const { data: ownerProfile } = await supabase
-          .from("profiles")
-          .select("display_name")
-          .eq("id", group.owner_id)
-          .single();
+        // 6. Get owner name
+        const ownerId = groupData.owner_id;
+        let ownerName = "Unknown";
+
+        if (ownerId) {
+          const { data: ownerProfile } = await supabase
+            .from("profiles")
+            .select("display_name")
+            .eq("id", ownerId)
+            .single();
+
+          ownerName = ownerProfile?.display_name || "Unknown";
+        }
 
         setGroupInfo({
-          id: group.id,
-          name: group.name,
-          currency: group.currency || "USD",
+          id: groupData.id,
+          name: groupData.name,
+          currency: groupData.currency || "USD",
           memberCount: count || 0,
-          ownerName: ownerProfile?.display_name || "Unknown",
+          ownerName,
         });
         setState("ready");
       } catch (err) {
@@ -141,7 +228,7 @@ export function JoinGroupConfirmModal({
 
     fetchGroup();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, groupId]);
+  }, [isOpen, groupId, token]);
 
   // ── Join group ──
   const handleJoin = useCallback(async () => {
@@ -167,7 +254,6 @@ export function JoinGroupConfirmModal({
 
       if (insertErr) {
         if (insertErr.code === "23505") {
-          // Unique violation — already a member
           setState("already_member");
           return;
         }
@@ -191,13 +277,13 @@ export function JoinGroupConfirmModal({
     }
   }, [supabase, groupId, router, onClose]);
 
-  // ── Go to group (already member) ──
+  // ── Go to group ──
   const handleGoToGroup = useCallback(() => {
     onClose();
     router.push(`/dashboard/groups/${groupId}`);
   }, [onClose, router, groupId]);
 
-  // ── Close on Escape ──
+  // ── Escape ──
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape" && state !== "joining") onClose();
@@ -210,7 +296,7 @@ export function JoinGroupConfirmModal({
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
-      {/* ── Backdrop ── */}
+      {/* Backdrop */}
       <div
         className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${
           animateIn ? "opacity-100" : "opacity-0"
@@ -218,7 +304,7 @@ export function JoinGroupConfirmModal({
         onClick={() => state !== "joining" && onClose()}
       />
 
-      {/* ── Modal ── */}
+      {/* Modal */}
       <div
         className={`relative w-full max-w-sm transform transition-all duration-300 ${
           animateIn
@@ -231,11 +317,15 @@ export function JoinGroupConfirmModal({
           {state === "loading" && (
             <div className="flex flex-col items-center justify-center px-6 py-16">
               <Loader2 className="mb-3 h-8 w-8 animate-spin text-indigo-500" />
-              <p className="text-sm text-gray-500">Loading group details…</p>
+              <p className="text-sm text-gray-500">
+                {token
+                  ? "Verifying invite link…"
+                  : "Loading group details…"}
+              </p>
             </div>
           )}
 
-          {/* ── Ready (confirm join) ── */}
+          {/* ── Ready ── */}
           {state === "ready" && groupInfo && (
             <div className="px-6 py-8">
               <div className="text-center">
@@ -250,7 +340,7 @@ export function JoinGroupConfirmModal({
                 </p>
               </div>
 
-              {/* Group Info Card */}
+              {/* Group Info */}
               <div className="mt-5 rounded-2xl border border-gray-100 bg-gray-50 p-4">
                 <h3 className="text-lg font-bold text-gray-900">
                   {groupInfo.name}
@@ -269,6 +359,16 @@ export function JoinGroupConfirmModal({
                 <p className="mt-2 text-xs text-gray-400">
                   Created by {groupInfo.ownerName}
                 </p>
+
+                {/* Security badge */}
+                {token && (
+                  <div className="mt-3 flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1.5">
+                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                    <span className="text-[11px] font-medium text-emerald-700">
+                      Verified invite link
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Buttons */}
@@ -315,7 +415,7 @@ export function JoinGroupConfirmModal({
             </div>
           )}
 
-          {/* ── Already a Member ── */}
+          {/* ── Already Member ── */}
           {state === "already_member" && groupInfo && (
             <div className="px-6 py-8 text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50">
@@ -325,13 +425,35 @@ export function JoinGroupConfirmModal({
                 Already a Member
               </h3>
               <p className="mt-1 text-sm text-gray-500">
-                You&apos;re already in <strong>{groupInfo.name}</strong>
+                You&apos;re already in{" "}
+                <strong>{groupInfo.name}</strong>
               </p>
               <button
                 onClick={handleGoToGroup}
                 className="mt-5 w-full rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
               >
                 Go to Group
+              </button>
+            </div>
+          )}
+
+          {/* ── Invalid Token ── */}
+          {state === "invalid_token" && (
+            <div className="px-6 py-8 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-50">
+                <ShieldAlert className="h-8 w-8 text-amber-500" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">
+                Invalid Invite Link
+              </h3>
+              <p className="mt-2 max-w-xs text-sm leading-relaxed text-gray-500">
+                {errorMsg}
+              </p>
+              <button
+                onClick={onClose}
+                className="mt-5 w-full rounded-xl bg-gray-100 py-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-200"
+              >
+                Close
               </button>
             </div>
           )}

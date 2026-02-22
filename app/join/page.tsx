@@ -3,13 +3,15 @@
 
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import { JoinGroupConfirmModal } from "@/components/modals/join-group-confirm-modal";
 import { useRouter } from "next/navigation";
+import { JoinGroupConfirmModal } from "@/components/modals/join-group-confirm-modal";
 
 function JoinContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+
   const groupId = searchParams.get("id");
+  const token = searchParams.get("token");
 
   if (!groupId) {
     return (
@@ -36,6 +38,7 @@ function JoinContent() {
         isOpen={true}
         onClose={() => router.push("/dashboard")}
         groupId={groupId}
+        token={token}
       />
     </div>
   );
