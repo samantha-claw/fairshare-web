@@ -299,7 +299,7 @@ export function useCreateGroup() {
       }
 
       // 4. Redirect to the new group
-      router.push(`/dashboard/${groupId}`);
+      router.push(`/dashboard/groups/${groupId}`);
     } catch (err: any) {
       console.error("Create group error:", err);
       setErrors({
