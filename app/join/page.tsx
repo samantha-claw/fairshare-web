@@ -44,10 +44,9 @@ function JoinGroupLogic() {
       // 2. إرسال الطلب لـ Supabase (الدالة الآمنة)
       try {
         const { error } = await supabase.rpc("join_group_securely", {
-          p_group_id: groupId,
-          p_token: token || null,
-        });
-
+  p_group_id: groupId,
+  p_token: token,
+});
         if (error) {
           // لو المستخدم عضو بالفعل، هندخله الجروب برضه بدل ما نطلعله إيرور يضايقه
           if (error.message.includes("already a member")) {
