@@ -50,21 +50,29 @@ export function QRScannerModal({
 
   // ── Cleanup scanner ──
   const stopScanner = useCallback(async () => {
-    if (scannerRef.current) {
-      try {
-        const scannerState = scannerRef.current.getState();
-        if (scannerState === 2) {
-          // SCANNING
-          await scannerRef.current.stop();
-        }
-        scannerRef.current.clear();
-      } catch (err) {
-        console.warn("Scanner cleanup warning:", err);
-      }
-      scannerRef.current = null;
-    }
-  }, []);
+    const scanner = scannerRef.current;
+    if (!scanner) return;
+    scannerRef.current = null; // امنع استدعاء مزدوج
 
+    try {
+        const scannerState = scanner.getState();
+
+        // أوقف الـ scanning فوراً (سريع، مش heavy)
+        if (scannerState === 2) {
+            // ⬇️ pause أولاً عشان نوقف الـ frame processing فوراً
+            try { scanner.pause(true); } catch {}
+            await scanner.stop();
+        }
+
+        // ⬇️ أخّر clear() عشان ما تحجزش الـ main thread أثناء التفاعل
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        scanner.clear();
+    } catch (err) {
+        console.warn("Scanner cleanup warning:", err);
+        // fallback: حاول clear على أي حال
+        try { scanner.clear(); } catch {}
+    }
+}, []);
   /*
    * ════════════════════════════════════════════════
    * PARSE SCANNED URL
@@ -191,7 +199,7 @@ export function QRScannerModal({
         await scanner.start(
           { facingMode: "environment" },
           {
-            fps: 10,
+            fps: 3,
             qrbox: { width: 250, height: 250 },
             aspectRatio: 1.0,
           },
@@ -239,13 +247,23 @@ export function QRScannerModal({
     };
   }, [isOpen, handleScannedUrl, stopScanner]);
 
-  // ── Close handler ──
-  const handleClose = useCallback(() => {
-    setAnimateIn(false);
-    stopScanner();
-    setTimeout(onClose, 200);
-  }, [onClose, stopScanner]);
+// ── Close handler ──
+const handleClose = useCallback(() => {
+  setAnimateIn(false);
 
+  // ⬇️ أوقف الـ frame processing فوراً (سريع جداً)
+  try {
+      const s = scannerRef.current;
+      if (s && s.getState() === 2) {
+          s.pause(true);
+      }
+  } catch {}
+
+  // ⬇️ استنّى الـ cleanup يخلص قبل ما تشيل الـ modal
+  setTimeout(() => {
+    onClose();
+  }, 300);
+}, [onClose]);
   // ── Escape key ──
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
