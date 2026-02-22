@@ -1,583 +1,494 @@
 "use client";
 
-import React, { useEffect, useState, useRef, type FormEvent, type ChangeEvent } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import type { User } from "@supabase/supabase-js";
+// ==========================================
+// 📦 IMPORTS
+// ==========================================
+import { useProfileEdit } from "@/hooks/use-profile-edit";
+import { Avatar } from "@/components/ui/avatar";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  User,
+  AtSign,
+  Type,
+  Image,
+  FileText,
+  Save,
+  ArrowLeft,
+  RotateCcw,
+  Check,
+  AlertCircle,
+  Sparkles,
+  Shield,
+} from "lucide-react";
 
-/* ════════════════════════════════════════════════════════════
-   TYPES
-   ════════════════════════════════════════════════════════════ */
+// ==========================================
+// 🧩 TYPES
+// ==========================================
 
-interface Profile {
-  id: string;
-  username: string;
-  full_name: string;
-  avatar_url: string;
-  bio: string;
+interface InputFieldProps {
+  label: string;
+  icon: React.ElementType;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  error?: string;
+  hint?: string;
+  required?: boolean;
+  maxLength?: number;
+  type?: "text" | "url";
+  disabled?: boolean;
 }
 
-/* ════════════════════════════════════════════════════════════
-   CONSTANTS
-   ════════════════════════════════════════════════════════════ */
+// ==========================================
+// ⚙️ LOGIC — Reusable Input Component
+// ==========================================
 
-const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,20}$/;
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
-
-/* ════════════════════════════════════════════════════════════
-   SKELETON LOADER
-   ════════════════════════════════════════════════════════════ */
-
-function ProfileSkeleton() {
+function InputField({
+  label,
+  icon: Icon,
+  value,
+  onChange,
+  placeholder,
+  error,
+  hint,
+  required = false,
+  maxLength,
+  type = "text",
+  disabled = false,
+}: InputFieldProps) {
   return (
-    <div className="flex min-h-screen items-start justify-center bg-gray-50 px-4 py-12">
-      <div className="w-full max-w-lg animate-pulse rounded-2xl border border-gray-200 bg-white p-8 shadow-xl">
-        <div className="flex flex-col items-center">
-          <div className="h-24 w-24 rounded-full bg-gray-200" />
-          <div className="mt-4 h-5 w-32 rounded bg-gray-200" />
+    <div>
+      <label className="mb-2 flex items-center justify-between">
+        <span className="flex items-center gap-1.5 text-sm font-semibold text-gray-700">
+          {label}
+          {required && <span className="text-rose-400">*</span>}
+        </span>
+        {maxLength && (
+          <span
+            className={`text-[10px] font-medium ${
+              value.length > maxLength ? "text-rose-500" : "text-gray-400"
+            }`}
+          >
+            {value.length}/{maxLength}
+          </span>
+        )}
+      </label>
+
+      <div className="relative">
+        <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2">
+          <Icon
+            className={`h-4 w-4 ${
+              error ? "text-rose-400" : "text-gray-400"
+            }`}
+          />
         </div>
-        <div className="mt-8 space-y-5">
-          <div className="h-10 w-full rounded-lg bg-gray-200" />
-          <div className="h-10 w-full rounded-lg bg-gray-200" />
-          <div className="h-24 w-full rounded-lg bg-gray-200" />
-          <div className="h-10 w-full rounded-lg bg-gray-200" />
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          disabled={disabled}
+          className={`block w-full rounded-2xl border bg-gray-50/50 py-3 pl-11 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+            error
+              ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
+              : "border-gray-200 focus:border-indigo-300 focus:ring-indigo-100"
+          }`}
+        />
+      </div>
+
+      {error && (
+        <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-rose-600">
+          <AlertCircle className="h-3 w-3" />
+          {error}
+        </p>
+      )}
+      {hint && !error && (
+        <p className="mt-1.5 text-xs text-gray-400">{hint}</p>
+      )}
+    </div>
+  );
+}
+
+function TextAreaField({
+  label,
+  icon: Icon,
+  value,
+  onChange,
+  placeholder,
+  error,
+  hint,
+  maxLength,
+}: {
+  label: string;
+  icon: React.ElementType;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  error?: string;
+  hint?: string;
+  maxLength?: number;
+}) {
+  return (
+    <div>
+      <label className="mb-2 flex items-center justify-between">
+        <span className="flex items-center gap-1.5 text-sm font-semibold text-gray-700">
+          {label}
+        </span>
+        {maxLength && (
+          <span
+            className={`text-[10px] font-medium ${
+              value.length > maxLength ? "text-rose-500" : "text-gray-400"
+            }`}
+          >
+            {value.length}/{maxLength}
+          </span>
+        )}
+      </label>
+
+      <div className="relative">
+        <div className="pointer-events-none absolute left-4 top-3.5">
+          <Icon
+            className={`h-4 w-4 ${
+              error ? "text-rose-400" : "text-gray-400"
+            }`}
+          />
+        </div>
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          rows={3}
+          className={`block w-full resize-none rounded-2xl border bg-gray-50/50 py-3 pl-11 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 ${
+            error
+              ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
+              : "border-gray-200 focus:border-indigo-300 focus:ring-indigo-100"
+          }`}
+        />
+      </div>
+
+      {error && (
+        <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-rose-600">
+          <AlertCircle className="h-3 w-3" />
+          {error}
+        </p>
+      )}
+      {hint && !error && (
+        <p className="mt-1.5 text-xs text-gray-400">{hint}</p>
+      )}
+    </div>
+  );
+}
+
+// ==========================================
+// 🎨 UI RENDER — SKELETON
+// ==========================================
+
+function EditSkeleton() {
+  return (
+    <div className="mx-auto max-w-2xl animate-pulse px-4 py-8 sm:px-6">
+      <div className="mb-8 h-6 w-40 rounded-lg bg-gray-200" />
+      <div className="rounded-3xl border border-gray-100 bg-white p-8 shadow-sm">
+        <div className="mb-8 flex justify-center">
+          <div className="h-24 w-24 rounded-full bg-gray-200" />
+        </div>
+        <div className="space-y-6">
+          <div className="h-12 rounded-2xl bg-gray-100" />
+          <div className="h-12 rounded-2xl bg-gray-100" />
+          <div className="h-12 rounded-2xl bg-gray-100" />
+          <div className="h-12 rounded-2xl bg-gray-100" />
+          <div className="h-24 rounded-2xl bg-gray-100" />
         </div>
       </div>
     </div>
   );
 }
 
-/* ════════════════════════════════════════════════════════════
-   MAIN COMPONENT
-   ════════════════════════════════════════════════════════════ */
+// ==========================================
+// 🎨 UI RENDER — PAGE
+// ==========================================
 
-export default function ProfilePage() {
-  const supabase = createClient();
-  const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+export default function EditProfilePage() {
+  const e = useProfileEdit();
 
-  // ── Auth state ──────────────────────────────────────────
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  if (e.loading) return <EditSkeleton />;
 
-  // ── Profile state ───────────────────────────────────────
-  const [username, setUsername] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [bio, setBio] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState("");
-
-  // ── Avatar upload state ─────────────────────────────────
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
-
-  // ── UI state ────────────────────────────────────────────
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [usernameError, setUsernameError] = useState<string | null>(null);
-
-  // ── Init: fetch session + profile ───────────────────────
-
-  useEffect(() => {
-    async function init() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        router.replace("/login");
-        return;
-      }
-
-      setUser(session.user);
-
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("id, username, full_name, avatar_url, bio")
-        .eq("id", session.user.id)
-        .single();
-
-      if (profileError || !profile) {
-        setError("Failed to load profile.");
-        setLoading(false);
-        return;
-      }
-
-      const p = profile as Profile;
-      setUsername(p.username || "");
-      setFullName(p.full_name || "");
-      setBio(p.bio || "");
-      setAvatarUrl(p.avatar_url || "");
-      setLoading(false);
-    }
-
-    init();
-  }, [router, supabase]);
-
-  // ── Username validation ─────────────────────────────────
-
-  function validateUsername(value: string): string | null {
-    if (!value.trim()) {
-      return "Username is required.";
-    }
-    if (value.length < 3) {
-      return "Username must be at least 3 characters.";
-    }
-    if (value.length > 20) {
-      return "Username must be 20 characters or fewer.";
-    }
-    if (!USERNAME_REGEX.test(value)) {
-      return "Only letters, numbers, and underscores allowed.";
-    }
-    return null;
-  }
-
-  function handleUsernameChange(value: string) {
-    setUsername(value);
-    setUsernameError(null);
-    setSuccess(null);
-  }
-
-  function handleUsernameBlur() {
-    const validationError = validateUsername(username);
-    if (validationError) {
-      setUsernameError(validationError);
-    }
-  }
-
-  // ── Avatar handling ─────────────────────────────────────
-
-  function handleAvatarClick() {
-    fileInputRef.current?.click();
-  }
-
-  function handleAvatarChange(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setError(null);
-    setSuccess(null);
-
-    // Validate type
-    if (!ACCEPTED_TYPES.includes(file.type)) {
-      setError("Please upload a JPG, PNG, or WebP image.");
-      return;
-    }
-
-    // Validate size
-    if (file.size > MAX_FILE_SIZE) {
-      setError("Image must be smaller than 5MB.");
-      return;
-    }
-
-    setAvatarFile(file);
-    setAvatarPreview(URL.createObjectURL(file));
-  }
-
-  async function uploadAvatar(): Promise<string | null> {
-    if (!avatarFile || !user) return null;
-
-    setUploadingAvatar(true);
-
-    try {
-      // Determine extension
-      const ext = avatarFile.name.split(".").pop()?.toLowerCase() || "png";
-      const filePath = `${user.id}/avatar.${ext}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, avatarFile, {
-          cacheControl: "3600",
-          upsert: true,
-        });
-
-      if (uploadError) {
-        throw new Error(uploadError.message);
-      }
-
-      // Get public URL with cache buster
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("avatars").getPublicUrl(filePath);
-
-      return `${publicUrl}?t=${Date.now()}`;
-    } finally {
-      setUploadingAvatar(false);
-    }
-  }
-
-  // ── Save handler ────────────────────────────────────────
-
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError(null);
-    setSuccess(null);
-
-    if (!user) {
-      setError("You must be signed in.");
-      return;
-    }
-
-    // Validate username format only — no pre-flight uniqueness check
-    const validationError = validateUsername(username);
-    if (validationError) {
-      setUsernameError(validationError);
-      return;
-    }
-
-    setSaving(true);
-
-    try {
-      // Upload avatar if changed
-      let newAvatarUrl = avatarUrl;
-      if (avatarFile) {
-        const uploadedUrl = await uploadAvatar();
-        if (uploadedUrl) {
-          newAvatarUrl = uploadedUrl;
-        }
-      }
-
-      // Attempt update — let the DB enforce uniqueness
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update({
-          username: username.trim().toLowerCase(),
-          full_name: fullName.trim(),
-          display_name: fullName,    // 👈 🟢 
-          bio: bio.trim(),
-          avatar_url: newAvatarUrl,
-        })
-        .eq("id", user.id);
-
-      if (updateError) {
-        // Postgres unique-violation code
-        if (updateError.code === "23505") {
-          setUsernameError("Username already taken.");
-        } else {
-          setError(updateError.message);
-        }
-        return;
-      }
-
-      // Update local state on success
-      setAvatarUrl(newAvatarUrl);
-      setAvatarFile(null);
-      setAvatarPreview(null);
-      setSuccess("Profile updated successfully!");
-
-      setTimeout(() => setSuccess(null), 3000);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to update profile."
-      );
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  // ── Loading ─────────────────────────────────────────────
-
-  if (loading) return <ProfileSkeleton />;
-
-  // ── Computed ────────────────────────────────────────────
-
-  const displayAvatar = avatarPreview || avatarUrl;
-  const initials = (fullName || username || "?")
-    .split(/[_\s]+/)
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-
-  const isSaving = saving || uploadingAvatar;
-
-  // ── Render ──────────────────────────────────────────────
+  const displayName =
+    e.formData.display_name || e.formData.full_name || e.formData.username || "User";
 
   return (
-    <div className="flex min-h-screen items-start justify-center bg-gray-50 px-4 py-12">
-      <div className="w-full max-w-lg">
-        {/* ── Back link ───────────────────────────────── */}
-        <button
-          type="button"
-          onClick={() => router.push("/dashboard/profile")}
-          className="mb-6 inline-flex items-center gap-1 text-sm text-gray-500 transition-colors hover:text-gray-900"
-        >
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15.75 19.5L8.25 12l7.5-7.5"
-            />
-          </svg>
-          Back to profile
-        </button>
+    <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
+      {/* ── Back Button ──────────────────────────── */}
+      <button
+        onClick={e.handleCancel}
+        className="mb-6 inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-medium text-gray-500 transition-all hover:bg-white hover:text-gray-900 hover:shadow-sm"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to Profile
+      </button>
 
-        {/* ── Card ────────────────────────────────────── */}
-        <form
-          onSubmit={handleSubmit}
-          className="rounded-2xl border border-gray-200 bg-white p-8 shadow-xl"
-        >
-          {/* ── Header ────────────────────────────────── */}
-          <h1 className="text-center text-xl font-semibold text-gray-900">
-            Edit Profile
-          </h1>
-          <p className="mt-1 text-center text-sm text-gray-500">
-            {user?.email}
-          </p>
+      {/* ── Main Form Card ───────────────────────── */}
+      <div className="relative overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
+        {/* Decorative Background */}
+        <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-gradient-to-br from-indigo-100/50 to-purple-100/30 blur-3xl" />
+        <div className="absolute -bottom-16 -left-16 h-40 w-40 rounded-full bg-gradient-to-tr from-blue-100/30 to-cyan-100/20 blur-2xl" />
 
-          {/* ── Messages ──────────────────────────────── */}
-          {error && (
-            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
+        {/* Header Banner */}
+        <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 px-8 pb-16 pt-8">
+          {/* Decorative */}
+          <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+          <div className="absolute bottom-4 left-1/4 h-16 w-16 rounded-full bg-purple-400/15 blur-lg" />
+
+          <div className="relative flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+              <Sparkles className="h-5 w-5 text-white" />
             </div>
-          )}
-
-          {success && (
-            <div className="mt-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-              {success}
-            </div>
-          )}
-
-          {/* ── Avatar ────────────────────────────────── */}
-          <div className="mt-6 flex flex-col items-center">
-            <button
-              type="button"
-              onClick={handleAvatarClick}
-              disabled={isSaving}
-              className="group relative h-24 w-24 overflow-hidden rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {displayAvatar ? (
-                <img
-                  src={displayAvatar}
-                  alt="Avatar"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-blue-100 text-xl font-bold text-blue-700">
-                  {initials}
-                </div>
-              )}
-
-              {/* Hover overlay */}
-              <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                <svg
-                  className="h-6 w-6 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"
-                  />
-                </svg>
-              </div>
-            </button>
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".jpg,.jpeg,.png,.webp"
-              onChange={handleAvatarChange}
-              className="hidden"
-            />
-
-            <p className="mt-2 text-xs text-gray-400">
-              Click to upload · JPG, PNG, WebP · Max 5MB
-            </p>
-
-            {avatarFile && (
-              <div className="mt-1 flex items-center gap-2">
-                <span className="text-xs text-blue-600">
-                  {avatarFile.name}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAvatarFile(null);
-                    setAvatarPreview(null);
-                    if (fileInputRef.current) {
-                      fileInputRef.current.value = "";
-                    }
-                  }}
-                  className="text-xs text-red-500 hover:text-red-700"
-                >
-                  Remove
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* ── Fields ────────────────────────────────── */}
-          <div className="mt-8 space-y-5">
-            {/* Username */}
             <div>
-              <label
-                htmlFor="username"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
-                Username <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-sm text-gray-400">
-                  @
-                </span>
-                <input
-                  id="username"
-                  type="text"
-                  required
-                  maxLength={20}
-                  value={username}
-                  placeholder="your_username"
-                  disabled={isSaving}
-                  onChange={(e) => handleUsernameChange(e.target.value)}
-                  onBlur={handleUsernameBlur}
-                  className={`
-                    block w-full rounded-lg border bg-white py-2.5 pl-8
-                    pr-3 text-sm text-gray-900 placeholder-gray-400
-                    shadow-sm transition-colors
-                    focus:outline-none focus:ring-1
-                    disabled:cursor-not-allowed disabled:bg-gray-50
-                    disabled:opacity-60
-                    ${
-                      usernameError
-                        ? "border-red-300 focus:border-red-500 focus:ring-red-500"
-                        : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                    }
-                  `}
-                />
-              </div>
-              {usernameError && (
-                <p className="mt-1 text-xs text-red-600">{usernameError}</p>
-              )}
-              <p className="mt-1 text-xs text-gray-400">
-                3-20 characters · Letters, numbers, underscores
+              <h1 className="text-xl font-bold text-white">Edit Profile</h1>
+              <p className="text-sm text-indigo-200">
+                Update your personal information
               </p>
             </div>
+          </div>
+        </div>
 
-            {/* Full name */}
-            <div>
-              <label
-                htmlFor="full-name"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
-                Full name
-              </label>
-              <input
-                id="full-name"
-                type="text"
-                maxLength={100}
-                value={fullName}
-                placeholder="Jane Doe"
-                disabled={isSaving}
-                onChange={(e) => {
-                  setFullName(e.target.value);
-                  setSuccess(null);
-                }}
-                className="
-                  block w-full rounded-lg border border-gray-300 bg-white
-                  px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400
-                  shadow-sm transition-colors
-                  focus:border-blue-500 focus:outline-none focus:ring-1
-                  focus:ring-blue-500
-                  disabled:cursor-not-allowed disabled:bg-gray-50
-                  disabled:opacity-60
-                "
-              />
+        {/* Avatar Preview (overlapping banner) */}
+        <div className="relative flex justify-center">
+          <div className="-mt-12 rounded-full bg-white p-1.5 shadow-xl">
+            <Avatar src={e.formData.avatar_url} name={displayName} size="lg" />
+          </div>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={e.handleSave} className="relative px-6 pb-8 pt-4 sm:px-8">
+          {/* General Error */}
+          {e.errors.general && (
+            <div className="mb-6 flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3">
+              <AlertCircle className="h-4 w-4 flex-shrink-0 text-rose-500" />
+              <p className="text-sm font-medium text-rose-700">
+                {e.errors.general}
+              </p>
             </div>
+          )}
+
+          {/* Success Message */}
+          {e.saveSuccess && (
+            <div className="mb-6 flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+              <Check className="h-4 w-4 flex-shrink-0 text-emerald-500" />
+              <p className="text-sm font-medium text-emerald-700">
+                Profile updated successfully!
+              </p>
+            </div>
+          )}
+
+          <div className="space-y-5">
+            {/* Display Name */}
+            <InputField
+              label="Display Name"
+              icon={Type}
+              value={e.formData.display_name}
+              onChange={(v) => e.updateField("display_name", v)}
+              placeholder="How others see you"
+              error={e.errors.display_name}
+              hint="This is your public name visible to everyone."
+              required
+              maxLength={50}
+            />
+
+            {/* Username */}
+            <InputField
+              label="Username"
+              icon={AtSign}
+              value={e.formData.username}
+              onChange={(v) => e.updateField("username", v)}
+              placeholder="your_username"
+              error={e.errors.username}
+              hint="Lowercase letters, numbers, and underscores only."
+              required
+              maxLength={30}
+            />
+
+            {/* Full Name */}
+            <InputField
+              label="Full Name"
+              icon={User}
+              value={e.formData.full_name}
+              onChange={(v) => e.updateField("full_name", v)}
+              placeholder="Your full name"
+              error={e.errors.full_name}
+              maxLength={100}
+            />
+
+            {/* Avatar URL */}
+            <InputField
+              label="Avatar URL"
+              icon={Image}
+              value={e.formData.avatar_url}
+              onChange={(v) => e.updateField("avatar_url", v)}
+              placeholder="https://example.com/photo.jpg"
+              error={e.errors.avatar_url}
+              hint="Paste a direct link to your profile picture."
+              type="url"
+            />
 
             {/* Bio */}
-            <div>
-              <label
-                htmlFor="bio"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
-                Bio
-              </label>
-              <textarea
-                id="bio"
-                rows={4}
-                maxLength={300}
-                value={bio}
-                placeholder="Tell others a little about yourself..."
-                disabled={isSaving}
-                onChange={(e) => {
-                  setBio(e.target.value);
-                  setSuccess(null);
-                }}
-                className="
-                  block w-full resize-none rounded-lg border border-gray-300
-                  bg-white px-3 py-2.5 text-sm text-gray-900
-                  placeholder-gray-400 shadow-sm transition-colors
-                  focus:border-blue-500 focus:outline-none focus:ring-1
-                  focus:ring-blue-500
-                  disabled:cursor-not-allowed disabled:bg-gray-50
-                  disabled:opacity-60
-                "
-              />
-              <p className="mt-1 text-right text-xs text-gray-400">
-                {bio.length}/300
-              </p>
-            </div>
+            <TextAreaField
+              label="Bio"
+              icon={FileText}
+              value={e.formData.bio}
+              onChange={(v) => e.updateField("bio", v)}
+              placeholder="Tell people about yourself…"
+              error={e.errors.bio}
+              hint="A short description visible on your profile."
+              maxLength={250}
+            />
           </div>
 
-          {/* ── Submit ────────────────────────────────── */}
-          <button
-            type="submit"
-            disabled={isSaving || !!usernameError}
-            className="
-              mt-6 flex w-full items-center justify-center rounded-lg
-              bg-blue-600 px-4 py-2.5 text-sm font-medium text-white
-              shadow-sm transition-colors hover:bg-blue-700
-              focus:outline-none focus:ring-2 focus:ring-blue-500
-              focus:ring-offset-2
-              disabled:cursor-not-allowed disabled:opacity-50
-            "
-          >
-            {isSaving ? (
-              <>
-                <svg
-                  className="mr-2 h-4 w-4 animate-spin"
-                  fill="none"
-                  viewBox="0 0 24 24"
+          {/* ── Divider ──────────────────────────── */}
+          <div className="my-6 border-t border-gray-100" />
+
+          {/* ── Security Note ────────────────────── */}
+          <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-indigo-100 bg-indigo-50/50 px-4 py-3">
+            <Shield className="mt-0.5 h-4 w-4 flex-shrink-0 text-indigo-500" />
+            <p className="text-xs leading-relaxed text-indigo-700">
+              Your profile information is stored securely. Only your
+              display name, username, and avatar are publicly visible.
+            </p>
+          </div>
+
+          {/* ── Action Buttons ───────────────────── */}
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+            {/* Left: Cancel + Reset */}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={e.handleCancel}
+                className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-600 transition-all duration-200 hover:bg-gray-50"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Cancel
+              </button>
+
+              {e.hasChanges && (
+                <button
+                  type="button"
+                  onClick={e.handleReset}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-500 transition-all duration-200 hover:bg-gray-50 hover:text-gray-700"
                 >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                  />
-                </svg>
-                {uploadingAvatar ? "Uploading avatar…" : "Saving…"}
-              </>
-            ) : (
-              "Save changes"
-            )}
-          </button>
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  Reset
+                </button>
+              )}
+            </div>
+
+            {/* Right: Save */}
+            <button
+              type="submit"
+              disabled={e.saving || !e.hasChanges}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-500/30 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+            >
+              {e.saving ? (
+                <>
+                  <Spinner className="h-4 w-4" />
+                  Saving…
+                </>
+              ) : e.saveSuccess ? (
+                <>
+                  <Check className="h-4 w-4" />
+                  Saved!
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  Save Changes
+                </>
+              )}
+            </button>
+          </div>
         </form>
       </div>
+
+      {/* ── Avatar Preview Card ──────────────────── */}
+      {e.formData.avatar_url.trim().length > 0 && (
+        <div className="mt-6 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+          <div className="mb-3 flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50">
+              <Image className="h-3.5 w-3.5 text-indigo-600" />
+            </div>
+            <h3 className="text-sm font-bold text-gray-900">
+              Avatar Preview
+            </h3>
+          </div>
+
+          <div className="flex items-center gap-4 rounded-2xl bg-gray-50/50 p-4">
+            {/* Multiple Sizes */}
+            <div className="flex items-end gap-3">
+              <div className="text-center">
+                <img
+                  src={e.formData.avatar_url}
+                  alt="Preview"
+                  className="h-16 w-16 rounded-full object-cover ring-2 ring-white shadow-md"
+                  onError={(ev) => {
+                    (ev.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                      displayName
+                    )}&background=e0e7ff&color=4338ca&bold=true`;
+                  }}
+                />
+                <p className="mt-1 text-[10px] text-gray-400">Large</p>
+              </div>
+              <div className="text-center">
+                <img
+                  src={e.formData.avatar_url}
+                  alt="Preview"
+                  className="h-10 w-10 rounded-full object-cover ring-2 ring-white shadow-sm"
+                  onError={(ev) => {
+                    (ev.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                      displayName
+                    )}&background=e0e7ff&color=4338ca&bold=true`;
+                  }}
+                />
+                <p className="mt-1 text-[10px] text-gray-400">Med</p>
+              </div>
+              <div className="text-center">
+                <img
+                  src={e.formData.avatar_url}
+                  alt="Preview"
+                  className="h-8 w-8 rounded-full object-cover ring-1 ring-white shadow-sm"
+                  onError={(ev) => {
+                    (ev.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                      displayName
+                    )}&background=e0e7ff&color=4338ca&bold=true`;
+                  }}
+                />
+                <p className="mt-1 text-[10px] text-gray-400">Sm</p>
+              </div>
+            </div>
+
+            {/* Profile Preview */}
+            <div className="ml-auto rounded-2xl border border-gray-100 bg-white p-3">
+              <div className="flex items-center gap-2.5">
+                <img
+                  src={e.formData.avatar_url}
+                  alt="Preview"
+                  className="h-10 w-10 rounded-full object-cover ring-1 ring-gray-200"
+                  onError={(ev) => {
+                    (ev.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                      displayName
+                    )}&background=e0e7ff&color=4338ca&bold=true`;
+                  }}
+                />
+                <div>
+                  <p className="text-sm font-bold text-gray-900">
+                    {e.formData.display_name || "Display Name"}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    @{e.formData.username || "username"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
