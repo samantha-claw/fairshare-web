@@ -15,11 +15,23 @@ import {
   AlertCircle,
   CheckCircle2,
   Info,
+  XCircle,
+  Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function RegisterPage() {
-  const { signUp, loading, error, clearError } = useAuth();
+  const {
+    signUp,
+    loading,
+    error,
+    clearError,
+    usernameStatus,
+    usernameSuggestions,
+    checkUsername,
+    selectSuggestion,
+    resetUsernameCheck,
+  } = useAuth();
 
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
@@ -30,15 +42,17 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [emailConfirmationSent, setEmailConfirmationSent] = useState(false);
 
-  // Live username validation state
-  const [usernameValid, setUsernameValid] = useState<boolean | null>(null);
+  // Local format validation (instant, no DB)
+  const [usernameFormatValid, setUsernameFormatValid] = useState<
+    boolean | null
+  >(null);
   const usernameRegex = /^[a-z0-9_]{3,30}$/;
 
   // Live confirm-password match indicator
   const confirmPasswordMatch: boolean | null =
     confirmPassword.length === 0 ? null : password === confirmPassword;
 
-  // Password strength
+  // ── Password strength ──
   const getPasswordStrength = (
     pw: string
   ): { label: string; color: string; width: string } => {
@@ -63,18 +77,93 @@ export default function RegisterPage() {
 
   const passwordStrength = getPasswordStrength(password);
 
+  // ── Username input handler ──
   const handleUsernameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "");
     setUsername(raw);
     if (error) clearError();
 
     if (raw.length === 0) {
-      setUsernameValid(null);
+      setUsernameFormatValid(null);
+      resetUsernameCheck();
+      return;
+    }
+
+    const isFormatValid = usernameRegex.test(raw);
+    setUsernameFormatValid(isFormatValid);
+
+    if (isFormatValid) {
+      // Format is good → fire debounced availability check
+      checkUsername(raw);
     } else {
-      setUsernameValid(usernameRegex.test(raw));
+      // Format invalid → reset availability state
+      resetUsernameCheck();
     }
   };
 
+  // ── Click a suggestion pill ──
+  const handleSelectSuggestion = (suggestion: string) => {
+    setUsername(suggestion);
+    setUsernameFormatValid(true);
+    selectSuggestion();
+    if (error) clearError();
+  };
+
+  // ── Derived: border class for username input ──
+  const getUsernameBorderClass = (): string => {
+    if (username.length === 0) {
+      return "border-white/10 focus:border-purple-500/50 focus:ring-purple-500/20";
+    }
+    if (usernameFormatValid === false) {
+      return "border-red-500/30 focus:border-red-500/50 focus:ring-red-500/20";
+    }
+    // Format is valid → use availability status
+    switch (usernameStatus) {
+      case "available":
+        return "border-emerald-500/30 focus:border-emerald-500/50 focus:ring-emerald-500/20";
+      case "taken":
+      case "error":
+        return "border-red-500/30 focus:border-red-500/50 focus:ring-red-500/20";
+      case "checking":
+        return "border-purple-500/30 focus:border-purple-500/50 focus:ring-purple-500/20";
+      default:
+        return "border-white/10 focus:border-purple-500/50 focus:ring-purple-500/20";
+    }
+  };
+
+  // ── Derived: icon inside the username input ──
+  const renderUsernameIcon = () => {
+    if (username.length === 0) return null;
+
+    if (usernameFormatValid === false) {
+      return <AlertCircle className="h-5 w-5 text-red-400" />;
+    }
+
+    switch (usernameStatus) {
+      case "checking":
+        return (
+          <Loader2 className="h-5 w-5 animate-spin text-purple-400" />
+        );
+      case "available":
+        return <CheckCircle2 className="h-5 w-5 text-emerald-400" />;
+      case "taken":
+        return <XCircle className="h-5 w-5 text-red-400" />;
+      case "error":
+        return <AlertCircle className="h-5 w-5 text-amber-400" />;
+      default:
+        return null;
+    }
+  };
+
+  // ── Derived: should submit button be disabled? ──
+  const isSubmitDisabled =
+    loading ||
+    usernameFormatValid === false ||
+    usernameStatus === "taken" ||
+    usernameStatus === "checking" ||
+    confirmPasswordMatch === false;
+
+  // ── Form submit ──
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -86,7 +175,6 @@ export default function RegisterPage() {
       fullName,
     });
 
-    // If email confirmation is required
     if (result && "confirmEmail" in result && result.confirmEmail) {
       setEmailConfirmationSent(true);
     }
@@ -146,7 +234,7 @@ export default function RegisterPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Full Name */}
+          {/* ── Full Name ── */}
           <div className="group">
             <label
               htmlFor="fullName"
@@ -172,7 +260,7 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {/* Username */}
+          {/* ── Username (with real-time availability) ── */}
           <div className="group">
             <label
               htmlFor="username"
@@ -190,35 +278,102 @@ export default function RegisterPage() {
                 placeholder="johndoe"
                 autoComplete="username"
                 required
-                className={`w-full rounded-2xl border bg-white/[0.05] py-3.5 pl-12 pr-12 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:bg-white/[0.08] focus:ring-2 ${
-                  usernameValid === null
-                    ? "border-white/10 focus:border-purple-500/50 focus:ring-purple-500/20"
-                    : usernameValid
-                      ? "border-emerald-500/30 focus:border-emerald-500/50 focus:ring-emerald-500/20"
-                      : "border-red-500/30 focus:border-red-500/50 focus:ring-red-500/20"
-                }`}
+                className={`w-full rounded-2xl border bg-white/[0.05] py-3.5 pl-12 pr-12 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:bg-white/[0.08] focus:ring-2 ${getUsernameBorderClass()}`}
               />
-              {/* Validation icon */}
-              {usernameValid !== null && (
-                <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                  {usernameValid ? (
-                    <CheckCircle2 className="h-5 w-5 text-emerald-400" />
-                  ) : (
-                    <AlertCircle className="h-5 w-5 text-red-400" />
-                  )}
+              {/* Dynamic right-side icon */}
+              <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                {renderUsernameIcon()}
+              </div>
+            </div>
+
+            {/* ── Status messages ── */}
+
+            {/* Format hint (shown when idle or format-invalid) */}
+            {(usernameFormatValid === null ||
+              usernameFormatValid === false) && (
+              <div className="mt-2 flex items-center gap-1.5">
+                <Info className="h-3 w-3 text-white/20" />
+                <p
+                  className={`text-[11px] ${
+                    usernameFormatValid === false
+                      ? "text-red-400/80"
+                      : "text-white/25"
+                  }`}
+                >
+                  Lowercase letters, numbers, and underscores only (3-30 chars)
+                </p>
+              </div>
+            )}
+
+            {/* Checking */}
+            {usernameFormatValid && usernameStatus === "checking" && (
+              <div className="mt-2 flex items-center gap-1.5">
+                <Loader2 className="h-3 w-3 animate-spin text-purple-400" />
+                <p className="text-[11px] text-purple-400/90">
+                  Checking availability…
+                </p>
+              </div>
+            )}
+
+            {/* Available */}
+            {usernameFormatValid && usernameStatus === "available" && (
+              <div className="mt-2 flex items-center gap-1.5">
+                <CheckCircle2 className="h-3 w-3 text-emerald-400" />
+                <p className="text-[11px] text-emerald-400">
+                  Username is available!
+                </p>
+              </div>
+            )}
+
+            {/* Taken + Suggestions */}
+            {usernameFormatValid && usernameStatus === "taken" && (
+              <div className="mt-2 space-y-2.5">
+                <div className="flex items-center gap-1.5">
+                  <XCircle className="h-3 w-3 text-red-400" />
+                  <p className="text-[11px] text-red-400">
+                    Username is taken.
+                  </p>
                 </div>
-              )}
-            </div>
-            {/* Username hint */}
-            <div className="mt-2 flex items-center gap-1.5">
-              <Info className="h-3 w-3 text-white/20" />
-              <p className="text-[11px] text-white/25">
-                Lowercase letters, numbers, and underscores only (3-30 chars)
-              </p>
-            </div>
+
+                {/* Smart Suggestions */}
+                {usernameSuggestions.length > 0 && (
+                  <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-3">
+                    <div className="mb-2 flex items-center gap-1.5">
+                      <Sparkles className="h-3 w-3 text-purple-400" />
+                      <p className="text-[11px] font-medium text-white/40">
+                        Available alternatives
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {usernameSuggestions.map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          type="button"
+                          onClick={() => handleSelectSuggestion(suggestion)}
+                          className="group/pill flex items-center gap-1 rounded-xl border border-white/10 bg-white/[0.05] px-3 py-1.5 text-xs font-medium text-purple-300 backdrop-blur-sm transition-all duration-200 hover:border-purple-500/40 hover:bg-purple-500/15 hover:text-purple-200 hover:shadow-md hover:shadow-purple-500/10 active:scale-95"
+                        >
+                          <AtSign className="h-3 w-3 opacity-50 transition-opacity group-hover/pill:opacity-100" />
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Error state */}
+            {usernameFormatValid && usernameStatus === "error" && (
+              <div className="mt-2 flex items-center gap-1.5">
+                <AlertCircle className="h-3 w-3 text-amber-400" />
+                <p className="text-[11px] text-amber-400/80">
+                  Could not check availability. Try again.
+                </p>
+              </div>
+            )}
           </div>
 
-          {/* Email */}
+          {/* ── Email ── */}
           <div className="group">
             <label
               htmlFor="email"
@@ -244,7 +399,7 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {/* Password */}
+          {/* ── Password ── */}
           <div className="group">
             <label
               htmlFor="password"
@@ -358,14 +513,10 @@ export default function RegisterPage() {
             )}
           </div>
 
-          {/* Submit Button */}
+          {/* ── Submit Button ── */}
           <button
             type="submit"
-            disabled={
-              loading ||
-              usernameValid === false ||
-              confirmPasswordMatch === false
-            }
+            disabled={isSubmitDisabled}
             className="group relative mt-2 w-full overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-600 bg-[length:200%_100%] py-3.5 text-sm font-semibold text-white shadow-lg shadow-purple-500/25 transition-all duration-500 hover:bg-[position:100%_0] hover:shadow-xl hover:shadow-purple-500/30 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:ring-offset-2 focus:ring-offset-transparent disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? (
