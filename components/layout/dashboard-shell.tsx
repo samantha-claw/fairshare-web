@@ -24,12 +24,11 @@ interface UserProfile {
 }
 
 // ==========================================
-// ⚙️ LOGIC & STATE
+// ⚙️ SKELETON
 // ==========================================
-
 function ShellSkeleton() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50">
+    <div className="flex min-h-screen w-full items-center justify-center overflow-x-hidden bg-slate-50">
       <div className="flex flex-col items-center gap-3">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/20">
           <span className="text-lg font-black text-white">F</span>
@@ -119,7 +118,11 @@ export function DashboardShell({ children }: DashboardShellProps) {
   if (loading) return <ShellSkeleton />;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    // ═══════════════════════════════════════════════════
+    // CRITICAL FIX: w-full + overflow-x-hidden kills the
+    // black strip / horizontal scroll on mobile
+    // ═══════════════════════════════════════════════════
+    <div className="relative min-h-screen w-full overflow-x-hidden bg-slate-50">
       {/* ── Desktop Sidebar ──────────────────────── */}
       <Sidebar
         displayName={profile.display_name}
@@ -183,7 +186,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
       )}
 
       {/* ── Main Content Area ────────────────────── */}
-      <div className="flex flex-col md:pl-[260px]">
+      <div className="flex w-full flex-col md:pl-[260px]">
         {/* Header */}
         <Header
           displayName={profile.display_name}
@@ -191,8 +194,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
           onMobileMenuToggle={() => setMobileMenuOpen(true)}
         />
 
-        {/* Page Content — pb-28 clears mobile nav, md:pb-8 for desktop */}
-        <main className="flex-1 pb-28 md:pb-8">
+        {/* Page Content
+            pb-32 = enough room for floating MobileNav + FABs on mobile
+            md:pb-8 = normal padding on desktop (no bottom nav) */}
+        <main className="w-full flex-1 pb-32 md:pb-8">
           {children}
         </main>
       </div>
