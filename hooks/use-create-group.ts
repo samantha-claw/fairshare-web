@@ -122,7 +122,7 @@ export function useCreateGroup() {
 
       // Fetch accepted friendships where user is either sender or receiver
       const { data: friendships, error: friendshipsError } = await supabase
-        .from("friends")
+        .from("friendships")
         .select("requester_id, receiver_id")
         .or(`requester_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
         .eq("status", "accepted");
