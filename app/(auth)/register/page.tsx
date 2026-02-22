@@ -25,12 +25,20 @@ export default function RegisterPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [emailConfirmationSent, setEmailConfirmationSent] = useState(false);
 
   // Live username validation state
   const [usernameValid, setUsernameValid] = useState<boolean | null>(null);
   const usernameRegex = /^[a-z0-9_]{3,30}$/;
+
+  // Live confirm-password match indicator
+  const confirmPasswordMatch: boolean | null =
+    confirmPassword.length === 0
+      ? null
+      : password === confirmPassword;
 
   // Password strength
   const getPasswordStrength = (
@@ -58,7 +66,6 @@ export default function RegisterPage() {
   const passwordStrength = getPasswordStrength(password);
 
   const handleUsernameChange = (e: ChangeEvent<HTMLInputElement>) => {
-    // Force lowercase and strip invalid chars on the fly
     const raw = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "");
     setUsername(raw);
     if (error) clearError();
@@ -73,9 +80,14 @@ export default function RegisterPage() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const result = await signUp({ email, password, username, fullName });
+    const result = await signUp({
+      email,
+      password,
+      confirmPassword,
+      username,
+      fullName,
+    });
 
-    // If email confirmation is required
     if (result && "confirmEmail" in result && result.confirmEmail) {
       setEmailConfirmationSent(true);
     }
@@ -187,7 +199,6 @@ export default function RegisterPage() {
                       : "border-red-500/30 focus:border-red-500/50 focus:ring-red-500/20"
                 }`}
               />
-              {/* Validation icon */}
               {usernameValid !== null && (
                 <div className="absolute right-4 top-1/2 -translate-y-1/2">
                   {usernameValid ? (
@@ -198,7 +209,6 @@ export default function RegisterPage() {
                 </div>
               )}
             </div>
-            {/* Username hint */}
             <div className="mt-2 flex items-center gap-1.5">
               <Info className="h-3 w-3 text-white/20" />
               <p className="text-[11px] text-white/25">
@@ -287,10 +297,76 @@ export default function RegisterPage() {
             )}
           </div>
 
+          {/* ── NEW: Confirm Password ── */}
+          <div className="group">
+            <label
+              htmlFor="confirmPassword"
+              className="mb-2 block text-xs font-semibold uppercase tracking-wider text-white/40"
+            >
+              Confirm Password
+            </label>
+            <div className="relative">
+              <Lock className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/30 transition-colors group-focus-within:text-purple-400" />
+              <input
+                id="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  if (error) clearError();
+                }}
+                placeholder="••••••••"
+                autoComplete="new-password"
+                required
+                minLength={6}
+                className={`w-full rounded-2xl border bg-white/[0.05] py-3.5 pl-12 pr-20 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:bg-white/[0.08] focus:ring-2 ${
+                  confirmPasswordMatch === null
+                    ? "border-white/10 focus:border-purple-500/50 focus:ring-purple-500/20"
+                    : confirmPasswordMatch
+                      ? "border-emerald-500/30 focus:border-emerald-500/50 focus:ring-emerald-500/20"
+                      : "border-red-500/30 focus:border-red-500/50 focus:ring-red-500/20"
+                }`}
+              />
+              {/* Match indicator icon + toggle visibility */}
+              <div className="absolute right-4 top-1/2 flex -translate-y-1/2 items-center gap-2">
+                {confirmPasswordMatch !== null && (
+                  confirmPasswordMatch ? (
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                  ) : (
+                    <AlertCircle className="h-4 w-4 text-red-400" />
+                  )
+                )}
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="text-white/30 transition-colors hover:text-white/60"
+                  tabIndex={-1}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Mismatch hint text */}
+            {confirmPasswordMatch === false && (
+              <p className="mt-2 text-xs text-red-400/80">
+                Passwords do not match
+              </p>
+            )}
+          </div>
+
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={loading || usernameValid === false}
+            disabled={
+              loading ||
+              usernameValid === false ||
+              confirmPasswordMatch === false
+            }
             className="group relative mt-2 w-full overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-600 bg-[length:200%_100%] py-3.5 text-sm font-semibold text-white shadow-lg shadow-purple-500/25 transition-all duration-500 hover:bg-[position:100%_0] hover:shadow-xl hover:shadow-purple-500/30 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:ring-offset-2 focus:ring-offset-transparent disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? (
