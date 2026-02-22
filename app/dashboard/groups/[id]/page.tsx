@@ -110,11 +110,11 @@ export default function GroupDetailsPage() {
   const activeToken =
     localToken || (g.group as any)?.invite_token || null;
 
-  const shareUrl = origin
+    const shareUrl = origin
     ? activeToken
       ? `${origin}/join?id=${g.group.id}&token=${activeToken}`
       : `${origin}/join?id=${g.group.id}`
-    : "";
+    : "https://fairshare.app"; // 👈 السر هنا! أوعى تسيبها "" (نص فاضي أبداً)
 
   /*
    * ════════════════════════════════════════════════
