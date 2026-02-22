@@ -12,6 +12,7 @@ import {
   UserPlus,
   Clock,
   Sparkles,
+  AtSign,
 } from "lucide-react";
 import type { SearchResultUser } from "@/types/friend";
 
@@ -30,6 +31,49 @@ interface AddFriendSearchProps {
   isOutgoingPending: (userId: string) => boolean;
   getOutgoingRequestId: (userId: string) => string | null;
   onClearSearch: () => void;
+}
+
+// ==========================================
+// ⚙️ LOGIC
+// ==========================================
+
+/**
+ * Safely resolve a display name from Supabase profile fields.
+ * Handles null, undefined, and empty-string cases.
+ */
+function resolveDisplayName(user: SearchResultUser): string {
+  if (user.display_name && user.display_name.trim().length > 0) {
+    return user.display_name.trim();
+  }
+  if (user.full_name && user.full_name.trim().length > 0) {
+    return user.full_name.trim();
+  }
+  if (user.username && user.username.trim().length > 0) {
+    return user.username.trim();
+  }
+  return "Unknown User";
+}
+
+function resolveUsername(user: SearchResultUser): string {
+  if (user.username && user.username.trim().length > 0) {
+    return user.username.trim();
+  }
+  return "unknown";
+}
+
+const CARD_ACCENTS = [
+  "hover:border-indigo-200 hover:shadow-indigo-100/40",
+  "hover:border-emerald-200 hover:shadow-emerald-100/40",
+  "hover:border-amber-200 hover:shadow-amber-100/40",
+  "hover:border-rose-200 hover:shadow-rose-100/40",
+  "hover:border-purple-200 hover:shadow-purple-100/40",
+  "hover:border-cyan-200 hover:shadow-cyan-100/40",
+  "hover:border-pink-200 hover:shadow-pink-100/40",
+  "hover:border-blue-200 hover:shadow-blue-100/40",
+];
+
+function getCardAccent(index: number): string {
+  return CARD_ACCENTS[index % CARD_ACCENTS.length];
 }
 
 // ==========================================
@@ -59,7 +103,7 @@ export function AddFriendSearch({
       {/* Header */}
       <div className="relative border-b border-gray-100 px-6 py-5">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-md shadow-indigo-500/20">
             <UserPlus className="h-4 w-4 text-white" />
           </div>
           <div>
@@ -109,62 +153,114 @@ export function AddFriendSearch({
                 <Search className="h-5 w-5 text-gray-300" />
               </div>
               <p className="text-sm font-medium text-gray-500">No users found</p>
-              <p className="mt-0.5 text-xs text-gray-400">Try a different username</p>
+              <p className="mt-0.5 text-xs text-gray-400">
+                Try a different username
+              </p>
             </div>
           ) : (
-            <div className="grid gap-2 pt-2 sm:grid-cols-2">
-              {searchResults.map((user) => {
+            <div className="space-y-2 pt-3">
+              {/* Results Count */}
+              <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                {searchResults.length} result{searchResults.length !== 1 && "s"}
+              </p>
+
+              {searchResults.map((user, index) => {
                 const isPending = isOutgoingPending(user.id);
                 const outgoingId = getOutgoingRequestId(user.id);
                 const isSending = sendingToId === user.id;
-                const isCancelling = outgoingId ? cancellingId === outgoingId : false;
-                
-                // 🛠️ تأكد من سحب الاسم الصحيح مع Fallback
-                const finalDisplayName = user.display_name || user.full_name || user.username || "User";
-                const finalUsername = user.username || "unknown";
+                const isCancelling = outgoingId
+                  ? cancellingId === outgoingId
+                  : false;
+
+                const displayName = resolveDisplayName(user);
+                const username = resolveUsername(user);
+                const cardAccent = getCardAccent(index);
 
                 return (
                   <div
                     key={user.id}
-                    className="group relative flex items-center gap-3 rounded-2xl border border-gray-100 bg-gradient-to-br from-white to-gray-50/50 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-100/40"
+                    className={`group relative flex items-center gap-3.5 rounded-2xl border border-gray-100 bg-white p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${cardAccent}`}
                   >
-                    <Link href={`/dashboard/profile/${user.id}`} className="flex-shrink-0">
-                      <Avatar src={user.avatar_url} name={finalDisplayName} size="md" />
+                    {/* Avatar with Profile Link */}
+                    <Link
+                      href={`/dashboard/profile/${user.id}`}
+                      className="relative flex-shrink-0 transition-transform duration-200 group-hover:scale-105"
+                    >
+                      <Avatar
+                        src={user.avatar_url}
+                        name={displayName}
+                        size="md"
+                      />
                     </Link>
 
-                    {/* 📍 هنا عرض الاسم واليوزر نيم */}
+                    {/* User Info */}
                     <div className="min-w-0 flex-1">
+                      {/* Display Name — always visible */}
                       <Link
                         href={`/dashboard/profile/${user.id}`}
-                        className="block truncate text-sm font-bold text-gray-900 transition-colors hover:text-indigo-600"
+                        className="block truncate text-sm font-bold text-gray-900 transition-colors group-hover:text-indigo-600"
                       >
-                        {finalDisplayName}
+                        {displayName}
                       </Link>
-                      <p className="truncate text-xs font-medium text-gray-500">
-                        @{finalUsername}
-                      </p>
+
+                      {/* Username — always visible with @ prefix */}
+                      <div className="mt-0.5 flex items-center gap-1">
+                        <AtSign className="h-3 w-3 flex-shrink-0 text-gray-300" />
+                        <p className="truncate text-xs font-medium text-gray-400">
+                          {username}
+                        </p>
+                      </div>
                     </div>
 
-                    {/* Add / Cancel Button */}
-                    {isPending ? (
-                      <button
-                        onClick={() => outgoingId && onCancelRequest(outgoingId)}
-                        disabled={isCancelling}
-                        className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        {isCancelling ? <Spinner className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
-                        {isCancelling ? "…" : "Pending"}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => onSendRequest(user.username, user.id)}
-                        disabled={isSending}
-                        className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-all duration-200 hover:shadow-md hover:shadow-indigo-200 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        {isSending ? <Spinner className="h-3 w-3" /> : <UserPlus className="h-3 w-3" />}
-                        {isSending ? "…" : "Add"}
-                      </button>
-                    )}
+                    {/* Action Button — Add / Pending+Cancel */}
+                    <div className="flex-shrink-0">
+                      {isPending ? (
+                        <button
+                          onClick={() =>
+                            outgoingId && onCancelRequest(outgoingId)
+                          }
+                          disabled={isCancelling}
+                          className="group/btn inline-flex items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2 text-xs font-semibold text-amber-700 transition-all duration-200 hover:border-red-300 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {isCancelling ? (
+                            <>
+                              <Spinner className="h-3 w-3" />
+                              <span>Cancelling</span>
+                            </>
+                          ) : (
+                            <>
+                              <Clock className="h-3 w-3" />
+                              <span className="group-hover/btn:hidden">
+                                Pending
+                              </span>
+                              <span className="hidden group-hover/btn:inline">
+                                Cancel
+                              </span>
+                            </>
+                          )}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() =>
+                            onSendRequest(username, user.id)
+                          }
+                          disabled={isSending}
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-all duration-200 hover:shadow-md hover:shadow-indigo-200/50 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {isSending ? (
+                            <>
+                              <Spinner className="h-3 w-3" />
+                              <span>Sending</span>
+                            </>
+                          ) : (
+                            <>
+                              <UserPlus className="h-3 w-3" />
+                              <span>Add Friend</span>
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })}
