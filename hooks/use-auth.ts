@@ -106,7 +106,7 @@ export function useAuth() {
       setError(null);
 
       try {
-        // ── Validation ──────────────────────────────────────────
+        // ── Validation ──
 
         if (!fullName.trim()) {
           setError({ message: "Full name is required.", field: "full_name" });
@@ -156,7 +156,7 @@ export function useAuth() {
           return;
         }
 
-        // ── NEW: Confirm Password validation ──
+        // ── Confirm Password check ──
         if (password !== confirmPassword) {
           setError({
             message: "Passwords do not match.",
@@ -239,7 +239,7 @@ export function useAuth() {
 
         console.log("PROFILE INSERT PAYLOAD:", profilePayload);
 
-        // ── استخدمنا update لأن الـ Trigger في قاعدة البيانات بيكريت البروفايل تلقائياً ──
+        // ──  ──
 const { error: profileError } = await supabase
 .from("profiles")
 .update({
@@ -248,23 +248,16 @@ const { error: profileError } = await supabase
   display_name: fullName.trim(),
   is_public: true,
 })
-.eq("id", authData.user.id); // بنحدد له البروفايل بتاع المستخدم الجديد بالظبط
+.eq("id", authData.user.id); //user ID from auth response
 
         if (profileError) {
-          // ── ENHANCED DEBUG LOGGING ──
           console.error("PROFILE INSERT ERROR DETAILS:", profileError);
           console.error("Error code:", profileError.code);
           console.error("Error message:", profileError.message);
           console.error("Error details:", profileError.details);
           console.error("Error hint:", profileError.hint);
-          console.error(
-            "Auth user ID used:",
-            authData.user.id
-          );
-          console.error(
-            "Auth session present:",
-            !!authData.session
-          );
+          console.error("Auth user ID used:", authData.user.id);
+          console.error("Auth session present:", !!authData.session);
 
           setError({
             message: `Account created but profile setup failed: ${profileError.message} (Code: ${profileError.code}). Check browser console for full details.`,
@@ -274,10 +267,7 @@ const { error: profileError } = await supabase
           return;
         }
 
-        console.log(
-          "PROFILE INSERT SUCCESS for user:",
-          authData.user.id
-        );
+        console.log("PROFILE INSERT SUCCESS for user:", authData.user.id);
 
         // ── Success: redirect ──
         if (authData.session) {
@@ -288,7 +278,7 @@ const { error: profileError } = await supabase
           return { confirmEmail: true };
         }
       } catch (err) {
-        console.error("Sign up unexpected error:", err);
+        console.error("Sign up error:", err);
         setError({
           message: "An unexpected error occurred. Please try again.",
           field: "general",

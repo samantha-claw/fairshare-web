@@ -36,9 +36,7 @@ export default function RegisterPage() {
 
   // Live confirm-password match indicator
   const confirmPasswordMatch: boolean | null =
-    confirmPassword.length === 0
-      ? null
-      : password === confirmPassword;
+    confirmPassword.length === 0 ? null : password === confirmPassword;
 
   // Password strength
   const getPasswordStrength = (
@@ -88,6 +86,7 @@ export default function RegisterPage() {
       fullName,
     });
 
+    // If email confirmation is required
     if (result && "confirmEmail" in result && result.confirmEmail) {
       setEmailConfirmationSent(true);
     }
@@ -199,6 +198,7 @@ export default function RegisterPage() {
                       : "border-red-500/30 focus:border-red-500/50 focus:ring-red-500/20"
                 }`}
               />
+              {/* Validation icon */}
               {usernameValid !== null && (
                 <div className="absolute right-4 top-1/2 -translate-y-1/2">
                   {usernameValid ? (
@@ -209,6 +209,7 @@ export default function RegisterPage() {
                 </div>
               )}
             </div>
+            {/* Username hint */}
             <div className="mt-2 flex items-center gap-1.5">
               <Info className="h-3 w-3 text-white/20" />
               <p className="text-[11px] text-white/25">
@@ -297,7 +298,7 @@ export default function RegisterPage() {
             )}
           </div>
 
-          {/* ── NEW: Confirm Password ── */}
+          {/* ── Confirm Password ── */}
           <div className="group">
             <label
               htmlFor="confirmPassword"
@@ -327,15 +328,13 @@ export default function RegisterPage() {
                       : "border-red-500/30 focus:border-red-500/50 focus:ring-red-500/20"
                 }`}
               />
-              {/* Match indicator icon + toggle visibility */}
               <div className="absolute right-4 top-1/2 flex -translate-y-1/2 items-center gap-2">
-                {confirmPasswordMatch !== null && (
-                  confirmPasswordMatch ? (
+                {confirmPasswordMatch !== null &&
+                  (confirmPasswordMatch ? (
                     <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                   ) : (
                     <AlertCircle className="h-4 w-4 text-red-400" />
-                  )
-                )}
+                  ))}
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -351,7 +350,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Mismatch hint text */}
+            {/* Mismatch hint */}
             {confirmPasswordMatch === false && (
               <p className="mt-2 text-xs text-red-400/80">
                 Passwords do not match
