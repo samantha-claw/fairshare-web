@@ -4,7 +4,6 @@
 // 📦 IMPORTS
 // ==========================================
 import { useProfileEdit } from "@/hooks/use-profile-edit";
-import { Avatar } from "@/components/ui/avatar";
 import { Spinner } from "@/components/ui/spinner";
 import {
   User,
@@ -189,7 +188,7 @@ function EditSkeleton() {
       <div className="mb-8 h-6 w-40 rounded-lg bg-gray-200" />
       <div className="rounded-3xl border border-gray-100 bg-white p-8 shadow-sm">
         <div className="mb-8 flex justify-center">
-          <div className="h-24 w-24 rounded-full bg-gray-200" />
+          <div className="h-32 w-32 rounded-full bg-gray-200" />
         </div>
         <div className="space-y-6">
           <div className="h-12 rounded-2xl bg-gray-100" />
@@ -204,6 +203,16 @@ function EditSkeleton() {
 }
 
 // ==========================================
+// 🔧 HELPER — Fallback avatar URL
+// ==========================================
+
+function getFallbackAvatar(name: string): string {
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(
+    name
+  )}&background=e0e7ff&color=4338ca&bold=true&size=256`;
+}
+
+// ==========================================
 // 🎨 UI RENDER — PAGE
 // ==========================================
 
@@ -214,6 +223,12 @@ export default function EditProfilePage() {
 
   const displayName =
     e.formData.display_name || e.formData.full_name || e.formData.username || "User";
+
+  // Resolve the avatar source: use provided URL or fallback
+  const avatarSrc =
+    e.formData.avatar_url.trim().length > 0
+      ? e.formData.avatar_url
+      : getFallbackAvatar(displayName);
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
@@ -233,7 +248,7 @@ export default function EditProfilePage() {
         <div className="absolute -bottom-16 -left-16 h-40 w-40 rounded-full bg-gradient-to-tr from-blue-100/30 to-cyan-100/20 blur-2xl" />
 
         {/* Header Banner */}
-        <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 px-8 pb-16 pt-8">
+        <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 px-8 pb-20 pt-8">
           {/* Decorative */}
           <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
           <div className="absolute bottom-4 left-1/4 h-16 w-16 rounded-full bg-purple-400/15 blur-lg" />
@@ -251,10 +266,18 @@ export default function EditProfilePage() {
           </div>
         </div>
 
-        {/* Avatar Preview (overlapping banner) */}
+        {/* ── LARGER Avatar Preview (static display, overlapping banner) ── */}
         <div className="relative flex justify-center">
-          <div className="-mt-12 rounded-full bg-white p-1.5 shadow-xl">
-            <Avatar src={e.formData.avatar_url} name={displayName} size="lg" />
+          <div className="-mt-16 rounded-full bg-white p-2 shadow-xl">
+            <img
+              src={avatarSrc}
+              alt={displayName}
+              className="h-32 w-32 rounded-full object-cover"
+              onError={(ev) => {
+                (ev.target as HTMLImageElement).src =
+                  getFallbackAvatar(displayName);
+              }}
+            />
           </div>
         </div>
 
@@ -318,13 +341,13 @@ export default function EditProfilePage() {
               maxLength={100}
             />
 
-            {/* Avatar URL */}
+            {/* Avatar URL — Explicit text input */}
             <InputField
               label="Avatar URL"
               icon={Image}
               value={e.formData.avatar_url}
               onChange={(v) => e.updateField("avatar_url", v)}
-              placeholder="https://example.com/photo.jpg"
+              placeholder="Paste a direct link to your profile picture"
               error={e.errors.avatar_url}
               hint="Paste a direct link to your profile picture."
               type="url"
@@ -428,9 +451,8 @@ export default function EditProfilePage() {
                   alt="Preview"
                   className="h-16 w-16 rounded-full object-cover ring-2 ring-white shadow-md"
                   onError={(ev) => {
-                    (ev.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                      displayName
-                    )}&background=e0e7ff&color=4338ca&bold=true`;
+                    (ev.target as HTMLImageElement).src =
+                      getFallbackAvatar(displayName);
                   }}
                 />
                 <p className="mt-1 text-[10px] text-gray-400">Large</p>
@@ -441,9 +463,8 @@ export default function EditProfilePage() {
                   alt="Preview"
                   className="h-10 w-10 rounded-full object-cover ring-2 ring-white shadow-sm"
                   onError={(ev) => {
-                    (ev.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                      displayName
-                    )}&background=e0e7ff&color=4338ca&bold=true`;
+                    (ev.target as HTMLImageElement).src =
+                      getFallbackAvatar(displayName);
                   }}
                 />
                 <p className="mt-1 text-[10px] text-gray-400">Med</p>
@@ -454,9 +475,8 @@ export default function EditProfilePage() {
                   alt="Preview"
                   className="h-8 w-8 rounded-full object-cover ring-1 ring-white shadow-sm"
                   onError={(ev) => {
-                    (ev.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                      displayName
-                    )}&background=e0e7ff&color=4338ca&bold=true`;
+                    (ev.target as HTMLImageElement).src =
+                      getFallbackAvatar(displayName);
                   }}
                 />
                 <p className="mt-1 text-[10px] text-gray-400">Sm</p>
@@ -471,9 +491,8 @@ export default function EditProfilePage() {
                   alt="Preview"
                   className="h-10 w-10 rounded-full object-cover ring-1 ring-gray-200"
                   onError={(ev) => {
-                    (ev.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                      displayName
-                    )}&background=e0e7ff&color=4338ca&bold=true`;
+                    (ev.target as HTMLImageElement).src =
+                      getFallbackAvatar(displayName);
                   }}
                 />
                 <div>
