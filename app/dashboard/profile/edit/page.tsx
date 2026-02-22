@@ -18,6 +18,8 @@ import {
   AlertCircle,
   Sparkles,
   Shield,
+  Camera,
+  Trash2,
 } from "lucide-react";
 
 // ==========================================
@@ -194,7 +196,6 @@ function EditSkeleton() {
           <div className="h-12 rounded-2xl bg-gray-100" />
           <div className="h-12 rounded-2xl bg-gray-100" />
           <div className="h-12 rounded-2xl bg-gray-100" />
-          <div className="h-12 rounded-2xl bg-gray-100" />
           <div className="h-24 rounded-2xl bg-gray-100" />
         </div>
       </div>
@@ -224,11 +225,17 @@ export default function EditProfilePage() {
   const displayName =
     e.formData.display_name || e.formData.full_name || e.formData.username || "User";
 
-  // Resolve the avatar source: use provided URL or fallback
-  const avatarSrc =
-    e.formData.avatar_url.trim().length > 0
+  // Resolve the avatar source: local preview > saved URL > fallback
+  const resolvedAvatarSrc = e.avatarPreviewUrl
+    ? e.avatarPreviewUrl
+    : e.formData.avatar_url.trim().length > 0
       ? e.formData.avatar_url
       : getFallbackAvatar(displayName);
+
+  // Determine if user has a photo (either a pending file or a saved URL)
+  const hasPhoto =
+    e.avatarFile !== null ||
+    (!e.avatarRemoved && e.formData.avatar_url.trim().length > 0);
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
@@ -266,19 +273,71 @@ export default function EditProfilePage() {
           </div>
         </div>
 
-        {/* ── LARGER Avatar Preview (static display, overlapping banner) ── */}
-        <div className="relative flex justify-center">
-          <div className="-mt-16 rounded-full bg-white p-2 shadow-xl">
+        {/* ── Clickable Avatar with Camera Overlay ── */}
+        <div className="relative flex flex-col items-center">
+          {/* Hidden file input */}
+          <input
+            ref={e.fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(ev) => {
+              const file = ev.target.files?.[0] ?? null;
+              if (file) e.handleAvatarSelect(file);
+            }}
+          />
+
+          <button
+            type="button"
+            onClick={e.triggerFileInput}
+            className="group -mt-16 relative rounded-full bg-white p-2 shadow-xl transition-all duration-200 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-indigo-200"
+            aria-label="Change profile photo"
+          >
             <img
-              src={avatarSrc}
+              src={resolvedAvatarSrc}
               alt={displayName}
-              className="h-32 w-32 rounded-full object-cover"
+              className="h-32 w-32 rounded-full object-cover transition-all duration-200 group-hover:brightness-75"
               onError={(ev) => {
                 (ev.target as HTMLImageElement).src =
                   getFallbackAvatar(displayName);
               }}
             />
+            {/* Camera overlay */}
+            <div className="absolute inset-2 flex items-center justify-center rounded-full bg-black/0 transition-all duration-200 group-hover:bg-black/20">
+              <Camera className="h-8 w-8 text-white opacity-0 drop-shadow-lg transition-all duration-200 group-hover:opacity-100" />
+            </div>
+          </button>
+
+          {/* Change / Remove buttons */}
+          <div className="mt-3 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={e.triggerFileInput}
+              className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-indigo-600 transition-all hover:bg-indigo-50"
+            >
+              <Camera className="h-3.5 w-3.5" />
+              Change Photo
+            </button>
+
+            {hasPhoto && (
+              <button
+                type="button"
+                onClick={e.handleAvatarRemove}
+                className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-rose-500 transition-all hover:bg-rose-50"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Remove Photo
+              </button>
+            )}
           </div>
+
+          {/* Avatar error */}
+          {e.errors.avatar_url && (
+            <p className="mt-2 flex items-center gap-1 text-xs font-medium text-rose-600">
+              <AlertCircle className="h-3 w-3" />
+              {e.errors.avatar_url}
+            </p>
+          )}
         </div>
 
         {/* Form */}
@@ -339,18 +398,6 @@ export default function EditProfilePage() {
               placeholder="Your full name"
               error={e.errors.full_name}
               maxLength={100}
-            />
-
-            {/* Avatar URL — Explicit text input */}
-            <InputField
-              label="Avatar URL"
-              icon={Image}
-              value={e.formData.avatar_url}
-              onChange={(v) => e.updateField("avatar_url", v)}
-              placeholder="Paste a direct link to your profile picture"
-              error={e.errors.avatar_url}
-              hint="Paste a direct link to your profile picture."
-              type="url"
             />
 
             {/* Bio */}
@@ -431,83 +478,84 @@ export default function EditProfilePage() {
       </div>
 
       {/* ── Avatar Preview Card ──────────────────── */}
-      {e.formData.avatar_url.trim().length > 0 && (
-        <div className="mt-6 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-          <div className="mb-3 flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50">
-              <Image className="h-3.5 w-3.5 text-indigo-600" />
-            </div>
-            <h3 className="text-sm font-bold text-gray-900">
-              Avatar Preview
-            </h3>
-          </div>
-
-          <div className="flex items-center gap-4 rounded-2xl bg-gray-50/50 p-4">
-            {/* Multiple Sizes */}
-            <div className="flex items-end gap-3">
-              <div className="text-center">
-                <img
-                  src={e.formData.avatar_url}
-                  alt="Preview"
-                  className="h-16 w-16 rounded-full object-cover ring-2 ring-white shadow-md"
-                  onError={(ev) => {
-                    (ev.target as HTMLImageElement).src =
-                      getFallbackAvatar(displayName);
-                  }}
-                />
-                <p className="mt-1 text-[10px] text-gray-400">Large</p>
+      {(e.avatarPreviewUrl || e.formData.avatar_url.trim().length > 0) &&
+        !e.avatarRemoved && (
+          <div className="mt-6 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+            <div className="mb-3 flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50">
+                <Image className="h-3.5 w-3.5 text-indigo-600" />
               </div>
-              <div className="text-center">
-                <img
-                  src={e.formData.avatar_url}
-                  alt="Preview"
-                  className="h-10 w-10 rounded-full object-cover ring-2 ring-white shadow-sm"
-                  onError={(ev) => {
-                    (ev.target as HTMLImageElement).src =
-                      getFallbackAvatar(displayName);
-                  }}
-                />
-                <p className="mt-1 text-[10px] text-gray-400">Med</p>
-              </div>
-              <div className="text-center">
-                <img
-                  src={e.formData.avatar_url}
-                  alt="Preview"
-                  className="h-8 w-8 rounded-full object-cover ring-1 ring-white shadow-sm"
-                  onError={(ev) => {
-                    (ev.target as HTMLImageElement).src =
-                      getFallbackAvatar(displayName);
-                  }}
-                />
-                <p className="mt-1 text-[10px] text-gray-400">Sm</p>
-              </div>
+              <h3 className="text-sm font-bold text-gray-900">
+                Avatar Preview
+              </h3>
             </div>
 
-            {/* Profile Preview */}
-            <div className="ml-auto rounded-2xl border border-gray-100 bg-white p-3">
-              <div className="flex items-center gap-2.5">
-                <img
-                  src={e.formData.avatar_url}
-                  alt="Preview"
-                  className="h-10 w-10 rounded-full object-cover ring-1 ring-gray-200"
-                  onError={(ev) => {
-                    (ev.target as HTMLImageElement).src =
-                      getFallbackAvatar(displayName);
-                  }}
-                />
-                <div>
-                  <p className="text-sm font-bold text-gray-900">
-                    {e.formData.display_name || "Display Name"}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    @{e.formData.username || "username"}
-                  </p>
+            <div className="flex items-center gap-4 rounded-2xl bg-gray-50/50 p-4">
+              {/* Multiple Sizes */}
+              <div className="flex items-end gap-3">
+                <div className="text-center">
+                  <img
+                    src={resolvedAvatarSrc}
+                    alt="Preview"
+                    className="h-16 w-16 rounded-full object-cover ring-2 ring-white shadow-md"
+                    onError={(ev) => {
+                      (ev.target as HTMLImageElement).src =
+                        getFallbackAvatar(displayName);
+                    }}
+                  />
+                  <p className="mt-1 text-[10px] text-gray-400">Large</p>
+                </div>
+                <div className="text-center">
+                  <img
+                    src={resolvedAvatarSrc}
+                    alt="Preview"
+                    className="h-10 w-10 rounded-full object-cover ring-2 ring-white shadow-sm"
+                    onError={(ev) => {
+                      (ev.target as HTMLImageElement).src =
+                        getFallbackAvatar(displayName);
+                    }}
+                  />
+                  <p className="mt-1 text-[10px] text-gray-400">Med</p>
+                </div>
+                <div className="text-center">
+                  <img
+                    src={resolvedAvatarSrc}
+                    alt="Preview"
+                    className="h-8 w-8 rounded-full object-cover ring-1 ring-white shadow-sm"
+                    onError={(ev) => {
+                      (ev.target as HTMLImageElement).src =
+                        getFallbackAvatar(displayName);
+                    }}
+                  />
+                  <p className="mt-1 text-[10px] text-gray-400">Sm</p>
+                </div>
+              </div>
+
+              {/* Profile Preview */}
+              <div className="ml-auto rounded-2xl border border-gray-100 bg-white p-3">
+                <div className="flex items-center gap-2.5">
+                  <img
+                    src={resolvedAvatarSrc}
+                    alt="Preview"
+                    className="h-10 w-10 rounded-full object-cover ring-1 ring-gray-200"
+                    onError={(ev) => {
+                      (ev.target as HTMLImageElement).src =
+                        getFallbackAvatar(displayName);
+                    }}
+                  />
+                  <div>
+                    <p className="text-sm font-bold text-gray-900">
+                      {e.formData.display_name || "Display Name"}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      @{e.formData.username || "username"}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 }

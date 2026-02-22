@@ -3,7 +3,7 @@
 // ==========================================
 // 📦 IMPORTS
 // ==========================================
-import { useEffect, useState, useCallback, type FormEvent } from "react";
+import { useEffect, useState, useCallback, useRef, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -59,6 +59,12 @@ export function useProfileEdit() {
     bio: "",
   });
 
+  /* ── Avatar File State ───────────────────────────── */
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
+  const [avatarRemoved, setAvatarRemoved] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   /* ── Derived ─────────────────────────────────────── */
 
   const hasChanges =
@@ -66,7 +72,9 @@ export function useProfileEdit() {
     formData.username !== originalData.username ||
     formData.full_name !== originalData.full_name ||
     formData.avatar_url !== originalData.avatar_url ||
-    formData.bio !== originalData.bio;
+    formData.bio !== originalData.bio ||
+    avatarFile !== null ||
+    avatarRemoved;
 
   /* ── Fetch Current Profile ───────────────────────── */
 
@@ -114,6 +122,16 @@ export function useProfileEdit() {
     fetchProfile();
   }, [fetchProfile]);
 
+  /* ── Cleanup object URL on unmount or change ─────── */
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreviewUrl) {
+        URL.revokeObjectURL(avatarPreviewUrl);
+      }
+    };
+  }, [avatarPreviewUrl]);
+
   /* ── Field Update ────────────────────────────────── */
 
   function updateField(field: keyof ProfileFormData, value: string) {
@@ -130,6 +148,92 @@ export function useProfileEdit() {
 
     // Clear success on any change
     if (saveSuccess) setSaveSuccess(false);
+  }
+
+  /* ── Avatar File Selection ───────────────────────── */
+
+  function handleAvatarSelect(file: File | null) {
+    // Revoke previous preview URL
+    if (avatarPreviewUrl) {
+      URL.revokeObjectURL(avatarPreviewUrl);
+      setAvatarPreviewUrl(null);
+    }
+
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        setErrors((prev) => ({
+          ...prev,
+          avatar_url: "Please select a valid image file.",
+        }));
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors((prev) => ({
+          ...prev,
+          avatar_url: "Image must be under 5MB.",
+        }));
+        return;
+      }
+
+      setAvatarFile(file);
+      setAvatarRemoved(false);
+      const previewUrl = URL.createObjectURL(file);
+      setAvatarPreviewUrl(previewUrl);
+
+      // Clear any avatar errors
+      if (errors.avatar_url) {
+        setErrors((prev) => {
+          const next = { ...prev };
+          delete next.avatar_url;
+          return next;
+        });
+      }
+    } else {
+      setAvatarFile(null);
+    }
+
+    // Clear success on any change
+    if (saveSuccess) setSaveSuccess(false);
+  }
+
+  /* ── Avatar Remove ───────────────────────────────── */
+
+  function handleAvatarRemove() {
+    // Revoke previous preview URL
+    if (avatarPreviewUrl) {
+      URL.revokeObjectURL(avatarPreviewUrl);
+      setAvatarPreviewUrl(null);
+    }
+
+    setAvatarFile(null);
+    setAvatarRemoved(true);
+    setFormData((prev) => ({ ...prev, avatar_url: "" }));
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
+    // Clear any avatar errors
+    if (errors.avatar_url) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next.avatar_url;
+        return next;
+      });
+    }
+
+    // Clear success on any change
+    if (saveSuccess) setSaveSuccess(false);
+  }
+
+  /* ── Trigger File Input ──────────────────────────── */
+
+  function triggerFileInput() {
+    fileInputRef.current?.click();
   }
 
   /* ── Validation ──────────────────────────────────── */
@@ -165,12 +269,6 @@ export function useProfileEdit() {
       newErrors.full_name = "Full name must be under 100 characters.";
     }
 
-    // Avatar URL (optional but validate format)
-    const trimmedAvatar = formData.avatar_url.trim();
-    if (trimmedAvatar && !isValidUrl(trimmedAvatar)) {
-      newErrors.avatar_url = "Please enter a valid URL.";
-    }
-
     // Bio
     if (formData.bio.trim().length > 250) {
       newErrors.bio = "Bio must be under 250 characters.";
@@ -180,12 +278,45 @@ export function useProfileEdit() {
     return Object.keys(newErrors).length === 0;
   }
 
-  function isValidUrl(url: string): boolean {
+  /* ── Upload Avatar to Supabase Storage ───────────── */
+
+  async function uploadAvatar(file: File, uid: string): Promise<string> {
+    const fileExt = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const filePath = `${uid}/avatar-${Date.now()}.${fileExt}`;
+
+    // Upload file to the 'avatars' bucket
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: true,
+      });
+
+    if (uploadError) throw uploadError;
+
+    // Get the public URL
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("avatars").getPublicUrl(filePath);
+
+    return publicUrl;
+  }
+
+  /* ── Delete Old Avatar from Storage ──────────────── */
+
+  async function deleteOldAvatar(avatarUrl: string, uid: string) {
     try {
-      new URL(url);
-      return true;
+      // Extract the file path from the URL
+      // The URL format is typically: .../storage/v1/object/public/avatars/{uid}/filename
+      const url = new URL(avatarUrl);
+      const pathParts = url.pathname.split("/avatars/");
+      if (pathParts.length > 1) {
+        const filePath = pathParts[1];
+        await supabase.storage.from("avatars").remove([filePath]);
+      }
     } catch {
-      return false;
+      // Silently fail — old avatar cleanup is best-effort
+      console.warn("Could not delete old avatar file.");
     }
   }
 
@@ -220,6 +351,23 @@ export function useProfileEdit() {
         }
       }
 
+      // Handle avatar upload / removal
+      let finalAvatarUrl = formData.avatar_url.trim();
+
+      if (avatarFile) {
+        // Upload new avatar
+        finalAvatarUrl = await uploadAvatar(avatarFile, userId);
+
+        // Delete old avatar if it existed
+        if (originalData.avatar_url.trim()) {
+          await deleteOldAvatar(originalData.avatar_url, userId);
+        }
+      } else if (avatarRemoved && originalData.avatar_url.trim()) {
+        // User removed their avatar — delete old file
+        await deleteOldAvatar(originalData.avatar_url, userId);
+        finalAvatarUrl = "";
+      }
+
       // Update profile
       const { error: updateError } = await supabase
         .from("profiles")
@@ -227,7 +375,7 @@ export function useProfileEdit() {
           display_name: formData.display_name.trim(),
           username: trimmedUsername,
           full_name: formData.full_name.trim(),
-          avatar_url: formData.avatar_url.trim(),
+          avatar_url: finalAvatarUrl,
           bio: formData.bio.trim(),
           updated_at: new Date().toISOString(),
         })
@@ -240,11 +388,23 @@ export function useProfileEdit() {
         display_name: formData.display_name.trim(),
         username: trimmedUsername,
         full_name: formData.full_name.trim(),
-        avatar_url: formData.avatar_url.trim(),
+        avatar_url: finalAvatarUrl,
         bio: formData.bio.trim(),
       };
       setOriginalData(updatedData);
       setFormData(updatedData);
+
+      // Clear avatar file state
+      if (avatarPreviewUrl) {
+        URL.revokeObjectURL(avatarPreviewUrl);
+        setAvatarPreviewUrl(null);
+      }
+      setAvatarFile(null);
+      setAvatarRemoved(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+
       setSaveSuccess(true);
 
       // Auto-clear success after delay
@@ -265,6 +425,17 @@ export function useProfileEdit() {
     setFormData({ ...originalData });
     setErrors({});
     setSaveSuccess(false);
+
+    // Reset avatar file state
+    if (avatarPreviewUrl) {
+      URL.revokeObjectURL(avatarPreviewUrl);
+      setAvatarPreviewUrl(null);
+    }
+    setAvatarFile(null);
+    setAvatarRemoved(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   }
 
   /* ── Navigation ──────────────────────────────────── */
@@ -284,10 +455,19 @@ export function useProfileEdit() {
     hasChanges,
     saveSuccess,
 
+    // Avatar
+    avatarFile,
+    avatarPreviewUrl,
+    avatarRemoved,
+    fileInputRef,
+
     // Actions
     updateField,
     handleSave,
     handleReset,
     handleCancel,
+    handleAvatarSelect,
+    handleAvatarRemove,
+    triggerFileInput,
   };
 }
