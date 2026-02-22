@@ -21,7 +21,7 @@ import {
 interface QRScannerModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onGroupScanned?: (groupId: string) => void;
+  onGroupScanned?: (groupId: string, token: string | null) => void;
 }
 
 type ScannerState =
@@ -65,7 +65,20 @@ export function QRScannerModal({
     }
   }, []);
 
-  // ── Parse scanned URL ──
+  /*
+   * ════════════════════════════════════════════════
+   * PARSE SCANNED URL
+   *
+   * Extracts BOTH `id` AND `token` from the URL
+   * to support the secure invite token system.
+   *
+   * Supported formats:
+   *   /join?id=GROUP_ID&token=INVITE_TOKEN  (secure)
+   *   /join?id=GROUP_ID                     (legacy)
+   *   /profile/USERNAME
+   *   /dashboard/profile/USERNAME
+   * ════════════════════════════════════════════════
+   */
   const handleScannedUrl = useCallback(
     (url: string) => {
       setScannedValue(url);
@@ -76,19 +89,28 @@ export function QRScannerModal({
         const pathname = parsed.pathname;
         const searchParams = parsed.searchParams;
 
-        // Case 1: Group join link → /join?id=GROUP_ID
-        if (
-          pathname === "/join" &&
-          searchParams.has("id")
-        ) {
+        // Case 1: Group join link → /join?id=GROUP_ID&token=TOKEN
+        if (pathname === "/join" && searchParams.has("id")) {
           const groupId = searchParams.get("id")!;
+          const token = searchParams.get("token"); // null if legacy link
+
+          console.log("[Scanner] Group invite:", {
+            groupId,
+            hasToken: !!token,
+          });
+
           stopScanner();
           setTimeout(() => {
             onClose();
             if (onGroupScanned) {
-              onGroupScanned(groupId);
+              // Pass both groupId and token to the callback
+              onGroupScanned(groupId, token);
             } else {
-              router.push(`/join?id=${groupId}`);
+              // Fallback: navigate with both params preserved
+              const joinUrl = token
+                ? `/join?id=${groupId}&token=${token}`
+                : `/join?id=${groupId}`;
+              router.push(joinUrl);
             }
           }, 800);
           return;

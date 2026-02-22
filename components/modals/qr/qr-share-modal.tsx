@@ -12,6 +12,8 @@ import {
   Download,
   Share2,
   Wallet,
+  RefreshCw,
+  Loader2,
 } from "lucide-react";
 
 // ==========================================
@@ -24,6 +26,8 @@ interface QRShareModalProps {
   title: string;
   subtitle?: string;
   type?: "group" | "profile";
+  isOwner?: boolean;
+  onResetToken?: () => Promise<void>;
 }
 
 // ==========================================
@@ -36,15 +40,20 @@ export function QRShareModal({
   title,
   subtitle,
   type = "group",
+  isOwner = false,
+  onResetToken,
 }: QRShareModalProps) {
   const [copied, setCopied] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   const qrRef = useRef<HTMLDivElement>(null);
 
   // ── Animate in ──
   useEffect(() => {
     if (isOpen) {
       requestAnimationFrame(() => setAnimateIn(true));
+      // Reset internal state when modal opens
+      setIsResetting(false);
     } else {
       setAnimateIn(false);
     }
@@ -116,6 +125,26 @@ export function QRShareModal({
     }
   }, [title, subtitle, value, handleCopy]);
 
+  // ── Reset invite token ──
+  const handleResetToken = useCallback(async () => {
+    if (!onResetToken) return;
+
+    const confirmed = window.confirm(
+      "Are you sure you want to reset the invite link?\n\nAll previously shared QR codes and links will stop working. Anyone who hasn't joined yet will need the new link."
+    );
+
+    if (!confirmed) return;
+
+    setIsResetting(true);
+    try {
+      await onResetToken();
+    } catch (err) {
+      console.error("Reset token error:", err);
+    } finally {
+      setIsResetting(false);
+    }
+  }, [onResetToken]);
+
   // ── Close on Escape ──
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -131,6 +160,8 @@ export function QRShareModal({
     type === "group" ? "from-indigo-600" : "from-purple-600";
   const gradientTo =
     type === "group" ? "to-blue-600" : "to-pink-600";
+
+  const showResetButton = isOwner && type === "group" && !!onResetToken;
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
@@ -151,18 +182,7 @@ export function QRShareModal({
         }`}
       >
         <div className="overflow-hidden rounded-3xl border border-white/20 bg-white shadow-2xl">
-          {/*
-           * ════════════════════════════════════════════
-           * GRADIENT HEADER
-           *
-           * FIX: Changed pb-16 → pb-12
-           * The header was extending too far down,
-           * causing the QR card (pulled up with -mt-6)
-           * to sit under a thick layer of gradient.
-           * Reducing pb gives the overlap a cleaner,
-           * shallower peek without clipping QR content.
-           * ════════════════════════════════════════════
-           */}
+          {/* ── Gradient Header ── */}
           <div
             className={`relative bg-gradient-to-br ${gradientFrom} ${gradientTo} px-6 pb-12 pt-6`}
           >
@@ -189,30 +209,7 @@ export function QRShareModal({
             </div>
           </div>
 
-          {/*
-           * ════════════════════════════════════════════
-           * QR CODE CONTAINER
-           *
-           * FIX SUMMARY (3 changes):
-           *
-           * 1. Negative margin: -mt-10 → -mt-6
-           *    The card was yanked up 2.5rem into the
-           *    header. Now it only peeks 1.5rem — enough
-           *    for elegant overlap without covering QR
-           *    modules.
-           *
-           * 2. Inner padding: p-4 → p-5
-           *    Extra 0.25rem on each side gives the QR
-           *    a wider "quiet zone" (the mandatory white
-           *    border scanners need to lock onto the
-           *    finder patterns).
-           *
-           * 3. Z-index: added relative z-10
-           *    Guarantees the white card renders ABOVE
-           *    the gradient tail, not behind it if the
-           *    browser composites layers differently.
-           * ════════════════════════════════════════════
-           */}
+          {/* ── QR Code ── */}
           <div className="relative z-10 -mt-6 px-6">
             <div
               ref={qrRef}
@@ -249,6 +246,29 @@ export function QRShareModal({
               </button>
             </div>
           </div>
+
+          {/* ── Reset Invite Link (Owner Only) ── */}
+          {showResetButton && (
+            <div className="mx-6 mt-3">
+              <button
+                onClick={handleResetToken}
+                disabled={isResetting}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 py-2.5 text-xs font-semibold text-red-600 transition-all hover:border-red-300 hover:bg-red-100 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isResetting ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Resetting…
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="h-3.5 w-3.5" />
+                    Reset Invite Link
+                  </>
+                )}
+              </button>
+            </div>
+          )}
 
           {/* ── Action Buttons ── */}
           <div className="flex gap-2 px-6 pb-6 pt-4">

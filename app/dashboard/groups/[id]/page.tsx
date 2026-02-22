@@ -3,9 +3,10 @@
 // ==========================================
 // 📦 IMPORTS
 // ==========================================
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { useGroup } from "@/hooks/use-group";
+import { createClient } from "@/lib/supabase/client";
 import { SummaryCards } from "./_components/summary-cards";
 import { MembersCard } from "./_components/members-card";
 import { BalancesCard } from "./_components/balances-card";
@@ -24,7 +25,39 @@ import { Share2, QrCode } from "lucide-react";
 // ==========================================
 export default function GroupDetailsPage() {
   const g = useGroup();
+  const supabase = createClient();
+
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
+  /*
+   * ════════════════════════════════════════════════
+   * HYDRATION-SAFE ORIGIN
+   *
+   * window.location.origin is NOT available during SSR.
+   * Using it directly in the render body causes a
+   * hydration mismatch (server="" vs client="https://…").
+   *
+   * Solution: set it inside useEffect (client-only).
+   * ════════════════════════════════════════════════
+   */
+  const [origin, setOrigin] = useState("");
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
+
+  /*
+   * ════════════════════════════════════════════════
+   * LOCAL TOKEN OVERRIDE
+   *
+   * After the owner resets the invite token via RPC,
+   * we store the new token here so the QR code and
+   * URL update INSTANTLY without a page reload.
+   *
+   * When null → we use group?.invite_token from the DB.
+   * ════════════════════════════════════════════════
+   */
+  const [localToken, setLocalToken] = useState<string | null>(null);
 
   /* ── Loading ─────────────────────────────────────────── */
   if (g.loading) {
@@ -57,11 +90,85 @@ export default function GroupDetailsPage() {
     );
   }
 
-  const currency = g.group.currency || "USD";
-  const shareUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/join?id=${g.group.id}`
-      : "";
+  const currency = g.group?.currency || "USD";
+
+  /*
+   * ════════════════════════════════════════════════
+   * SHARE URL WITH SECURE TOKEN
+   *
+   * Format: /join?id=GROUP_ID&token=INVITE_TOKEN
+   *
+   * Priority:
+   *   1. localToken  → freshly reset token (instant)
+   *   2. group.invite_token → from DB via useGroup
+   *   3. fallback → id-only URL
+   *
+   * origin is "" on first render (SSR-safe), so the
+   * URL is "" until useEffect runs — no hydration error.
+   * ════════════════════════════════════════════════
+   */
+  const activeToken =
+    localToken || (g.group as any)?.invite_token || null;
+
+  const shareUrl = origin
+    ? activeToken
+      ? `${origin}/join?id=${g.group.id}&token=${activeToken}`
+      : `${origin}/join?id=${g.group.id}`
+    : "";
+
+  /*
+   * ════════════════════════════════════════════════
+   * RESET INVITE TOKEN
+   *
+   * Calls: supabase.rpc('reset_group_invite_token', { p_group_id })
+   * Returns: new UUID token as string
+   *
+   * We store it in localToken so the QR + URL update
+   * immediately. The old QR codes become invalid.
+   * ════════════════════════════════════════════════
+   */
+  const handleResetToken = useCallback(async () => {
+    if (!g.group?.id) return;
+
+    const { data, error } = await supabase.rpc(
+      "reset_group_invite_token",
+      { p_group_id: g.group.id }
+    );
+
+    if (error) {
+      console.error("Reset token RPC error:", error);
+      throw new Error(error.message);
+    }
+
+    // RPC returns the new token (UUID string)
+    const newToken =
+      typeof data === "string" ? data : data?.token;
+
+    if (newToken) {
+      setLocalToken(newToken);
+      console.log("Invite token reset successfully:", newToken);
+    } else {
+      console.warn("RPC returned unexpected data:", data);
+      throw new Error("No token returned from reset");
+    }
+  }, [supabase, g.group?.id]);
+
+  /*
+   * ════════════════════════════════════════════════
+   * IS OWNER CHECK
+   *
+   * Compares current user ID against the group's
+   * owner_id. Uses optional chaining to prevent
+   * crashes if either value is undefined.
+   * ════════════════════════════════════════════════
+   */
+  const isCurrentUserOwner =
+    !!g.currentUser &&
+    !!g.group?.owner_id &&
+    g.currentUser === g.group.owner_id;
+
+  // Also check g.isOwner if your useGroup hook provides it
+  const isOwner = g.isOwner ?? isCurrentUserOwner;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -70,11 +177,11 @@ export default function GroupDetailsPage() {
         <div className="mx-auto flex max-w-6xl items-start justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-gray-900">
-              {g.group.name}
+              {g.group?.name}
             </h1>
             <p className="mt-1 text-sm text-gray-500">
-              {g.members.length} member{g.members.length !== 1 && "s"} ·{" "}
-              {currency}
+              {g.members?.length ?? 0} member
+              {(g.members?.length ?? 0) !== 1 ? "s" : ""} · {currency}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -141,7 +248,7 @@ export default function GroupDetailsPage() {
         <SummaryCards
           totalGroupExpenses={g.totalGroupExpenses}
           myNetBalance={g.myNetBalance}
-          pendingCount={g.pendingSettlements.length}
+          pendingCount={g.pendingSettlements?.length ?? 0}
           currency={currency}
         />
 
@@ -167,7 +274,7 @@ export default function GroupDetailsPage() {
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
-                  💸 Expenses ({g.expenses.length})
+                  💸 Expenses ({g.expenses?.length ?? 0})
                 </button>
                 <button
                   onClick={() => g.setActiveTab("activity")}
@@ -177,7 +284,7 @@ export default function GroupDetailsPage() {
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
-                  📋 Activity ({g.allActivities.length})
+                  📋 Activity ({g.allActivities?.length ?? 0})
                 </button>
               </div>
 
@@ -202,7 +309,7 @@ export default function GroupDetailsPage() {
                     expenses={g.expenses}
                     currency={currency}
                     currentUser={g.currentUser}
-                    isOwner={g.isOwner}
+                    isOwner={isOwner}
                     onEditExpense={g.openEditExpenseModal}
                     onDeleteExpense={g.handleDeleteExpense}
                   />
@@ -222,7 +329,7 @@ export default function GroupDetailsPage() {
             <MembersCard
               members={g.members}
               group={g.group}
-              isOwner={g.isOwner}
+              isOwner={isOwner}
               onOpenAddModal={g.openMemberModal}
               onRemoveMember={g.handleRemoveMember}
             />
@@ -278,7 +385,7 @@ export default function GroupDetailsPage() {
         onClose={() => g.setIsSettingsModalOpen(false)}
         group={g.group}
         members={g.members}
-        isOwner={g.isOwner}
+        isOwner={isOwner}
         canLeave={g.canLeave}
         myNetBalance={g.myNetBalance}
         deleteConfirmText={g.deleteConfirmText}
@@ -289,14 +396,18 @@ export default function GroupDetailsPage() {
         onLeaveGroup={g.handleLeaveGroup}
       />
 
-      {/* ★ QR Share Modal ★ */}
+      {/* ★ QR Share Modal (with Token + Reset) ★ */}
       <QRShareModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
         value={shareUrl}
-        title={g.group.name}
-        subtitle={`${g.members.length} member${g.members.length !== 1 ? "s" : ""} · ${currency}`}
+        title={g.group?.name ?? "Group"}
+        subtitle={`${g.members?.length ?? 0} member${
+          (g.members?.length ?? 0) !== 1 ? "s" : ""
+        } · ${currency}`}
         type="group"
+        isOwner={isOwner}
+        onResetToken={handleResetToken}
       />
     </div>
   );
