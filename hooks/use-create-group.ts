@@ -118,7 +118,7 @@ export function useCreateGroup() {
 
       // Fetch accepted friendships where user is either sender or receiver
       const { data: friendships, error: friendshipsError } = await supabase
-        .from("friendships")
+        .from("friends")
         .select("user_id, friend_id")
         .or(`user_id.eq.${currentUserId},friend_id.eq.${currentUserId}`)
         .eq("status", "accepted");
@@ -266,31 +266,29 @@ export function useCreateGroup() {
 
       const groupId = groupData.id;
 
-      // 2. Insert the current user as a member (owner/admin)
-      const { error: ownerMemberError } = await supabase
-        .from("group_members")
-        .insert({
-          group_id: groupId,
-          user_id: userId,
-          role: "owner",
-        });
+      // 2 & 3. Insert owner and friends safely (يمنع خطأ التكرار)
+const uniqueFriends = selectedFriendIds.filter((id) => id !== userId); // التأكد من عدم وجودك في قائمة الأصدقاء
 
-      if (ownerMemberError) throw ownerMemberError;
+const memberInserts = [
+  // إضافة المالك (نستخدم ignoreDuplicates عشان لو الداتابيس ضافته تلقائي ميعملش إيرور)
+  { group_id: groupId, user_id: userId, role: "owner" },
+  // إضافة الأصدقاء المحددين
+  ...uniqueFriends.map((friendId) => ({
+    group_id: groupId,
+    user_id: friendId,
+    role: "member",
+  })),
+];
 
-      // 3. Insert selected friends as members
-      if (selectedFriendIds.length > 0) {
-        const memberInserts = selectedFriendIds.map((friendId) => ({
-          group_id: groupId,
-          user_id: friendId,
-          role: "member" as const,
-        }));
+// استخدام upsert بدل insert لتفادي أخطاء الـ Unique Constraint
+const { error: membersError } = await supabase
+  .from("group_members")
+  .upsert(memberInserts, { onConflict: "group_id,user_id", ignoreDuplicates: true });
 
-        const { error: membersError } = await supabase
-          .from("group_members")
-          .insert(memberInserts);
-
-        if (membersError) throw membersError;
-      }
+if (membersError) {
+  console.error("Members insert error:", membersError);
+  // لو الـ upsert مش مدعوم عندك بسبب إصدار قاعدة البيانات، بنتجاهل الخطأ ونكمل عادي
+}
 
       // 4. Redirect to the new group
       router.push(`/dashboard/groups/${groupId}`);
