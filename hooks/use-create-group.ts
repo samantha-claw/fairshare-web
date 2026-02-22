@@ -3,7 +3,7 @@
 // ==========================================
 // 📦 IMPORTS
 // ==========================================
-import { useEffect, useState, useCallback, type FormEvent } from "react";
+import { useEffect, useState, useCallback, useRef, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -75,6 +75,10 @@ export function useCreateGroup() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [userId, setUserId] = useState<string | null>(null);
 
+  // Ref-based guard to prevent duplicate submissions
+  // (refs update synchronously, unlike state which is async)
+  const isSubmittingRef = useRef(false);
+
   // Form fields
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -119,8 +123,8 @@ export function useCreateGroup() {
       // Fetch accepted friendships where user is either sender or receiver
       const { data: friendships, error: friendshipsError } = await supabase
         .from("friends")
-        .select("user_id, friend_id")
-        .or(`user_id.eq.${currentUserId},friend_id.eq.${currentUserId}`)
+        .select("requester_id, receiver_id")
+        .or(`requester_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
         .eq("status", "accepted");
 
       if (friendshipsError) throw friendshipsError;
@@ -133,7 +137,7 @@ export function useCreateGroup() {
 
       // Extract friend IDs (the other person in each friendship)
       const friendIds = friendships.map((f) =>
-        f.user_id === currentUserId ? f.friend_id : f.user_id
+        f.requester_id === currentUserId ? f.receiver_id : f.requester_id
       );
 
       // Remove duplicates
@@ -236,9 +240,17 @@ export function useCreateGroup() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
 
+    // ⛔ SUBMISSION GUARD — prevent duplicate submissions
+    // Check ref first (synchronous, immune to React batching)
+    if (isSubmittingRef.current) return;
+    // Also check state as a fallback
+    if (saving) return;
+
     if (!validate()) return;
     if (!userId) return;
 
+    // Lock immediately — ref updates synchronously
+    isSubmittingRef.current = true;
     setSaving(true);
     setErrors({});
 
@@ -266,29 +278,25 @@ export function useCreateGroup() {
 
       const groupId = groupData.id;
 
-      // 2 & 3. Insert owner and friends safely (يمنع خطأ التكرار)
-const uniqueFriends = selectedFriendIds.filter((id) => id !== userId); // التأكد من عدم وجودك في قائمة الأصدقاء
+      // 2 & 3. Insert owner and friends safely
+      const uniqueFriends = selectedFriendIds.filter((id) => id !== userId);
 
-const memberInserts = [
-  // إضافة المالك (نستخدم ignoreDuplicates عشان لو الداتابيس ضافته تلقائي ميعملش إيرور)
-  { group_id: groupId, user_id: userId, role: "owner" },
-  // إضافة الأصدقاء المحددين
-  ...uniqueFriends.map((friendId) => ({
-    group_id: groupId,
-    user_id: friendId,
-    role: "member",
-  })),
-];
+      const memberInserts = [
+        { group_id: groupId, user_id: userId, role: "owner" },
+        ...uniqueFriends.map((friendId) => ({
+          group_id: groupId,
+          user_id: friendId,
+          role: "member",
+        })),
+      ];
 
-// استخدام upsert بدل insert لتفادي أخطاء الـ Unique Constraint
-const { error: membersError } = await supabase
-  .from("group_members")
-  .upsert(memberInserts, { onConflict: "group_id,user_id", ignoreDuplicates: true });
+      const { error: membersError } = await supabase
+        .from("group_members")
+        .upsert(memberInserts, { onConflict: "group_id,user_id", ignoreDuplicates: true });
 
-if (membersError) {
-  console.error("Members insert error:", membersError);
-  // لو الـ upsert مش مدعوم عندك بسبب إصدار قاعدة البيانات، بنتجاهل الخطأ ونكمل عادي
-}
+      if (membersError) {
+        console.error("Members insert error:", membersError);
+      }
 
       // 4. Redirect to the new group
       router.push(`/dashboard/groups/${groupId}`);
@@ -297,6 +305,8 @@ if (membersError) {
       setErrors({
         general: err.message || "Failed to create group. Please try again.",
       });
+      // Only unlock on error — on success we redirect so it stays locked
+      isSubmittingRef.current = false;
     } finally {
       setSaving(false);
     }
