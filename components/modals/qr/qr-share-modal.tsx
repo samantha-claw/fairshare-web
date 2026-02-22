@@ -13,7 +13,9 @@ import {
   Share2,
   Wallet,
   RefreshCw,
+  AlertTriangle,
   Loader2,
+  ShieldAlert,
 } from "lucide-react";
 
 // ==========================================
@@ -45,16 +47,19 @@ export function QRShareModal({
 }: QRShareModalProps) {
   const [copied, setCopied] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
-  const [isResetting, setIsResetting] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
   const qrRef = useRef<HTMLDivElement>(null);
 
   // ── Animate in ──
   useEffect(() => {
     if (isOpen) {
       requestAnimationFrame(() => setAnimateIn(true));
-      // Reset internal state when modal opens
-      setIsResetting(false);
-      setShowConfirm(false); // ✅ Reset confirmation state
+      // Reset internal states when modal opens
+      setShowResetConfirm(false);
+      setResetting(false);
+      setResetSuccess(false);
     } else {
       setAnimateIn(false);
     }
@@ -119,66 +124,46 @@ export function QRShareModal({
           url: value,
         });
       } catch {
-        // User cancelled share
+        // User cancelled
       }
     } else {
       handleCopy();
     }
   }, [title, subtitle, value, handleCopy]);
 
-  // ── Reset invite token ──
-  // استبدل handleResetToken بالكامل
-  const [showConfirm, setShowConfirm] = useState(false);
+  // ── Reset token ──
   const handleResetToken = useCallback(async () => {
-  if (!onResetToken) return;
-  setShowConfirm(true); // فقط أظهر التأكيد - بدون blocking
-}, [onResetToken]);
+    if (!onResetToken) return;
 
-const confirmReset = useCallback(async () => {
-  if (!onResetToken) return;
-  setShowConfirm(false);
-  setIsResetting(true);
-  try {
-    await onResetToken();
-  } catch (err) {
-    console.error("Reset token error:", err);
-  } finally {
-    setIsResetting(false);
-  }
-}, [onResetToken]);
+    setResetting(true);
+    try {
+      await onResetToken();
+      setResetSuccess(true);
+      setShowResetConfirm(false);
 
-
-{/* ✅ أضف هذا بعد زر Reset Invite Link مباشرة */}
-{showConfirm && (
-  <div className="mx-6 mt-2 rounded-xl border border-amber-200 bg-amber-50 p-3">
-    <p className="text-xs text-amber-800 mb-2">
-      Are you sure? All previously shared QR codes and links will stop working.
-    </p>
-    <div className="flex gap-2">
-      <button
-        onClick={() => setShowConfirm(false)}
-        className="flex-1 rounded-lg border border-gray-200 bg-white py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
-      >
-        Cancel
-      </button>
-      <button
-        onClick={confirmReset}
-        className="flex-1 rounded-lg bg-red-600 py-1.5 text-xs font-medium text-white hover:bg-red-700"
-      >
-        Yes, Reset
-      </button>
-    </div>
-  </div>
-)} 
+      // Auto-hide success after 3 seconds
+      setTimeout(() => setResetSuccess(false), 3000);
+    } catch (err) {
+      console.error("Reset token error:", err);
+    } finally {
+      setResetting(false);
+    }
+  }, [onResetToken]);
 
   // ── Close on Escape ──
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        if (showResetConfirm) {
+          setShowResetConfirm(false);
+        } else {
+          onClose();
+        }
+      }
     };
     if (isOpen) window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, showResetConfirm]);
 
   if (!isOpen) return null;
 
@@ -187,7 +172,7 @@ const confirmReset = useCallback(async () => {
   const gradientTo =
     type === "group" ? "to-blue-600" : "to-pink-600";
 
-  const showResetButton = isOwner && type === "group" && !!onResetToken;
+  const showResetButton = isOwner && type === "group" && onResetToken;
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
@@ -196,7 +181,13 @@ const confirmReset = useCallback(async () => {
         className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${
           animateIn ? "opacity-100" : "opacity-0"
         }`}
-        onClick={onClose}
+        onClick={() => {
+          if (showResetConfirm) {
+            setShowResetConfirm(false);
+          } else {
+            onClose();
+          }
+        }}
       />
 
       {/* ── Modal ── */}
@@ -241,20 +232,29 @@ const confirmReset = useCallback(async () => {
               ref={qrRef}
               className="mx-auto flex w-fit items-center justify-center rounded-2xl border-4 border-white bg-white p-5 shadow-lg"
             >
-              <QRCodeSVG 
-  value={value || "https://fairshare.app"} // 👈 حماية إضافية هنا
-  size={200} 
-  level="H" 
-  includeMargin 
-  bgColor="#ffffff" 
-  fgColor="#1e1b4b" 
-/>
-
+              <QRCodeSVG
+                value={value}
+                size={200}
+                level="H"
+                includeMargin
+                bgColor="#ffffff"
+                fgColor="#1e1b4b"
+              />
             </div>
           </div>
 
+          {/* ── Reset Success Toast ── */}
+          {resetSuccess && (
+            <div className="mx-6 mt-4 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 transition-all">
+              <Check className="h-4 w-4 shrink-0 text-emerald-600" />
+              <p className="text-xs font-medium text-emerald-700">
+                Invite link reset! Old links are now invalid.
+              </p>
+            </div>
+          )}
+
           {/* ── URL Preview ── */}
-          <div className="mx-6 mt-5">
+          <div className="mx-6 mt-4">
             <div className="flex items-center gap-2 rounded-xl bg-gray-50 px-3 py-2.5">
               <p className="flex-1 truncate text-xs text-gray-500">{value}</p>
               <button
@@ -275,25 +275,67 @@ const confirmReset = useCallback(async () => {
           </div>
 
           {/* ── Reset Invite Link (Owner Only) ── */}
-          {showResetButton && (
+          {showResetButton && !showResetConfirm && (
             <div className="mx-6 mt-3">
               <button
-                onClick={handleResetToken}
-                disabled={isResetting}
-                className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 py-2.5 text-xs font-semibold text-red-600 transition-all hover:border-red-300 hover:bg-red-100 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={() => setShowResetConfirm(true)}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-100 bg-red-50/50 py-2.5 text-xs font-semibold text-red-600 transition-all hover:border-red-200 hover:bg-red-50 active:scale-[0.99]"
               >
-                {isResetting ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    Resetting…
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="h-3.5 w-3.5" />
-                    Reset Invite Link
-                  </>
-                )}
+                <RefreshCw className="h-3.5 w-3.5" />
+                Reset Invite Link
               </button>
+            </div>
+          )}
+
+          {/* ── Reset Confirmation Panel ── */}
+          {showResetButton && showResetConfirm && (
+            <div className="mx-6 mt-3">
+              <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+                {/* Warning Header */}
+                <div className="mb-3 flex items-start gap-2.5">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-red-100">
+                    <ShieldAlert className="h-4 w-4 text-red-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-red-900">
+                      Reset invite link?
+                    </p>
+                    <p className="mt-0.5 text-xs leading-relaxed text-red-600/80">
+                      This will invalidate all previously shared QR codes and
+                      links. Anyone who hasn&apos;t joined yet will need the new
+                      link.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Confirmation Buttons */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowResetConfirm(false)}
+                    disabled={resetting}
+                    className="flex flex-1 items-center justify-center rounded-xl border border-red-200 bg-white py-2.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleResetToken}
+                    disabled={resetting}
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-red-600 py-2.5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-red-700 active:scale-[0.98] disabled:opacity-60"
+                  >
+                    {resetting ? (
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        Resetting…
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="h-3.5 w-3.5" />
+                        Yes, Reset
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 

@@ -11,7 +11,6 @@ import {
   CameraOff,
   Loader2,
   AlertTriangle,
-  ScanLine,
   QrCode,
 } from "lucide-react";
 
@@ -50,42 +49,38 @@ export function QRScannerModal({
 
   // ── Cleanup scanner ──
   const stopScanner = useCallback(async () => {
-    const scanner = scannerRef.current;
-    if (!scanner) return;
-    scannerRef.current = null; // امنع استدعاء مزدوج
-
-    try {
-        const scannerState = scanner.getState();
-
-        // أوقف الـ scanning فوراً (سريع، مش heavy)
+    if (scannerRef.current) {
+      try {
+        const scannerState = scannerRef.current.getState();
         if (scannerState === 2) {
-            // ⬇️ pause أولاً عشان نوقف الـ frame processing فوراً
-            try { scanner.pause(true); } catch {}
-            await scanner.stop();
+          await scannerRef.current.stop();
         }
-
-        // ⬇️ أخّر clear() عشان ما تحجزش الـ main thread أثناء التفاعل
-        await new Promise((resolve) => setTimeout(resolve, 50));
-        scanner.clear();
-    } catch (err) {
+        scannerRef.current.clear();
+      } catch (err) {
         console.warn("Scanner cleanup warning:", err);
-        // fallback: حاول clear على أي حال
-        try { scanner.clear(); } catch {}
+      }
+      scannerRef.current = null;
     }
-}, []);
+  }, []);
+
   /*
-   * ════════════════════════════════════════════════
-   * PARSE SCANNED URL
+   * ════════════════════════════════════════════════════
+   * PARSE SCANNED URL — SECURE TOKEN LOGIC
    *
-   * Extracts BOTH `id` AND `token` from the URL
-   * to support the secure invite token system.
+   * Supported URL formats:
    *
-   * Supported formats:
-   *   /join?id=GROUP_ID&token=INVITE_TOKEN  (secure)
-   *   /join?id=GROUP_ID                     (legacy)
-   *   /profile/USERNAME
-   *   /dashboard/profile/USERNAME
-   * ════════════════════════════════════════════════
+   * 1. Group invite (with token — SECURE):
+   *    /join?id=GROUP_ID&token=INVITE_TOKEN
+   *
+   * 2. Group invite (legacy, id only):
+   *    /join?id=GROUP_ID
+   *
+   * 3. Profile link:
+   *    /profile/USERNAME
+   *    /dashboard/profile/USERNAME
+   *
+   * 4. Any other same-origin URL → navigate to it
+   * ════════════════════════════════════════════════════
    */
   const handleScannedUrl = useCallback(
     (url: string) => {
@@ -97,12 +92,12 @@ export function QRScannerModal({
         const pathname = parsed.pathname;
         const searchParams = parsed.searchParams;
 
-        // Case 1: Group join link → /join?id=GROUP_ID&token=TOKEN
+        // ── Case 1: Group join link ──
         if (pathname === "/join" && searchParams.has("id")) {
           const groupId = searchParams.get("id")!;
-          const token = searchParams.get("token"); // null if legacy link
+          const token = searchParams.get("token"); // may be null (legacy)
 
-          console.log("[Scanner] Group invite:", {
+          console.log("[Scanner] Group invite detected:", {
             groupId,
             hasToken: !!token,
           });
@@ -114,7 +109,7 @@ export function QRScannerModal({
               // Pass both groupId and token to the callback
               onGroupScanned(groupId, token);
             } else {
-              // Fallback: navigate with both params preserved
+              // Fallback: navigate with both params
               const joinUrl = token
                 ? `/join?id=${groupId}&token=${token}`
                 : `/join?id=${groupId}`;
@@ -124,12 +119,14 @@ export function QRScannerModal({
           return;
         }
 
-        // Case 2: Profile link → /profile/USERNAME or /dashboard/profile/USERNAME
+        // ── Case 2: Profile link ──
         const profileMatch = pathname.match(
           /\/(?:dashboard\/)?profile\/([a-z0-9_]+)/i
         );
         if (profileMatch) {
           const username = profileMatch[1];
+          console.log("[Scanner] Profile detected:", username);
+
           stopScanner();
           setTimeout(() => {
             onClose();
@@ -138,8 +135,10 @@ export function QRScannerModal({
           return;
         }
 
-        // Case 3: Generic FairShare URL → just navigate
+        // ── Case 3: Same-origin generic URL ──
         if (parsed.origin === window.location.origin) {
+          console.log("[Scanner] Same-origin URL:", pathname);
+
           stopScanner();
           setTimeout(() => {
             onClose();
@@ -148,12 +147,11 @@ export function QRScannerModal({
           return;
         }
 
-        // Unknown URL
+        // ── Case 4: External / unknown URL ──
         setErrorMessage("This QR code is not a FairShare link.");
         setState("error");
         setTimeout(() => setState("scanning"), 2500);
       } catch {
-        // Not a URL — could be plain text
         setErrorMessage("Unrecognized QR code format.");
         setState("error");
         setTimeout(() => setState("scanning"), 2500);
@@ -175,47 +173,35 @@ export function QRScannerModal({
 
     const initScanner = async () => {
       try {
-        // Dynamic import to avoid SSR issues
         const { Html5Qrcode } = await import("html5-qrcode");
 
         if (!mounted) return;
 
-        // Ensure container exists
         const readerId = "qr-reader-container";
         let container = document.getElementById(readerId);
         if (!container) {
-          // Wait a frame for DOM
           await new Promise((r) => requestAnimationFrame(r));
           container = document.getElementById(readerId);
         }
         if (!container || !mounted) return;
 
-        const scanner = new Html5Qrcode(readerId, {
-          verbose: false,
-        });
-
+        const scanner = new Html5Qrcode(readerId, { verbose: false });
         scannerRef.current = scanner;
 
         await scanner.start(
           { facingMode: "environment" },
           {
-            fps: 3,
+            fps: 10,
             qrbox: { width: 250, height: 250 },
             aspectRatio: 1.0,
           },
           (decodedText) => {
-            if (mounted) {
-              handleScannedUrl(decodedText);
-            }
+            if (mounted) handleScannedUrl(decodedText);
           },
-          () => {
-            // QR code not detected in frame — no action needed
-          }
+          () => {}
         );
 
-        if (mounted) {
-          setState("scanning");
-        }
+        if (mounted) setState("scanning");
       } catch (err: any) {
         if (!mounted) return;
         console.error("Scanner init error:", err);
@@ -237,7 +223,6 @@ export function QRScannerModal({
       }
     };
 
-    // Small delay to let modal animate in
     const timer = setTimeout(initScanner, 400);
 
     return () => {
@@ -247,23 +232,13 @@ export function QRScannerModal({
     };
   }, [isOpen, handleScannedUrl, stopScanner]);
 
-// ── Close handler ──
-const handleClose = useCallback(() => {
-  setAnimateIn(false);
+  // ── Close handler ──
+  const handleClose = useCallback(() => {
+    setAnimateIn(false);
+    stopScanner();
+    setTimeout(onClose, 200);
+  }, [onClose, stopScanner]);
 
-  // ⬇️ أوقف الـ frame processing فوراً (سريع جداً)
-  try {
-      const s = scannerRef.current;
-      if (s && s.getState() === 2) {
-          s.pause(true);
-      }
-  } catch {}
-
-  // ⬇️ استنّى الـ cleanup يخلص قبل ما تشيل الـ modal
-  setTimeout(() => {
-    onClose();
-  }, 300);
-}, [onClose]);
   // ── Escape key ──
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -318,39 +293,38 @@ const handleClose = useCallback(() => {
           </div>
 
           {/* ── Camera View ── */}
-          <div className="relative aspect-square w-full bg-black" ref={containerRef}>
-            {/* Scanner mounts here */}
+          <div
+            className="relative aspect-square w-full bg-black"
+            ref={containerRef}
+          >
             <div
               id="qr-reader-container"
               className="h-full w-full [&>video]:!h-full [&>video]:!w-full [&>video]:!object-cover [&_img]:hidden [&_select]:hidden [&_button]:hidden [&>div]:!border-none"
             />
 
-            {/* ── Scanning Overlay (crosshairs) ── */}
+            {/* Scanning Overlay */}
             {state === "scanning" && (
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                {/* Corners */}
                 <div className="relative h-64 w-64">
-                  {/* Top-left */}
                   <div className="absolute left-0 top-0 h-8 w-8 border-l-[3px] border-t-[3px] border-indigo-400 rounded-tl-lg" />
-                  {/* Top-right */}
                   <div className="absolute right-0 top-0 h-8 w-8 border-r-[3px] border-t-[3px] border-indigo-400 rounded-tr-lg" />
-                  {/* Bottom-left */}
                   <div className="absolute bottom-0 left-0 h-8 w-8 border-b-[3px] border-l-[3px] border-indigo-400 rounded-bl-lg" />
-                  {/* Bottom-right */}
                   <div className="absolute bottom-0 right-0 h-8 w-8 border-b-[3px] border-r-[3px] border-indigo-400 rounded-br-lg" />
-                  {/* Scan line animation */}
                   <div className="absolute left-2 right-2 top-0 h-0.5 animate-[scanline_2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-indigo-400 to-transparent" />
                 </div>
-
-                {/* Dim outside the scanning area */}
-                <div className="absolute inset-0 bg-black/40" style={{
-                  maskImage: "radial-gradient(circle 130px, transparent 128px, black 130px)",
-                  WebkitMaskImage: "radial-gradient(circle 130px, transparent 128px, black 130px)",
-                }} />
+                <div
+                  className="absolute inset-0 bg-black/40"
+                  style={{
+                    maskImage:
+                      "radial-gradient(circle 130px, transparent 128px, black 130px)",
+                    WebkitMaskImage:
+                      "radial-gradient(circle 130px, transparent 128px, black 130px)",
+                  }}
+                />
               </div>
             )}
 
-            {/* ── Initializing State ── */}
+            {/* Initializing */}
             {state === "initializing" && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-950">
                 <Loader2 className="mb-3 h-8 w-8 animate-spin text-indigo-400" />
@@ -358,7 +332,7 @@ const handleClose = useCallback(() => {
               </div>
             )}
 
-            {/* ── Permission Denied ── */}
+            {/* Permission Denied */}
             {state === "permission_denied" && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-950 px-6 text-center">
                 <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-500/10">
@@ -379,7 +353,7 @@ const handleClose = useCallback(() => {
               </div>
             )}
 
-            {/* ── Success State ── */}
+            {/* Success */}
             {state === "success" && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-950/95">
                 <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20">
@@ -395,7 +369,7 @@ const handleClose = useCallback(() => {
               </div>
             )}
 
-            {/* ── Error State ── */}
+            {/* Error */}
             {state === "error" && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-950/95 px-6 text-center">
                 <AlertTriangle className="mb-3 h-8 w-8 text-amber-400" />
@@ -413,7 +387,7 @@ const handleClose = useCallback(() => {
         </div>
       </div>
 
-      {/* ── Scanline keyframes ── */}
+      {/* Scanline animation */}
       <style jsx global>{`
         @keyframes scanline {
           0%,

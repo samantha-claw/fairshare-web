@@ -49,19 +49,28 @@ export function Header({
   const pathname = usePathname();
   const subtitle = getPageSubtitle(pathname);
 
-  // Scanner state
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [joinGroupId, setJoinGroupId] = useState<string | null>(null);
+  const [joinToken, setJoinToken] = useState<string | null>(null);
 
-  const handleGroupScanned = (groupId: string) => {
+  const handleGroupScanned = (
+    groupId: string,
+    token: string | null
+  ) => {
     setIsScannerOpen(false);
     setJoinGroupId(groupId);
+    setJoinToken(token);
+  };
+
+  const handleJoinModalClose = () => {
+    setJoinGroupId(null);
+    setJoinToken(null);
   };
 
   return (
     <>
       <header className="sticky top-0 z-30 flex h-16 items-center border-b border-gray-200/60 bg-white/70 px-4 backdrop-blur-xl sm:px-6">
-        {/* ── Mobile Menu Toggle ───────────────────── */}
+        {/* Mobile Menu */}
         <button
           onClick={onMobileMenuToggle}
           className="mr-3 flex h-9 w-9 items-center justify-center rounded-xl text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 md:hidden"
@@ -69,7 +78,7 @@ export function Header({
           <Menu className="h-5 w-5" />
         </button>
 
-        {/* ── Brand + Page Context ─────────────────── */}
+        {/* Brand */}
         <div className="min-w-0 flex-1">
           <Link
             href="/dashboard"
@@ -85,17 +94,19 @@ export function Header({
               <span className="text-gray-900">Share</span>
             </h1>
           </Link>
-          <p className="hidden text-xs text-gray-500 sm:block">{subtitle}</p>
+          <p className="hidden text-xs text-gray-500 sm:block">
+            {subtitle}
+          </p>
         </div>
 
-        {/* ── Right Actions ────────────────────────── */}
+        {/* Right Actions */}
         <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Search */}
           <button className="hidden h-9 w-9 items-center justify-center rounded-xl text-gray-400 transition-all duration-200 hover:bg-gray-100 hover:text-gray-600 sm:flex">
             <Search className="h-[18px] w-[18px]" />
           </button>
 
-          {/* ★ QR Scanner Button ★ */}
+          {/* QR Scanner */}
           <button
             onClick={() => setIsScannerOpen(true)}
             className="relative flex h-9 w-9 items-center justify-center rounded-xl text-gray-400 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-600"
@@ -116,7 +127,7 @@ export function Header({
           {/* Divider */}
           <div className="mx-1 hidden h-6 w-px bg-gray-200 sm:block" />
 
-          {/* User Avatar */}
+          {/* Avatar */}
           <Link
             href="/dashboard/profile"
             className="group flex items-center gap-2.5 rounded-xl py-1 pl-1 pr-2 transition-all duration-200 hover:bg-gray-100 sm:pr-3"
@@ -134,19 +145,20 @@ export function Header({
         </div>
       </header>
 
-      {/* ── Scanner Modal ── */}
+      {/* Scanner Modal */}
       <QRScannerModal
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
         onGroupScanned={handleGroupScanned}
       />
 
-      {/* ── Join Group Confirm Modal ── */}
+      {/* Join Confirm Modal (passes token) */}
       {joinGroupId && (
         <JoinGroupConfirmModal
           isOpen={!!joinGroupId}
-          onClose={() => setJoinGroupId(null)}
+          onClose={handleJoinModalClose}
           groupId={joinGroupId}
+          token={joinToken}
         />
       )}
     </>
