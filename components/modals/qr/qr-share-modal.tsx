@@ -241,14 +241,15 @@ const confirmReset = useCallback(async () => {
               ref={qrRef}
               className="mx-auto flex w-fit items-center justify-center rounded-2xl border-4 border-white bg-white p-5 shadow-lg"
             >
-              <QRCodeSVG
-                value={value}
-                size={200}
-                level="H"
-                includeMargin
-                bgColor="#ffffff"
-                fgColor="#1e1b4b"
-              />
+              <QRCodeSVG 
+  value={value || "https://fairshare.app"} // 👈 حماية إضافية هنا
+  size={200} 
+  level="H" 
+  includeMargin 
+  bgColor="#ffffff" 
+  fgColor="#1e1b4b" 
+/>
+
             </div>
           </div>
 
