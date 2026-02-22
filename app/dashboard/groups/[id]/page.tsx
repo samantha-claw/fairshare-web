@@ -255,7 +255,7 @@ export default function GroupDetailsPage() {
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
             <PendingSettlements
-              settlements={g.pendingSettlements}
+              settlements={g.pendingSettlements || []}
               currentUser={g.currentUser}
               currency={currency}
               processingSettlementId={g.processingSettlementId}
@@ -306,7 +306,7 @@ export default function GroupDetailsPage() {
 
                 {g.activeTab === "expenses" && (
                   <ExpensesTab
-                    expenses={g.expenses}
+                    expenses={g.expenses || []}
                     currency={currency}
                     currentUser={g.currentUser}
                     isOwner={isOwner}
@@ -317,7 +317,7 @@ export default function GroupDetailsPage() {
 
                 {g.activeTab === "activity" && (
                   <ActivityTab
-                    allActivities={g.allActivities}
+                    allActivities={g.allActivities || []}
                     currency={currency}
                   />
                 )}
@@ -327,13 +327,13 @@ export default function GroupDetailsPage() {
 
           <div className="space-y-6">
             <MembersCard
-              members={g.members}
+              members={g.members || []}
               group={g.group}
               isOwner={isOwner}
               onOpenAddModal={g.openMemberModal}
               onRemoveMember={g.handleRemoveMember}
             />
-            <BalancesCard balances={g.balances} currency={currency} />
+            <BalancesCard balances={g.balances || []} currency={currency} />
           </div>
         </div>
       </main>
