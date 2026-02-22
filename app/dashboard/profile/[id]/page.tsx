@@ -13,7 +13,7 @@ import { ShareProfileModal } from "../_components/share-profile-modal";
 import { StatsWidgets } from "../_components/stats-widgets";
 import { ActivityLog } from "../_components/activity-log";
 import { ProfileInfoCard } from "../_components/profile-info-card";
-import { QRShareModal } from "@/components/qr/qr-share-modal";
+import { QRShareModal } from "@/components/modals/qr/qr-share-modal";
 
 // ==========================================
 // 🎨 UI RENDER

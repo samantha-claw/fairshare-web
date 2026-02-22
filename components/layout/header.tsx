@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { Bell, Search, Menu, Wallet, QrCode } from "lucide-react";
-import { QRScannerModal } from "@/components/qr/qr-scanner-modal";
+import { QRScannerModal } from "@/components/modals/qr/qr-scanner-modal";
 import { JoinGroupConfirmModal } from "@/components/modals/join-group-confirm-modal";
 
 // ==========================================
