@@ -6,7 +6,7 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
-import { Bell, Search, Menu } from "lucide-react";
+import { Bell, Search, Menu, Wallet } from "lucide-react";
 
 // ==========================================
 // 🧩 TYPES
@@ -20,27 +20,14 @@ interface HeaderProps {
 // ==========================================
 // ⚙️ LOGIC
 // ==========================================
-
-function getPageTitle(pathname: string): { title: string; subtitle: string } {
-  if (pathname === "/dashboard") {
-    return { title: "Dashboard", subtitle: "Your financial overview" };
-  }
-  if (pathname.startsWith("/dashboard/friends")) {
-    return { title: "Friends", subtitle: "Manage your connections" };
-  }
-  if (pathname.startsWith("/dashboard/profile/edit")) {
-    return { title: "Edit Profile", subtitle: "Update your information" };
-  }
-  if (pathname.startsWith("/dashboard/profile")) {
-    return { title: "Profile", subtitle: "Your account details" };
-  }
-  if (pathname.startsWith("/dashboard/groups/new")) {
-    return { title: "New Group", subtitle: "Create a new expense group" };
-  }
-  if (pathname.startsWith("/dashboard/groups/")) {
-    return { title: "Group Details", subtitle: "Manage expenses & members" };
-  }
-  return { title: "Dashboard", subtitle: "Welcome back" };
+function getPageSubtitle(pathname: string): string {
+  if (pathname === "/dashboard") return "Your financial overview";
+  if (pathname.startsWith("/dashboard/friends")) return "Manage your connections";
+  if (pathname.startsWith("/dashboard/profile/edit")) return "Update your information";
+  if (pathname.startsWith("/dashboard/profile")) return "Your account details";
+  if (pathname.startsWith("/dashboard/groups/new")) return "Create a new expense group";
+  if (pathname.startsWith("/dashboard/groups/")) return "Manage expenses & members";
+  return "Welcome back";
 }
 
 // ==========================================
@@ -52,7 +39,7 @@ export function Header({
   onMobileMenuToggle,
 }: HeaderProps) {
   const pathname = usePathname();
-  const { title, subtitle } = getPageTitle(pathname);
+  const subtitle = getPageSubtitle(pathname);
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center border-b border-gray-200/60 bg-white/70 px-4 backdrop-blur-xl sm:px-6">
@@ -64,11 +51,27 @@ export function Header({
         <Menu className="h-5 w-5" />
       </button>
 
-      {/* ── Page Title ───────────────────────────── */}
+      {/* ── Brand + Page Context ─────────────────── */}
       <div className="min-w-0 flex-1">
-        <h1 className="truncate text-base font-bold text-gray-900 sm:text-lg">
-          {title}
-        </h1>
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center gap-2 transition-opacity active:opacity-80"
+        >
+          {/* Icon mark — visible on mobile where sidebar is hidden */}
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 shadow-md shadow-indigo-500/20 md:hidden">
+            <Wallet className="h-4 w-4 text-white" strokeWidth={2.5} />
+          </div>
+
+          {/* App name with gradient */}
+          <h1 className="truncate text-lg font-extrabold tracking-tight sm:text-xl">
+            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              Fair
+            </span>
+            <span className="text-gray-900">Share</span>
+          </h1>
+        </Link>
+
+        {/* Page subtitle for context */}
         <p className="hidden text-xs text-gray-500 sm:block">{subtitle}</p>
       </div>
 
