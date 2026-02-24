@@ -36,6 +36,7 @@ export function useProfile(options: UseProfileOptions = {}) {
   const [error, setError] = useState<string | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
 
   /* ── Friend State ────────────────────────────────── */
   const [friendStatus, setFriendStatus] = useState<FriendStatus>("none");
@@ -81,6 +82,24 @@ export function useProfile(options: UseProfileOptions = {}) {
 
       const fetchId = targetUserId || session.user.id;
 
+      // 1b. Fetch current user's name (needed for notifications when viewing others)
+      if (targetUserId && targetUserId !== session.user.id) {
+        const { data: currentUserProfile } = await supabase
+          .from("profiles")
+          .select("display_name, full_name, username")
+          .eq("id", session.user.id)
+          .single();
+
+        if (currentUserProfile) {
+          setCurrentUserName(
+            currentUserProfile.display_name ||
+            currentUserProfile.full_name ||
+            currentUserProfile.username ||
+            "Someone"
+          );
+        }
+      }
+
       // 2. Profile
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
@@ -92,6 +111,16 @@ export function useProfile(options: UseProfileOptions = {}) {
 
       if (profileError) throw profileError;
       setProfile(profileData as UserProfile);
+
+      // If viewing own profile, set name from own profile data
+      if (!targetUserId || targetUserId === session.user.id) {
+        setCurrentUserName(
+          profileData.display_name ||
+          profileData.full_name ||
+          profileData.username ||
+          "Someone"
+        );
+      }
 
       // 3. Friend status (only for other users)
       if (targetUserId && targetUserId !== session.user.id) {
@@ -253,6 +282,13 @@ export function useProfile(options: UseProfileOptions = {}) {
 
   /* ── Friend Actions ──────────────────────────────── */
 
+  /**
+   * ════════════════════════════════════════════════════════
+   * ADD FRIEND
+   * → Sends a friend request via RPC, then notifies the
+   *   target user so they see it in their notification bell.
+   * ════════════════════════════════════════════════════════
+   */
   async function handleAddFriend() {
     if (!currentUserId || !profile) {
       router.push("/login");
@@ -266,6 +302,24 @@ export function useProfile(options: UseProfileOptions = {}) {
       });
       if (error) throw error;
       setFriendStatus("pending");
+
+      // ── Notify the target user about the friend request ──
+      const senderName = currentUserName || "Someone";
+
+      const { error: notifError } = await supabase
+        .from("notifications")
+        .insert({
+          user_id: profile.id,
+          actor_id: currentUserId,
+          type: "friend_request",
+          title: "New Friend Request! 👋",
+          message: `${senderName} sent you a friend request.`,
+          link: `/dashboard/profile/${currentUserId}`,
+        });
+
+      if (notifError) {
+        console.error("Failed to send friend request notification:", notifError);
+      }
     } catch (err: any) {
       console.error(err);
       alert(err.message || "Failed to send request.");
