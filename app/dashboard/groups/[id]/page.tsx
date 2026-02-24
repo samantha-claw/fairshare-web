@@ -230,7 +230,7 @@ export default function GroupDetailsPage() {
                 </div>
 
                 {/* ── Action Buttons ── */}
-                <div className="mb-5 flex w-full items-center justify-center gap-3 sm:justify-end">
+                <div className="mt-4 mb-5 flex w-full items-center justify-center gap-3 sm:justify-end">
                   <button
                     onClick={g.openSettleUpModal}
                     className="flex flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-50 active:scale-[0.98]"
