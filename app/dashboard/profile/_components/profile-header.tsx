@@ -3,8 +3,6 @@
 // ==========================================
 // 📦 IMPORTS
 // ==========================================
-import Link from "next/link";
-import { Avatar } from "@/components/ui/avatar";
 import { Spinner } from "@/components/ui/spinner";
 import {
   Share2,
@@ -34,6 +32,16 @@ interface ProfileHeaderProps {
 }
 
 // ==========================================
+// 🎨 AVATAR FALLBACK HELPER
+// ==========================================
+function getInitials(name: string): string {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.slice(0, 2).toUpperCase();
+}
+
+// ==========================================
 // 🎨 UI RENDER
 // ==========================================
 export function ProfileHeader({
@@ -47,48 +55,37 @@ export function ProfileHeader({
   onEditProfile,
 }: ProfileHeaderProps) {
   const displayName =
-    profile.display_name || profile.full_name || profile.username;
+    profile.display_name || profile.full_name || profile.username || "User";
   const joinDate = new Date(profile.created_at).toLocaleDateString("en-US", {
     month: "long",
     year: "numeric",
   });
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
+    <div className="relative overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm">
       {/* ── Banner Gradient ───────────────────────── */}
-      <div className="relative h-40 overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 sm:h-52">
+      <div className="relative h-48 overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-fuchsia-600 sm:h-56">
         {/* Decorative Elements */}
-        <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
-        <div className="absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-purple-400/15 blur-xl" />
-        <div className="absolute -bottom-8 right-1/3 h-40 w-40 rounded-full bg-indigo-300/10 blur-2xl" />
-        <div className="absolute left-1/2 top-1/3 h-24 w-24 -translate-x-1/2 rounded-full bg-white/5 blur-2xl" />
-
-        {/* Grid Pattern */}
-        <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle, white 1px, transparent 1px)",
-            backgroundSize: "24px 24px",
-          }}
-        />
+        <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/20 blur-3xl" />
+        <div className="absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-purple-400/20 blur-2xl" />
+        <div className="absolute left-1/2 top-1/3 h-24 w-24 -translate-x-1/2 rounded-full bg-white/10 blur-2xl" />
 
         {/* Top Actions — Glassmorphism */}
-        <div className="absolute right-4 top-4 flex items-center gap-2">
+        <div className="absolute right-4 top-4 flex items-center gap-2 z-10">
           <button
             onClick={onShareProfile}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-white/30 bg-white/20 px-3.5 py-2 text-xs font-semibold text-white backdrop-blur-md transition-all duration-200 hover:bg-white/30 active:scale-95"
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-md transition-all duration-200 hover:bg-white/20 active:scale-95"
           >
-            <Share2 className="h-3.5 w-3.5" />
+            <Share2 className="h-4 w-4" />
             Share
           </button>
 
           {isOwnProfile && onEditProfile && (
             <button
               onClick={onEditProfile}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-white/30 bg-white/20 px-3.5 py-2 text-xs font-semibold text-white backdrop-blur-md transition-all duration-200 hover:bg-white/30 active:scale-95"
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-md transition-all duration-200 hover:bg-white/20 active:scale-95"
             >
-              <Pencil className="h-3.5 w-3.5" />
+              <Pencil className="h-4 w-4" />
               Edit
             </button>
           )}
@@ -96,71 +93,89 @@ export function ProfileHeader({
       </div>
 
       {/* ── Centered Profile Content ─────────────── */}
-      <div className="relative flex flex-col items-center px-6 pb-8">
-        {/* Avatar — centered, overlapping the banner */}
-        <div className="relative -mt-16 mb-1 sm:-mt-[4.5rem]">
-          <div className="rounded-full border-4 border-white bg-white shadow-xl">
-            <Avatar src={profile.avatar_url} name={displayName} size="lg" />
+      <div className="relative flex flex-col items-center px-6 pb-10">
+        {/* Avatar — Large, centered, overlapping the banner */}
+        <div className="relative -mt-20 sm:-mt-24 z-10">
+          <div className="flex h-32 w-32 sm:h-36 sm:w-36 items-center justify-center overflow-hidden rounded-full border-[6px] border-white bg-white shadow-xl ring-1 ring-black/5">
+            {profile.avatar_url ? (
+              <img
+                src={profile.avatar_url}
+                alt={displayName}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-100 text-3xl font-bold text-indigo-600">
+                {getInitials(displayName)}
+              </div>
+            )}
           </div>
+          
           {/* Online Indicator */}
           {isOwnProfile && (
-            <div className="absolute bottom-1 right-1 h-5 w-5 rounded-full border-[3px] border-white bg-emerald-400 shadow-sm" />
+            <div className="absolute bottom-2 right-2 h-6 w-6 rounded-full border-4 border-white bg-emerald-500 shadow-sm" />
           )}
         </div>
 
-        {/* Display Name + Friend Badge */}
-        <div className="mt-3 flex items-center justify-center gap-2">
-          <h1 className="text-2xl font-black tracking-tight text-gray-900">
+        {/* Display Name */}
+        <div className="mt-4 flex flex-col items-center justify-center">
+          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">
             {displayName}
           </h1>
-          {friendStatus === "friends" && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-600 ring-1 ring-inset ring-emerald-200">
-              <UserCheck className="h-2.5 w-2.5" />
-              Friend
-            </span>
-          )}
+          
+          {/* Username */}
+          <div className="mt-1 flex items-center gap-1 text-base font-medium text-gray-500">
+            <AtSign className="h-4 w-4" />
+            <span>{profile.username}</span>
+          </div>
         </div>
 
-        {/* Username */}
-        <div className="mt-1 flex items-center justify-center gap-1 text-sm text-gray-500">
-          <AtSign className="h-3.5 w-3.5" />
-          <span className="font-medium">{profile.username}</span>
-        </div>
+        {/* Friend Badge (If Applicable) */}
+        {friendStatus === "friends" && (
+          <div className="mt-3">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-600 ring-1 ring-inset ring-emerald-200">
+              <UserCheck className="h-3 w-3" />
+              Friend
+            </span>
+          </div>
+        )}
 
         {/* Bio */}
         {profile.bio && profile.bio.trim().length > 0 && (
-          <p className="mt-3 max-w-sm text-center text-sm leading-relaxed text-gray-600">
+          <p className="mt-4 max-w-md text-center text-sm leading-relaxed text-gray-600">
             {profile.bio}
           </p>
         )}
 
         {/* Meta — Joined & Public */}
-        <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
-          <div className="flex items-center gap-1.5 text-xs text-gray-400">
-            <CalendarDays className="h-3 w-3" />
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-4">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-gray-400">
+            <CalendarDays className="h-3.5 w-3.5" />
             <span>Joined {joinDate}</span>
           </div>
           {profile.is_public && (
-            <div className="flex items-center gap-1 text-xs text-gray-400">
-              <Shield className="h-3 w-3" />
-              <span>Public profile</span>
-            </div>
+            <>
+              <span className="h-1 w-1 rounded-full bg-gray-300"></span>
+              <div className="flex items-center gap-1 text-xs font-medium text-gray-400">
+                <Shield className="h-3.5 w-3.5" />
+                <span>Public Profile</span>
+              </div>
+            </>
           )}
         </div>
 
-        {/* Friend Action Buttons — centered below meta */}
+        {/* Friend Action Buttons */}
         {!isOwnProfile && (
-          <div className="mt-5">
+          <div className="mt-6 w-full max-w-xs">
             {friendStatus === "none" && (
               <button
                 onClick={onAddFriend}
                 disabled={isProcessing}
-                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-500/30 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-500/30 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isProcessing ? (
-                  <Spinner className="h-4 w-4" />
+                  <Spinner className="h-5 w-5" />
                 ) : (
-                  <UserPlus className="h-4 w-4" />
+                  <UserPlus className="h-5 w-5" />
                 )}
                 Add Friend
               </button>
@@ -170,19 +185,19 @@ export function ProfileHeader({
               <button
                 onClick={onCancelRequest}
                 disabled={isProcessing}
-                className="group inline-flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-6 py-2.5 text-sm font-semibold text-amber-700 transition-all duration-300 hover:border-red-300 hover:bg-red-50 hover:text-red-600 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                className="group flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 py-3.5 text-sm font-bold text-amber-700 transition-all duration-300 hover:border-red-300 hover:bg-red-50 hover:text-red-600 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isProcessing ? (
-                  <Spinner className="h-4 w-4" />
+                  <Spinner className="h-5 w-5" />
                 ) : (
                   <>
                     <span className="flex items-center gap-1.5 group-hover:hidden">
-                      <UserCheck className="h-4 w-4" />
-                      Requested
+                      <UserCheck className="h-5 w-5" />
+                      Request Sent
                     </span>
                     <span className="hidden items-center gap-1.5 group-hover:flex">
-                      <X className="h-4 w-4" />
-                      Cancel
+                      <X className="h-5 w-5" />
+                      Cancel Request
                     </span>
                   </>
                 )}
@@ -190,10 +205,10 @@ export function ProfileHeader({
             )}
 
             {friendStatus === "friends" && (
-              <div className="inline-flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-2.5 text-sm font-semibold text-emerald-700">
-                <UserCheck className="h-4 w-4" />
+              <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 py-3.5 text-sm font-bold text-emerald-700">
+                <UserCheck className="h-5 w-5" />
                 Friends
-                <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+                <Sparkles className="h-4 w-4 text-emerald-400" />
               </div>
             )}
           </div>
