@@ -129,7 +129,7 @@ export default function GroupDetailsPage() {
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* ── Header ───────────────────────────────────── */}
       <div className="border-b border-gray-200 bg-white px-4 py-5 sm:px-6 sm:py-6">
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
           {/* Left: Title & subtitle */}
           <div className="min-w-0 flex-1">
             <h1 className="truncate text-xl font-bold tracking-tight text-gray-900 sm:text-2xl">
@@ -141,22 +141,20 @@ export default function GroupDetailsPage() {
             </p>
           </div>
 
-          {/* Right: Share & Settings only */}
-          <div className="ml-4 flex items-center gap-2">
-            {/* Share QR Button */}
+          {/* Right: Share & Settings */}
+          <div className="flex shrink-0 items-center gap-2">
             <button
               onClick={() => setIsShareModalOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2.5 text-sm font-medium text-indigo-700 shadow-sm transition-all duration-200 hover:bg-indigo-100 active:scale-95"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 shadow-sm transition-all duration-200 hover:bg-indigo-100 active:scale-95"
               title="Share Group via QR"
             >
               <QrCode className="h-4 w-4" />
               <span className="hidden sm:inline">Share</span>
             </button>
 
-            {/* Settings Button */}
             <button
               onClick={() => g.setIsSettingsModalOpen(true)}
-              className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-600 shadow-sm transition-all duration-200 hover:bg-gray-50 active:scale-95"
+              className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 shadow-sm transition-all duration-200 hover:bg-gray-50 active:scale-95"
               title="Group Settings"
             >
               <svg
@@ -205,13 +203,13 @@ export default function GroupDetailsPage() {
             />
 
             <section className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-              {/* ── Tabs + Action Buttons (responsive stack) ── */}
-              <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 p-4">
+              {/* ── Tabs + Action Buttons ── */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-gray-200">
                 {/* Tab Buttons */}
                 <div className="flex">
                   <button
                     onClick={() => g.setActiveTab("expenses")}
-                    className={`px-4 py-2 text-sm font-semibold transition-all duration-200 ${
+                    className={`flex-1 px-4 py-3 text-sm font-semibold transition-all duration-200 sm:flex-initial sm:px-6 ${
                       g.activeTab === "expenses"
                         ? "border-b-2 border-blue-600 text-blue-600"
                         : "text-gray-500 hover:text-gray-700"
@@ -221,7 +219,7 @@ export default function GroupDetailsPage() {
                   </button>
                   <button
                     onClick={() => g.setActiveTab("activity")}
-                    className={`px-4 py-2 text-sm font-semibold transition-all duration-200 ${
+                    className={`flex-1 px-4 py-3 text-sm font-semibold transition-all duration-200 sm:flex-initial sm:px-6 ${
                       g.activeTab === "activity"
                         ? "border-b-2 border-blue-600 text-blue-600"
                         : "text-gray-500 hover:text-gray-700"
@@ -232,7 +230,7 @@ export default function GroupDetailsPage() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 border-t border-gray-100 px-4 py-2.5 sm:border-t-0 sm:py-3 sm:pr-4">
                   <button
                     onClick={g.openSettleUpModal}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 active:scale-95 sm:px-4"
