@@ -184,7 +184,7 @@ export default function GroupDetailsPage() {
       </div>
 
       {/* ── Main Content ─────────────────────────────── */}
-      <main className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6">
+      <main className="mx-auto w-full max-w-6xl space-y-6 overflow-hidden px-4 py-6 sm:px-6">
         <SummaryCards
           totalGroupExpenses={g.totalGroupExpenses}
           myNetBalance={g.myNetBalance}
@@ -204,14 +204,14 @@ export default function GroupDetailsPage() {
               onDelete={g.handleDeleteSettlement}
             />
 
-            <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-              {/* ── Tabs + Action Buttons (balanced row) ── */}
-              <div className="flex w-full flex-wrap items-center justify-between border-b border-gray-200">
+            <section className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+              {/* ── Tabs + Action Buttons (responsive stack) ── */}
+              <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 p-4">
                 {/* Tab Buttons */}
-                <div className="flex min-w-0 flex-1">
+                <div className="flex">
                   <button
                     onClick={() => g.setActiveTab("expenses")}
-                    className={`flex-1 px-4 py-3 text-sm font-semibold transition-all duration-200 sm:px-6 ${
+                    className={`px-4 py-2 text-sm font-semibold transition-all duration-200 ${
                       g.activeTab === "expenses"
                         ? "border-b-2 border-blue-600 text-blue-600"
                         : "text-gray-500 hover:text-gray-700"
@@ -221,7 +221,7 @@ export default function GroupDetailsPage() {
                   </button>
                   <button
                     onClick={() => g.setActiveTab("activity")}
-                    className={`flex-1 px-4 py-3 text-sm font-semibold transition-all duration-200 sm:px-6 ${
+                    className={`px-4 py-2 text-sm font-semibold transition-all duration-200 ${
                       g.activeTab === "activity"
                         ? "border-b-2 border-blue-600 text-blue-600"
                         : "text-gray-500 hover:text-gray-700"
@@ -232,7 +232,7 @@ export default function GroupDetailsPage() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex w-full items-center justify-center gap-2 border-t border-gray-100 px-3 py-2 sm:w-auto sm:justify-end sm:border-t-0 sm:px-4 sm:py-0">
+                <div className="flex items-center gap-2">
                   <button
                     onClick={g.openSettleUpModal}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 active:scale-95 sm:px-4"

@@ -76,111 +76,124 @@ export function ExpensesTab({
   const hasMore = expenses.length > 5;
 
   return (
-    <div className="space-y-3">
-      {displayedExpenses.map((exp) => {
-        const payerName =
-          exp.profiles.display_name || exp.profiles.full_name || "Unknown";
+    <div>
+      {/* ── Expense Items ── */}
+      <div className="space-y-3">
+        {displayedExpenses.map((exp) => {
+          const payerName =
+            exp.profiles.display_name || exp.profiles.full_name || "Unknown";
+          const payerAvatar = (exp.profiles as any)?.avatar_url || null;
 
-        // Cast to any[] for safe optional property access on splits
-        const splits = (exp.expense_splits || []) as any[];
-        const visibleSplits = splits.slice(0, 3);
-        const remainingCount = Math.max(0, splits.length - 3);
+          const splits = (exp.expense_splits || []) as any[];
+          const visibleSplits = splits.slice(0, 3);
+          const remainingCount = Math.max(0, splits.length - 3);
 
-        return (
-          <div
-            key={exp.id}
-            className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50/50 p-3 transition-all hover:border-gray-200 hover:shadow-sm sm:p-4"
-          >
-            {/* ── Left: Payer Avatar ── */}
+          return (
             <div
-              className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold text-white shadow-sm ring-2 ring-white ${getAvatarColor(
-                payerName
-              )}`}
+              key={exp.id}
+              className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50/50 p-3 transition-all hover:border-gray-200 hover:shadow-sm sm:p-4"
             >
-              {getInitials(payerName)}
-            </div>
-
-            {/* ── Middle: Expense Info ── */}
-            <div className="min-w-0 flex-1">
-              <h3 className="truncate text-sm font-semibold text-gray-900 sm:text-base">
-                {exp.name}
-              </h3>
-              <p className="truncate text-xs text-gray-500">
-                Paid by{" "}
-                <Link
-                  href={`/dashboard/profile/${exp.paid_by}`}
-                  className="font-medium text-gray-700 hover:text-blue-600 hover:underline"
+              {/* ── Left: Payer Avatar (real image or initials fallback) ── */}
+              {payerAvatar ? (
+                <img
+                  src={payerAvatar}
+                  alt={payerName}
+                  className="h-10 w-10 flex-shrink-0 rounded-full object-cover shadow-sm ring-2 ring-white"
+                />
+              ) : (
+                <div
+                  className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold text-white shadow-sm ring-2 ring-white ${getAvatarColor(
+                    payerName
+                  )}`}
                 >
-                  {payerName}
-                </Link>{" "}
-                · {new Date(exp.created_at).toLocaleDateString()}
-              </p>
-            </div>
+                  {getInitials(payerName)}
+                </div>
+              )}
 
-            {/* ── Right: Amount + Mini Avatars ── */}
-            <div className="flex flex-shrink-0 flex-col items-end gap-1.5">
-              <p className="text-base font-bold text-gray-900 sm:text-lg">
-                {formatCurrency(exp.amount, currency)}
-              </p>
+              {/* ── Middle: Expense Info ── */}
+              <div className="min-w-0 flex-1">
+                <h3 className="truncate text-sm font-semibold text-gray-900 sm:text-base">
+                  {exp.name}
+                </h3>
+                <p className="truncate text-xs text-gray-500">
+                  Paid by{" "}
+                  <Link
+                    href={`/dashboard/profile/${exp.paid_by}`}
+                    className="font-medium text-gray-700 hover:text-blue-600 hover:underline"
+                  >
+                    {payerName}
+                  </Link>{" "}
+                  · {new Date(exp.created_at).toLocaleDateString()}
+                </p>
+              </div>
 
-              {/* Overlapping mini-avatars of participants */}
-              <div className="flex items-center">
-                {visibleSplits.map((split: any, i: number) => {
-                  const splitName =
-                    split?.profiles?.display_name ||
-                    split?.profiles?.full_name ||
-                    `M${i + 1}`;
-                  return (
-                    <div
-                      key={split?.id || i}
-                      className={`${
-                        i > 0 ? "-ml-1.5" : ""
-                      } flex h-6 w-6 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold text-white shadow-sm ${getAvatarColor(
-                        splitName
-                      )}`}
-                      title={splitName}
-                    >
-                      {getInitials(splitName).charAt(0)}
+              {/* ── Right: Amount + Mini Avatars ── */}
+              <div className="flex flex-shrink-0 flex-col items-end gap-1.5">
+                <p className="text-base font-bold text-gray-900 sm:text-lg">
+                  {formatCurrency(exp.amount, currency)}
+                </p>
+
+                {/* Overlapping mini-avatars of participants */}
+                <div className="flex items-center">
+                  {visibleSplits.map((split: any, i: number) => {
+                    const splitName =
+                      split?.profiles?.display_name ||
+                      split?.profiles?.full_name ||
+                      `M${i + 1}`;
+                    const splitAvatar =
+                      split?.profiles?.avatar_url || null;
+
+                    return splitAvatar ? (
+                      <img
+                        key={split?.id || i}
+                        src={splitAvatar}
+                        alt={splitName}
+                        title={splitName}
+                        className={`${
+                          i > 0 ? "-ml-1.5" : ""
+                        } h-6 w-6 rounded-full border-2 border-white object-cover shadow-sm`}
+                      />
+                    ) : (
+                      <div
+                        key={split?.id || i}
+                        className={`${
+                          i > 0 ? "-ml-1.5" : ""
+                        } flex h-6 w-6 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold text-white shadow-sm ${getAvatarColor(
+                          splitName
+                        )}`}
+                        title={splitName}
+                      >
+                        {getInitials(splitName).charAt(0)}
+                      </div>
+                    );
+                  })}
+                  {remainingCount > 0 && (
+                    <div className="-ml-1.5 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-gray-200 text-[10px] font-bold text-gray-600 shadow-sm">
+                      +{remainingCount}
                     </div>
-                  );
-                })}
-                {remainingCount > 0 && (
-                  <div className="-ml-1.5 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-gray-200 text-[10px] font-bold text-gray-600 shadow-sm">
-                    +{remainingCount}
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
 
-      {/* ── View All Expenses Button ── */}
+      {/* ── View All Expenses Button (flush with card bottom) ── */}
       {onViewAll && (
-        <button
-          onClick={onViewAll}
-          className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gradient-to-r from-gray-50 to-white py-3.5 text-sm font-semibold text-gray-600 shadow-sm transition-all duration-200 hover:border-gray-300 hover:shadow-md active:scale-[0.98]"
-        >
-          View All Expenses
-          {hasMore && (
-            <span className="inline-flex items-center justify-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-600">
-              {expenses.length}
-            </span>
-          )}
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
+        <div className="-mx-4 -mb-4 mt-4 sm:-mx-6 sm:-mb-6">
+          <button
+            onClick={onViewAll}
+            className="w-full rounded-b-xl border-t border-gray-100 bg-gray-50 p-4 text-center text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M8.25 4.5l7.5 7.5-7.5 7.5"
-            />
-          </svg>
-        </button>
+            View All Expenses
+            {hasMore && (
+              <span className="ml-2 inline-flex items-center justify-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-600">
+                {expenses.length}
+              </span>
+            )}
+          </button>
+        </div>
       )}
     </div>
   );
