@@ -5,14 +5,7 @@
 // ==========================================
 import Link from "next/link";
 import { formatCurrency } from "@/lib/utils";
-import {
-  Wallet,
-  TrendingUp,
-  TrendingDown,
-  Users,
-  Receipt,
-  ArrowUpRight,
-} from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import type { ProfileStats, ProfileGroup } from "@/types/profile";
 
 // ==========================================
@@ -36,11 +29,11 @@ export function StatsWidgets({
 
   return (
     <div className="space-y-6">
-      {/* ── Stats Cards ──────────────────────────── */}
+      {/* ── Stats Cards — Pure Typography ─────────── */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {/* Net Balance */}
         <div
-          className={`rounded-2xl border bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md ${
+          className={`flex flex-col items-center justify-center rounded-2xl border bg-white px-5 py-6 text-center shadow-sm transition-all duration-300 hover:shadow-md ${
             stats.netBalance > 0
               ? "border-emerald-100"
               : stats.netBalance < 0
@@ -48,103 +41,78 @@ export function StatsWidgets({
               : "border-gray-100"
           }`}
         >
-          <div className="flex items-center gap-3">
-            <div
-              className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-                stats.netBalance > 0
-                  ? "bg-emerald-50 text-emerald-600"
-                  : stats.netBalance < 0
-                  ? "bg-rose-50 text-rose-600"
-                  : "bg-gray-50 text-gray-500"
-              }`}
-            >
-              <Wallet className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                Net Balance
-              </p>
-              <p
-                className={`font-mono text-lg font-black ${
-                  stats.netBalance > 0
-                    ? "text-emerald-600"
-                    : stats.netBalance < 0
-                    ? "text-rose-600"
-                    : "text-gray-900"
-                }`}
-              >
-                {stats.netBalance > 0 && "+"}
-                {stats.netBalance < 0 && "−"}
-                {formatCurrency(stats.netBalance)}
-              </p>
-            </div>
-          </div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+            Net Balance
+          </p>
+          <p
+            className={`mt-2 font-mono text-2xl font-bold sm:text-3xl ${
+              stats.netBalance > 0
+                ? "text-emerald-600"
+                : stats.netBalance < 0
+                ? "text-rose-600"
+                : "text-gray-900"
+            }`}
+          >
+            {stats.netBalance > 0 && "+"}
+            {stats.netBalance < 0 && "−"}
+            {formatCurrency(stats.netBalance)}
+          </p>
+          <p className="mt-1.5 text-[11px] text-gray-400">
+            {stats.netBalance > 0
+              ? "You're owed overall"
+              : stats.netBalance < 0
+              ? "You owe overall"
+              : "All settled up"}
+          </p>
         </div>
 
         {/* Owed To You */}
-        <div className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-              <TrendingUp className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                Owed to You
-              </p>
-              <p className="font-mono text-lg font-black text-emerald-600">
-                +{formatCurrency(stats.totalOwed)}
-              </p>
-            </div>
-          </div>
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-emerald-100 bg-white px-5 py-6 text-center shadow-sm transition-all duration-300 hover:shadow-md">
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+            Owed to You
+          </p>
+          <p className="mt-2 font-mono text-2xl font-bold text-emerald-600 sm:text-3xl">
+            +{formatCurrency(stats.totalOwed)}
+          </p>
+          <p className="mt-1.5 text-[11px] text-gray-400">
+            From all groups
+          </p>
         </div>
 
         {/* You Owe */}
-        <div className="rounded-2xl border border-rose-100 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
-              <TrendingDown className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                You Owe
-              </p>
-              <p className="font-mono text-lg font-black text-rose-600">
-                −{formatCurrency(stats.totalOwes)}
-              </p>
-            </div>
-          </div>
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-rose-100 bg-white px-5 py-6 text-center shadow-sm transition-all duration-300 hover:shadow-md">
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+            You Owe
+          </p>
+          <p className="mt-2 font-mono text-2xl font-bold text-rose-600 sm:text-3xl">
+            −{formatCurrency(stats.totalOwes)}
+          </p>
+          <p className="mt-1.5 text-[11px] text-gray-400">
+            Across all groups
+          </p>
         </div>
 
         {/* Groups */}
-        <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
-              <Users className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                Groups
-              </p>
-              <p className="font-mono text-lg font-black text-gray-900">
-                {stats.totalGroups}
-              </p>
-            </div>
-          </div>
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white px-5 py-6 text-center shadow-sm transition-all duration-300 hover:shadow-md">
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+            Groups
+          </p>
+          <p className="mt-2 font-mono text-2xl font-bold text-gray-900 sm:text-3xl">
+            {stats.totalGroups}
+          </p>
+          <p className="mt-1.5 text-[11px] text-gray-400">
+            Active group{stats.totalGroups !== 1 ? "s" : ""}
+          </p>
         </div>
       </div>
 
       {/* ── Group Balances ───────────────────────── */}
       {groups.length > 0 && (
         <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50">
-                <Receipt className="h-3.5 w-3.5 text-indigo-600" />
-              </div>
-              <h3 className="text-sm font-bold text-gray-900">
-                Group Balances
-              </h3>
-            </div>
+          <div className="mb-5 text-center">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+              Group Balances
+            </h3>
           </div>
 
           <div className="space-y-2">
@@ -152,17 +120,17 @@ export function StatsWidgets({
               <Link
                 key={group.group_id}
                 href={`/dashboard/groups/${group.group_id}`}
-                className="group flex items-center justify-between rounded-2xl border border-gray-50 bg-gray-50/50 p-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-100 hover:bg-white hover:shadow-md"
+                className="group flex items-center justify-between rounded-2xl border border-gray-50 bg-gray-50/50 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-100 hover:bg-white hover:shadow-md"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-sm font-bold text-indigo-600">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-sm font-bold text-white shadow-sm">
                     {group.group_name.charAt(0).toUpperCase()}
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-gray-900 transition-colors group-hover:text-indigo-600">
                       {group.group_name}
                     </p>
-                    <p className="text-[10px] text-gray-400">
+                    <p className="text-[11px] text-gray-400">
                       {group.currency}
                     </p>
                   </div>
