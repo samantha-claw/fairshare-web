@@ -149,6 +149,7 @@ export default function DashboardPage() {
 
       {/*
        * ════════════════════════════════════════════════
+       * I will likely add floating action buttons here in the future,
        * FLOATING ACTION BUTTONS
        *
        * bottom-24   → above mobile nav
@@ -157,33 +158,6 @@ export default function DashboardPage() {
        * md:bottom-8 md:right-8 → normal desktop position
        * ════════════════════════════════════════════════
        */}
-      <div className="fixed bottom-24 right-4 z-40 flex flex-col gap-3 md:bottom-8 md:right-8">
-        {/* Settle Up — Secondary FAB */}
-        <Link
-          href="/dashboard/settle"
-          className="group flex items-center gap-2.5 rounded-2xl border border-gray-200/80 bg-white/90 px-4 py-3 shadow-lg shadow-gray-900/5 backdrop-blur-sm transition-all duration-200 hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-500/10 active:scale-95"
-        >
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 transition-colors group-hover:bg-emerald-100">
-            <HandCoins className="h-[18px] w-[18px]" />
-          </div>
-          <span className="hidden text-sm font-semibold text-gray-700 group-hover:text-emerald-700 sm:block">
-            Settle Up
-          </span>
-        </Link>
-
-        {/* Add Expense — Primary FAB */}
-        <Link
-          href="/dashboard/expenses/new"
-          className="group flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-3 shadow-lg shadow-indigo-500/25 transition-all duration-200 hover:shadow-xl hover:shadow-indigo-500/35 active:scale-95"
-        >
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/20 text-white backdrop-blur-sm">
-            <Receipt className="h-[18px] w-[18px]" />
-          </div>
-          <span className="hidden text-sm font-semibold text-white sm:block">
-            Add Expense
-          </span>
-        </Link>
-      </div>
 
       {/* ── Wave Animation Keyframes ─────────────── */}
       <style jsx global>{`
