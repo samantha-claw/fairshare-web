@@ -19,7 +19,7 @@ import { SettleModal } from "./_components/settle-modal";
 import { SettingsModal } from "./_components/settings-modal";
 import { QRShareModal } from "@/components/modals/qr/qr-share-modal";
 import { QrCode } from "lucide-react";
-
+import { AllExpensesModal } from "./_components/all-expenses-modal";
 // ==========================================
 // 🎨 UI RENDER
 // ==========================================
@@ -353,6 +353,17 @@ export default function GroupDetailsPage() {
         type="group"
         isOwner={g.isOwner}
         onResetToken={handleResetToken}
+      />
+      {/* ★ All Expenses Modal ★ */}
+      <AllExpensesModal
+        isOpen={isAllExpensesModalOpen}
+        onClose={() => setIsAllExpensesModalOpen(false)}
+        expenses={g.expenses}
+        currency={currency}
+        currentUser={g.currentUser}
+        isOwner={g.isOwner}
+        onEditExpense={g.openEditExpenseModal}
+        onDeleteExpense={g.handleDeleteExpense}
       />
     </div>
   );
