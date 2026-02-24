@@ -229,22 +229,23 @@ export default function GroupDetailsPage() {
                   </button>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex items-center gap-2 border-t border-gray-100 px-4 py-2.5 sm:border-t-0 sm:py-3 sm:pr-4">
+                {/* ── Action Buttons ── */}
+                <div className="mb-5 flex w-full items-center justify-center gap-3 sm:justify-end">
                   <button
                     onClick={g.openSettleUpModal}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 active:scale-95 sm:px-4"
+                    className="flex flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-50 active:scale-[0.98]"
                   >
                     <span>🤝</span> Settle Up
                   </button>
                   <button
                     onClick={g.openAddExpenseModal}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:bg-green-700 active:scale-95 sm:px-4"
+                    className="flex flex-1 sm:flex-none items-center justify-center gap-2 rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-green-700 active:scale-[0.98]"
                   >
                     <span>💸</span> Add Expense
                   </button>
                 </div>
               </div>
+
 
               {/* ── Tab Content ── */}
               <div className="p-4 sm:p-6">
