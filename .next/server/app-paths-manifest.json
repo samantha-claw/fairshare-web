@@ -1,1 +1,17 @@
-{}
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/auth/signout/route": "app/auth/signout/route.js",
+  "/auth/callback/route": "app/auth/callback/route.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/join/page": "app/join/page.js",
+  "/page": "app/page.js",
+  "/(auth)/login/page": "app/(auth)/login/page.js",
+  "/(auth)/register/page": "app/(auth)/register/page.js",
+  "/dashboard/friends/page": "app/dashboard/friends/page.js",
+  "/dashboard/groups/[id]/page": "app/dashboard/groups/[id]/page.js",
+  "/dashboard/groups/new/page": "app/dashboard/groups/new/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/dashboard/profile/[id]/page": "app/dashboard/profile/[id]/page.js",
+  "/dashboard/profile/edit/page": "app/dashboard/profile/edit/page.js",
+  "/dashboard/profile/page": "app/dashboard/profile/page.js"
+}

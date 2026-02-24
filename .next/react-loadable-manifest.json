@@ -1,1 +1,9 @@
-{}
+{
+  "components/modals/qr/qr-scanner-modal.tsx -> html5-qrcode": {
+    "id": 791,
+    "files": [
+      "static/chunks/7cb1fa1f.ea36de2d276ff347.js",
+      "static/chunks/791.3f6c3063dde95baf.js"
+    ]
+  }
+}

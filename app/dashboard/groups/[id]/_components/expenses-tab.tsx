@@ -9,6 +9,37 @@ import { formatCurrency } from "@/lib/utils";
 import type { Expense } from "@/types/group";
 
 // ==========================================
+// 🎨 AVATAR HELPERS
+// ==========================================
+const AVATAR_GRADIENTS = [
+  "bg-gradient-to-br from-blue-400 to-blue-600",
+  "bg-gradient-to-br from-emerald-400 to-emerald-600",
+  "bg-gradient-to-br from-purple-400 to-purple-600",
+  "bg-gradient-to-br from-pink-400 to-pink-600",
+  "bg-gradient-to-br from-indigo-400 to-indigo-600",
+  "bg-gradient-to-br from-teal-400 to-teal-600",
+  "bg-gradient-to-br from-amber-400 to-amber-600",
+  "bg-gradient-to-br from-cyan-400 to-cyan-600",
+  "bg-gradient-to-br from-rose-400 to-rose-600",
+  "bg-gradient-to-br from-violet-400 to-violet-600",
+];
+
+function getInitials(name: string): string {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.slice(0, 2).toUpperCase();
+}
+
+function getAvatarColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return AVATAR_GRADIENTS[Math.abs(hash) % AVATAR_GRADIENTS.length];
+}
+
+// ==========================================
 // 🧩 TYPES
 // ==========================================
 interface ExpensesTabProps {
@@ -18,6 +49,7 @@ interface ExpensesTabProps {
   isOwner: boolean;
   onEditExpense: (exp: Expense) => void;
   onDeleteExpense: (id: string, name: string) => void;
+  onViewAll?: () => void;
 }
 
 // ==========================================
@@ -30,6 +62,7 @@ export function ExpensesTab({
   isOwner,
   onEditExpense,
   onDeleteExpense,
+  onViewAll,
 }: ExpensesTabProps) {
   if (expenses.length === 0) {
     return (
@@ -39,63 +72,116 @@ export function ExpensesTab({
     );
   }
 
+  const displayedExpenses = expenses.slice(0, 5);
+  const hasMore = expenses.length > 5;
+
   return (
     <div className="space-y-3">
-      {expenses.map((exp) => (
-        <div
-          key={exp.id}
-          className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50/50 p-4 transition-all hover:border-gray-200 hover:shadow-sm"
-        >
-          <div className="flex items-center gap-4">
-            <div className="rounded-lg bg-white p-3 text-xl shadow-sm ring-1 ring-gray-100">🧾</div>
-            <div>
-              <h3 className="font-semibold text-gray-900">{exp.name}</h3>
-              <p className="text-xs text-gray-500">
+      {displayedExpenses.map((exp) => {
+        const payerName =
+          exp.profiles.display_name || exp.profiles.full_name || "Unknown";
+
+        // Cast to any[] for safe optional property access on splits
+        const splits = (exp.expense_splits || []) as any[];
+        const visibleSplits = splits.slice(0, 3);
+        const remainingCount = Math.max(0, splits.length - 3);
+
+        return (
+          <div
+            key={exp.id}
+            className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50/50 p-3 transition-all hover:border-gray-200 hover:shadow-sm sm:p-4"
+          >
+            {/* ── Left: Payer Avatar ── */}
+            <div
+              className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold text-white shadow-sm ring-2 ring-white ${getAvatarColor(
+                payerName
+              )}`}
+            >
+              {getInitials(payerName)}
+            </div>
+
+            {/* ── Middle: Expense Info ── */}
+            <div className="min-w-0 flex-1">
+              <h3 className="truncate text-sm font-semibold text-gray-900 sm:text-base">
+                {exp.name}
+              </h3>
+              <p className="truncate text-xs text-gray-500">
                 Paid by{" "}
                 <Link
                   href={`/dashboard/profile/${exp.paid_by}`}
                   className="font-medium text-gray-700 hover:text-blue-600 hover:underline"
                 >
-                  {exp.profiles.display_name || exp.profiles.full_name}
+                  {payerName}
                 </Link>{" "}
                 · {new Date(exp.created_at).toLocaleDateString()}
               </p>
             </div>
-          </div>
 
-          <div className="flex flex-col items-end gap-2 text-right">
-            <p className="text-lg font-bold text-gray-900">{formatCurrency(exp.amount, currency)}</p>
-            <div className="flex items-center gap-2">
-              <span className="inline-block rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-600">
-                {exp.expense_splits?.length} members
-              </span>
+            {/* ── Right: Amount + Mini Avatars ── */}
+            <div className="flex flex-shrink-0 flex-col items-end gap-1.5">
+              <p className="text-base font-bold text-gray-900 sm:text-lg">
+                {formatCurrency(exp.amount, currency)}
+              </p>
 
-              {(currentUser === exp.paid_by || isOwner) && (
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => onEditExpense(exp)}
-                    className="p-1 text-gray-400 transition-colors hover:text-blue-600"
-                    title="Edit"
-                  >
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => onDeleteExpense(exp.id, exp.name)}
-                    className="p-1 text-gray-400 transition-colors hover:text-red-600"
-                    title="Delete"
-                  >
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
-              )}
+              {/* Overlapping mini-avatars of participants */}
+              <div className="flex items-center">
+                {visibleSplits.map((split: any, i: number) => {
+                  const splitName =
+                    split?.profiles?.display_name ||
+                    split?.profiles?.full_name ||
+                    `M${i + 1}`;
+                  return (
+                    <div
+                      key={split?.id || i}
+                      className={`${
+                        i > 0 ? "-ml-1.5" : ""
+                      } flex h-6 w-6 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold text-white shadow-sm ${getAvatarColor(
+                        splitName
+                      )}`}
+                      title={splitName}
+                    >
+                      {getInitials(splitName).charAt(0)}
+                    </div>
+                  );
+                })}
+                {remainingCount > 0 && (
+                  <div className="-ml-1.5 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-gray-200 text-[10px] font-bold text-gray-600 shadow-sm">
+                    +{remainingCount}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
+
+      {/* ── View All Expenses Button ── */}
+      {onViewAll && (
+        <button
+          onClick={onViewAll}
+          className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gradient-to-r from-gray-50 to-white py-3.5 text-sm font-semibold text-gray-600 shadow-sm transition-all duration-200 hover:border-gray-300 hover:shadow-md active:scale-[0.98]"
+        >
+          View All Expenses
+          {hasMore && (
+            <span className="inline-flex items-center justify-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-600">
+              {expenses.length}
+            </span>
+          )}
+          <svg
+            className="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M8.25 4.5l7.5 7.5-7.5 7.5"
+            />
+          </svg>
+        </button>
+      )}
     </div>
   );
 }
