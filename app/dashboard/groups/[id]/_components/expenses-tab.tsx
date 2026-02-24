@@ -91,18 +91,15 @@ export function ExpensesTab({
           return (
             <div
               key={exp.id}
-              className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50/50 p-3 transition-all hover:border-gray-200 hover:shadow-sm sm:p-4"
+              className="flex items-start sm:items-center gap-3 rounded-xl border border-gray-100 bg-gray-50/50 p-3 transition-all hover:border-gray-200 hover:shadow-sm sm:p-4"
             >
-              {/* ── Left: Payer Avatar (same pattern as members-card) ── */}
+              {/* ── Left: Payer Avatar ── */}
+              {/* ضفنا mt-1 للموبايل عشان لو النص كتر الأفاتار يفضل محاذي صح من فوق */}
               <Link
                 href={`/dashboard/profile/${exp.paid_by}`}
-                className="flex-shrink-0"
+                className="mt-1 shrink-0 sm:mt-0"
               >
-                <Avatar
-                  src={payerAvatar}
-                  name={payerName}
-                  size="md"
-                />
+                <Avatar src={payerAvatar} name={payerName} size="md" />
               </Link>
 
               {/* ── Middle: Expense Info ── */}
@@ -110,20 +107,29 @@ export function ExpensesTab({
                 <h3 className="truncate text-sm font-semibold text-gray-900 sm:text-base">
                   {exp.name}
                 </h3>
-                <p className="truncate text-xs text-gray-500">
-                  Paid by{" "}
+                
+                {/* تم تعديل السطر ده: 
+                  استخدمنا flex-wrap عشان التاريخ ينزل سطر جديد لوحده براحته
+                  بدون ما يدخل تحت الأفاتارات اليمين 
+                */}
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs text-gray-500">
+                  <span>Paid by</span>
                   <Link
                     href={`/dashboard/profile/${exp.paid_by}`}
-                    className="font-medium text-gray-700 hover:text-blue-600 hover:underline"
+                    className="truncate max-w-[80px] sm:max-w-[120px] font-medium text-gray-700 hover:text-blue-600 hover:underline"
+                    title={payerName}
                   >
                     {payerName}
-                  </Link>{" "}
-                  · {new Date(exp.created_at).toLocaleDateString()}
-                </p>
+                  </Link>
+                  <span className="text-gray-400">·</span>
+                  <span className="whitespace-nowrap">
+                    {new Date(exp.created_at).toLocaleDateString()}
+                  </span>
+                </div>
               </div>
 
               {/* ── Right: Amount + Mini Participant Avatars ── */}
-              <div className="flex flex-shrink-0 flex-col items-end gap-1.5">
+              <div className="flex shrink-0 flex-col items-end gap-1.5">
                 <p className="text-base font-bold text-gray-900 sm:text-lg">
                   {formatCurrency(exp.amount, currency)}
                 </p>
@@ -135,8 +141,7 @@ export function ExpensesTab({
                       split?.profiles?.display_name ||
                       split?.profiles?.full_name ||
                       `M${i + 1}`;
-                    const splitAvatar =
-                      split?.profiles?.avatar_url || null;
+                    const splitAvatar = split?.profiles?.avatar_url || null;
 
                     return (
                       <div
