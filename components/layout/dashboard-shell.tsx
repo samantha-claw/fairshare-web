@@ -19,6 +19,7 @@ interface DashboardShellProps {
 }
 
 interface UserProfile {
+  id: string;
   display_name: string;
   avatar_url: string;
 }
@@ -51,6 +52,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile>({
+    id: "",
     display_name: "User",
     avatar_url: "",
   });
@@ -77,6 +79,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
       if (profileData) {
         setProfile({
+          id: session.user.id,
           display_name: profileData.display_name || "User",
           avatar_url: profileData.avatar_url || "",
         });
@@ -200,6 +203,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
         <Header
           displayName={profile.display_name}
           avatarUrl={profile.avatar_url}
+          userId={profile.id}
           onMobileMenuToggle={() => setMobileMenuOpen(true)}
         />
 
