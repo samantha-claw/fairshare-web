@@ -196,7 +196,6 @@ export function useFriends() {
           .limit(8);
 
         if (!error && data) {
-          // Filter out: current user, existing friends, and people with pending outgoing requests
           const friendIds = friends.map((f) => f.friend_id);
           const filtered = data.filter(
             (user: any) =>
@@ -288,18 +287,43 @@ export function useFriends() {
 
   /* ── Decline Incoming Request ────────────────────────── */
 
+  /**
+   * ════════════════════════════════════════════════════════
+   * FIX: Changed from .update({ status: "declined" }) to
+   * .delete() — matching the working pattern in use-profile.ts.
+   *
+   * The old approach failed because:
+   *   1. RLS policy may not allow the receiver to UPDATE
+   *      a friendship row (only the requester "owns" it).
+   *   2. The "declined" status may not exist as a valid
+   *      enum/check value on the status column.
+   *
+   * The new approach:
+   *   - Uses .delete() to remove the row entirely.
+   *   - Filters by BOTH the friendship row ID AND
+   *     receiver_id = currentUserId for RLS safety.
+   *   - Adds status = "pending" guard so we only delete
+   *     pending requests (never accepted friendships).
+   * ════════════════════════════════════════════════════════
+   */
   async function handleDeclineRequest(requestId: string) {
+    if (!currentUserId) return;
+
     setDecliningId(requestId);
     try {
       const { error } = await supabase
         .from("friendships")
-        .update({ status: "declined" })
-        .eq("id", requestId);
+        .delete()
+        .eq("id", requestId)
+        .eq("receiver_id", currentUserId)
+        .eq("status", "pending");
+
       if (error) throw error;
 
       setPendingRequests((prev) => prev.filter((r) => r.request_id !== requestId));
       showToast("success", "Request declined.");
     } catch (err) {
+      console.error("Failed to decline request:", err);
       showToast("error", "Failed to decline request.");
     } finally {
       setDecliningId(null);
