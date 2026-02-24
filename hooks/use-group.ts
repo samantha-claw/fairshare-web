@@ -299,6 +299,12 @@ export function useGroup() {
 
   /* ── Handlers ────────────────────────────────────────── */
 
+  /**
+   * ════════════════════════════════════════════════════════
+   * ADD MEMBER
+   * → Notifies the added user after successful RPC
+   * ════════════════════════════════════════════════════════
+   */
   async function handleAddMember(targetUserId: string) {
     setAddingMember(targetUserId);
     try {
@@ -312,6 +318,20 @@ export function useGroup() {
         return;
       }
 
+      // ── Notify the added member ──
+      const groupName = group?.name || "a group";
+      await supabase.from("notifications").insert({
+        user_id: targetUserId,
+        title: "New Group Invitation 🤝",
+        message: `You have been added to the group: ${groupName}`,
+        type: "group",
+        link: `/dashboard/groups/${groupId}`,
+      }).then(({ error: notifError }) => {
+        if (notifError) {
+          console.error("Failed to send group invitation notification:", notifError);
+        }
+      });
+
       setInvitableFriends((prev) => prev.filter((f) => f.friend_id !== targetUserId));
       setSearchResults((prev) => prev.filter((u) => u.id !== targetUserId));
       await fetchData();
@@ -322,6 +342,12 @@ export function useGroup() {
     }
   }
 
+  /**
+   * ════════════════════════════════════════════════════════
+   * SAVE EXPENSE (Add / Edit)
+   * → Notifies all participants except the current user
+   * ════════════════════════════════════════════════════════
+   */
   async function handleSaveExpense(e: FormEvent) {
     e.preventDefault();
     if (!expenseName || !expenseAmount) return;
@@ -354,6 +380,29 @@ export function useGroup() {
     if (rpcError) {
       alert("Error saving expense: " + rpcError.message);
     } else {
+      // ── Notify all participants except the current user ──
+      const currency = group?.currency || "USD";
+      const formattedAmount = formatCurrency(parseFloat(expenseAmount), currency);
+      const membersToNotify = selectedMembers.filter((id) => id !== currentUser);
+
+      if (membersToNotify.length > 0) {
+        const notifications = membersToNotify.map((memberId) => ({
+          user_id: memberId,
+          title: "New Expense Added 💸",
+          message: `You were added to an expense: ${expenseName} for ${formattedAmount}`,
+          type: "expense",
+          link: `/dashboard/groups/${groupId}`,
+        }));
+
+        const { error: notifError } = await supabase
+          .from("notifications")
+          .insert(notifications);
+
+        if (notifError) {
+          console.error("Failed to send expense notifications:", notifError);
+        }
+      }
+
       setIsExpenseModalOpen(false);
       setEditingExpenseId(null);
       setExpenseName("");
@@ -364,6 +413,12 @@ export function useGroup() {
     setSubmittingExpense(false);
   }
 
+  /**
+   * ════════════════════════════════════════════════════════
+   * INITIATE SETTLEMENT
+   * → Notifies the receiver after the settlement is created
+   * ════════════════════════════════════════════════════════
+   */
   async function handleInitiateSettlement(e: FormEvent) {
     e.preventDefault();
 
@@ -408,6 +463,24 @@ export function useGroup() {
           type: "settlement",
         },
       });
+
+      // ── Notify the settlement receiver ──
+      const currency = group?.currency || "USD";
+      const formattedAmount = formatCurrency(parseFloat(settleAmount), currency);
+
+      const { error: notifError } = await supabase
+        .from("notifications")
+        .insert({
+          user_id: settleReceiver,
+          title: "Payment Confirmation Needed 🤝",
+          message: `A payment of ${formattedAmount} was sent to you. Please confirm receipt.`,
+          type: "settlement",
+          link: `/dashboard/groups/${groupId}`,
+        });
+
+      if (notifError) {
+        console.error("Failed to send settlement notification:", notifError);
+      }
 
       setIsSettleModalOpen(false);
       setSettleReceiver("");

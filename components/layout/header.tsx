@@ -7,7 +7,8 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
-import { Bell, Search, Menu, Wallet, QrCode } from "lucide-react";
+import { Search, Menu, Wallet, QrCode } from "lucide-react";
+import { NotificationBell } from "@/components/notification-bell";
 import { QRScannerModal } from "@/components/modals/qr/qr-scanner-modal";
 import { JoinGroupConfirmModal } from "@/components/modals/join-group-confirm-modal";
 
@@ -17,6 +18,7 @@ import { JoinGroupConfirmModal } from "@/components/modals/join-group-confirm-mo
 interface HeaderProps {
   displayName: string;
   avatarUrl: string;
+  userId: string;
   onMobileMenuToggle?: () => void;
 }
 
@@ -44,6 +46,7 @@ function getPageSubtitle(pathname: string): string {
 export function Header({
   displayName,
   avatarUrl,
+  userId,
   onMobileMenuToggle,
 }: HeaderProps) {
   const pathname = usePathname();
@@ -115,14 +118,8 @@ export function Header({
             <QrCode className="h-[18px] w-[18px]" />
           </button>
 
-          {/* Notifications */}
-          <button className="relative flex h-9 w-9 items-center justify-center rounded-xl text-gray-400 transition-all duration-200 hover:bg-gray-100 hover:text-gray-600">
-            <Bell className="h-[18px] w-[18px]" />
-            <span className="absolute right-1.5 top-1.5 flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-indigo-500" />
-            </span>
-          </button>
+          {/* ★ Real-time Notification Bell (replaces static Bell icon) ★ */}
+          <NotificationBell userId={userId} />
 
           {/* Divider */}
           <div className="mx-1 hidden h-6 w-px bg-gray-200 sm:block" />
