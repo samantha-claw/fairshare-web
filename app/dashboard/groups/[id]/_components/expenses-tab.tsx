@@ -9,7 +9,7 @@ import { formatCurrency } from "@/lib/utils";
 import type { Expense } from "@/types/group";
 
 // ==========================================
-// 🎨 AVATAR HELPERS
+// 🎨 AVATAR FALLBACK HELPERS
 // ==========================================
 const AVATAR_GRADIENTS = [
   "bg-gradient-to-br from-blue-400 to-blue-600",
@@ -93,22 +93,17 @@ export function ExpensesTab({
               key={exp.id}
               className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50/50 p-3 transition-all hover:border-gray-200 hover:shadow-sm sm:p-4"
             >
-              {/* ── Left: Payer Avatar (real image or initials fallback) ── */}
-              {payerAvatar ? (
-                <img
+              {/* ── Left: Payer Avatar (same pattern as members-card) ── */}
+              <Link
+                href={`/dashboard/profile/${exp.paid_by}`}
+                className="flex-shrink-0"
+              >
+                <Avatar
                   src={payerAvatar}
-                  alt={payerName}
-                  className="h-10 w-10 flex-shrink-0 rounded-full object-cover shadow-sm ring-2 ring-white"
+                  name={payerName}
+                  size="md"
                 />
-              ) : (
-                <div
-                  className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold text-white shadow-sm ring-2 ring-white ${getAvatarColor(
-                    payerName
-                  )}`}
-                >
-                  {getInitials(payerName)}
-                </div>
-              )}
+              </Link>
 
               {/* ── Middle: Expense Info ── */}
               <div className="min-w-0 flex-1">
@@ -127,13 +122,13 @@ export function ExpensesTab({
                 </p>
               </div>
 
-              {/* ── Right: Amount + Mini Avatars ── */}
+              {/* ── Right: Amount + Mini Participant Avatars ── */}
               <div className="flex flex-shrink-0 flex-col items-end gap-1.5">
                 <p className="text-base font-bold text-gray-900 sm:text-lg">
                   {formatCurrency(exp.amount, currency)}
                 </p>
 
-                {/* Overlapping mini-avatars of participants */}
+                {/* Overlapping mini-avatars */}
                 <div className="flex items-center">
                   {visibleSplits.map((split: any, i: number) => {
                     const splitName =
@@ -143,32 +138,37 @@ export function ExpensesTab({
                     const splitAvatar =
                       split?.profiles?.avatar_url || null;
 
-                    return splitAvatar ? (
-                      <img
-                        key={split?.id || i}
-                        src={splitAvatar}
-                        alt={splitName}
-                        title={splitName}
-                        className={`${
-                          i > 0 ? "-ml-1.5" : ""
-                        } h-6 w-6 rounded-full border-2 border-white object-cover shadow-sm`}
-                      />
-                    ) : (
+                    return (
                       <div
                         key={split?.id || i}
                         className={`${
                           i > 0 ? "-ml-1.5" : ""
-                        } flex h-6 w-6 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold text-white shadow-sm ${getAvatarColor(
-                          splitName
-                        )}`}
+                        } rounded-full ring-2 ring-white`}
                         title={splitName}
                       >
-                        {getInitials(splitName).charAt(0)}
+                        {splitAvatar ? (
+                          <img
+                            src={splitAvatar}
+                            alt={splitName}
+                            className="h-6 w-6 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div
+                            className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-white ${getAvatarColor(
+                              splitName
+                            )}`}
+                          >
+                            {getInitials(splitName).charAt(0)}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
                   {remainingCount > 0 && (
-                    <div className="-ml-1.5 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-gray-200 text-[10px] font-bold text-gray-600 shadow-sm">
+                    <div
+                      className="-ml-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-[10px] font-bold text-gray-600 ring-2 ring-white"
+                      title={`+${remainingCount} more`}
+                    >
                       +{remainingCount}
                     </div>
                   )}
@@ -179,19 +179,32 @@ export function ExpensesTab({
         })}
       </div>
 
-      {/* ── View All Expenses Button (flush with card bottom) ── */}
+      {/* ── Seamless "View All" Button ── */}
       {onViewAll && (
-        <div className="-mx-4 -mb-4 mt-4 sm:-mx-6 sm:-mb-6">
+        <div className="-mx-4 -mb-4 mt-3 sm:-mx-6 sm:-mb-6">
           <button
             onClick={onViewAll}
-            className="w-full rounded-b-xl border-t border-gray-100 bg-gray-50 p-4 text-center text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100"
+            className="flex w-full items-center justify-center gap-2 rounded-b-xl border-t border-gray-100 bg-gray-50 p-4 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100 active:scale-[0.99]"
           >
             View All Expenses
             {hasMore && (
-              <span className="ml-2 inline-flex items-center justify-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-600">
+              <span className="inline-flex items-center justify-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-600">
                 {expenses.length}
               </span>
             )}
+            <svg
+              className="h-4 w-4 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M8.25 4.5l7.5 7.5-7.5 7.5"
+              />
+            </svg>
           </button>
         </div>
       )}
