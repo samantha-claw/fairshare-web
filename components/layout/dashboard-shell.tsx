@@ -111,9 +111,16 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
   /* ── Sign Out ────────────────────────────────────── */
 
+    /* ── Sign Out ────────────────────────────────────── */
   async function handleSignOut() {
-    await supabase.auth.signOut();
-    router.replace("/login");
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    } finally {
+      // Force redirect to login after sign out
+      window.location.href = "/login";
+    }
   }
 
   /* ── Loading State ───────────────────────────────── */
@@ -221,11 +228,13 @@ export function DashboardShell({ children }: DashboardShellProps) {
         </main>
       </div>
 
-      {/* ── Mobile Bottom Nav ────────────────────── */}
-      <MobileNav
-        displayName={profile.display_name}
-        avatarUrl={profile.avatar_url}
-      />
+            {/* ── Mobile Bottom Nav ────────────────────── */}
+      {!mobileMenuOpen && (
+        <MobileNav
+          displayName={profile.display_name}
+          avatarUrl={profile.avatar_url}
+        />
+      )}
     </div>
   );
 }
