@@ -187,6 +187,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
                   displayName={profile.display_name}
                   avatarUrl={profile.avatar_url}
                   onSignOut={handleSignOut}
+                  isMobile={true}
                 />
               </div>
             </div>

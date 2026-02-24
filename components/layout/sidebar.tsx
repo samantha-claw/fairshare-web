@@ -23,6 +23,7 @@ interface SidebarProps {
   displayName: string;
   avatarUrl: string;
   onSignOut: () => void;
+  isMobile?: boolean; // 👈 ضفنا الخاصية دي هنا
 }
 
 interface NavItem {
@@ -34,7 +35,6 @@ interface NavItem {
 // ==========================================
 // ⚙️ LOGIC
 // ==========================================
-
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Friends", href: "/dashboard/friends", icon: Users },
@@ -49,20 +49,33 @@ function isActive(pathname: string, href: string): boolean {
 // ==========================================
 // 🎨 UI RENDER
 // ==========================================
-export function Sidebar({ displayName, avatarUrl, onSignOut }: SidebarProps) {
+export function Sidebar({
+  displayName,
+  avatarUrl,
+  onSignOut,
+  isMobile = false, // 👈 القيمة الافتراضية
+}: SidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden w-[260px] flex-col border-r border-slate-800/50 bg-slate-950 md:flex">
-      {/* ── Logo ───────────────────────────────────── */}
-      <div className="flex h-16 items-center gap-2.5 border-b border-slate-800/50 px-6">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/30">
-          <span className="text-sm font-black text-white">F</span>
+    <aside
+      className={
+        isMobile
+          ? "flex h-full w-full flex-col bg-slate-950" // كلاسات الموبايل (تخليه يملى الشاشة ويظهر دايماً)
+          : "fixed inset-y-0 left-0 z-40 hidden w-[260px] flex-col border-r border-slate-800/50 bg-slate-950 md:flex" // كلاسات الديسكتوب
+      }
+    >
+      {/* ── Logo (يظهر في الديسكتوب بس لأن الموبايل ليه هيدر خاص بيه) ── */}
+      {!isMobile && (
+        <div className="flex h-16 shrink-0 items-center gap-2.5 border-b border-slate-800/50 px-6">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/30">
+            <span className="text-sm font-black text-white">F</span>
+          </div>
+          <span className="text-lg font-bold tracking-tight text-white">
+            Fair<span className="text-indigo-400">Share</span>
+          </span>
         </div>
-        <span className="text-lg font-bold tracking-tight text-white">
-          Fair<span className="text-indigo-400">Share</span>
-        </span>
-      </div>
+      )}
 
       {/* ── Navigation ─────────────────────────────── */}
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5">
@@ -90,7 +103,7 @@ export function Sidebar({ displayName, avatarUrl, onSignOut }: SidebarProps) {
               )}
 
               <Icon
-                className={`h-[18px] w-[18px] flex-shrink-0 transition-transform duration-200 ${
+                className={`h-[18px] w-[18px] shrink-0 transition-transform duration-200 ${
                   active
                     ? "text-white"
                     : "text-slate-500 group-hover:text-slate-300"
@@ -114,7 +127,7 @@ export function Sidebar({ displayName, avatarUrl, onSignOut }: SidebarProps) {
             href="/dashboard/groups/new"
             className="group flex items-center gap-3 rounded-xl border border-dashed border-slate-700 px-3 py-2.5 text-sm font-medium text-slate-400 transition-all duration-300 hover:border-indigo-500/50 hover:bg-indigo-500/10 hover:text-indigo-300"
           >
-            <PlusCircle className="h-[18px] w-[18px] flex-shrink-0 text-slate-600 transition-colors group-hover:text-indigo-400" />
+            <PlusCircle className="h-[18px] w-[18px] shrink-0 text-slate-600 transition-colors group-hover:text-indigo-400" />
             <span>Create Group</span>
             <Sparkles className="ml-auto h-3.5 w-3.5 text-slate-600 transition-all group-hover:rotate-12 group-hover:text-indigo-400" />
           </Link>
@@ -122,13 +135,13 @@ export function Sidebar({ displayName, avatarUrl, onSignOut }: SidebarProps) {
       </nav>
 
       {/* ── Bottom Section: User + Sign Out ─────── */}
-      <div className="border-t border-slate-800/50 p-3">
+      <div className="shrink-0 border-t border-slate-800/50 p-3">
         {/* User Card */}
         <Link
           href="/dashboard/profile"
           className="group mb-2 flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 hover:bg-slate-800/60"
         >
-          <div className="relative flex-shrink-0">
+          <div className="relative shrink-0">
             <Avatar src={avatarUrl} name={displayName} size="sm" />
             <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-slate-950 bg-emerald-400" />
           </div>
@@ -146,7 +159,7 @@ export function Sidebar({ displayName, avatarUrl, onSignOut }: SidebarProps) {
           onClick={onSignOut}
           className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-500 transition-all duration-200 hover:bg-red-500/10 hover:text-red-400"
         >
-          <LogOut className="h-[18px] w-[18px] flex-shrink-0" />
+          <LogOut className="h-[18px] w-[18px] shrink-0" />
           <span>Sign out</span>
         </button>
       </div>
