@@ -143,12 +143,12 @@ export function useGroup() {
       const { data: expensesData, error: expError } = await supabase
         .from("expenses")
         .select(
-          `id, name, amount, created_at, paid_by,
-           profiles:paid_by ( full_name, username, display_name ),
-           expense_splits ( user_id )`
-        )
-        .eq("group_id", groupId)
-        .order("created_at", { ascending: false });
+         `id, name, amount, created_at, paid_by,
+          profiles:paid_by ( full_name, username, display_name, avatar_url ),
+          expense_splits ( user_id, profiles ( full_name, display_name, avatar_url ) )`
+      )
+       .eq("group_id", groupId)
+      .order("created_at", { ascending: false });
 
       if (expError) console.error("Error fetching expenses:", expError);
       if (expensesData) {
