@@ -76,8 +76,8 @@ export function QRScannerModal({
    *    /join?id=GROUP_ID
    *
    * 3. Profile link:
-   *    /profile/USERNAME
-   *    /dashboard/profile/USERNAME
+   *    /dashboard/profile/USER_ID_OR_USERNAME
+   *    /profile/USER_ID_OR_USERNAME
    *
    * 4. Any other same-origin URL → navigate to it
    * ════════════════════════════════════════════════════
@@ -120,17 +120,21 @@ export function QRScannerModal({
         }
 
         // ── Case 2: Profile link ──
+        // Matches: /profile/ANYTHING or /dashboard/profile/ANYTHING
+        // The [a-zA-Z0-9_\-.]+ pattern supports:
+        //   - UUIDs:    550e8400-e29b-41d4-a716-446655440000
+        //   - Usernames: john_doe, user-123, my.name
         const profileMatch = pathname.match(
-          /\/(?:dashboard\/)?profile\/([a-z0-9_]+)/i
+          /\/(?:dashboard\/)?profile\/([a-zA-Z0-9_\-.]+)/
         );
         if (profileMatch) {
-          const username = profileMatch[1];
-          console.log("[Scanner] Profile detected:", username);
+          const profileIdentifier = profileMatch[1];
+          console.log("[Scanner] Profile detected:", profileIdentifier);
 
           stopScanner();
           setTimeout(() => {
             onClose();
-            router.push(`/dashboard/profile/${username}`);
+            router.push(`/dashboard/profile/${profileIdentifier}`);
           }, 800);
           return;
         }
