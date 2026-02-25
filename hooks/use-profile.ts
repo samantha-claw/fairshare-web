@@ -22,6 +22,9 @@ interface UseProfileOptions {
   userId?: string;
 }
 
+// "outgoing" = I sent the request | "incoming" = they sent it to me
+type FriendshipDirection = "incoming" | "outgoing" | null;
+
 // ==========================================
 // ⚙️ LOGIC & STATE
 // ==========================================
@@ -40,6 +43,7 @@ export function useProfile(options: UseProfileOptions = {}) {
 
   /* ── Friend State ────────────────────────────────── */
   const [friendStatus, setFriendStatus] = useState<FriendStatus>("none");
+  const [friendshipDirection, setFriendshipDirection] = useState<FriendshipDirection>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   /* ── Financial State ─────────────────────────────── */
@@ -126,7 +130,7 @@ export function useProfile(options: UseProfileOptions = {}) {
       if (targetUserId && targetUserId !== session.user.id) {
         const { data: friendshipData } = await supabase
           .from("friendships")
-          .select("status")
+          .select("id, status, requester_id, receiver_id")
           .or(
             `and(requester_id.eq.${session.user.id},receiver_id.eq.${targetUserId}),and(requester_id.eq.${targetUserId},receiver_id.eq.${session.user.id})`
           )
@@ -135,11 +139,19 @@ export function useProfile(options: UseProfileOptions = {}) {
         if (friendshipData) {
           if (friendshipData.status === "accepted") {
             setFriendStatus("friends");
+            setFriendshipDirection(null);
           } else {
             setFriendStatus("pending");
+            // Determine direction: did I send it or did they?
+            if (friendshipData.requester_id === session.user.id) {
+              setFriendshipDirection("outgoing"); // I sent it
+            } else {
+              setFriendshipDirection("incoming"); // They sent it to me
+            }
           }
         } else {
           setFriendStatus("none");
+          setFriendshipDirection(null);
         }
       }
 
@@ -302,6 +314,7 @@ export function useProfile(options: UseProfileOptions = {}) {
       });
       if (error) throw error;
       setFriendStatus("pending");
+      setFriendshipDirection("outgoing");
 
       // ── Notify the target user about the friend request ──
       const senderName = currentUserName || "Someone";
@@ -328,6 +341,12 @@ export function useProfile(options: UseProfileOptions = {}) {
     }
   }
 
+  /**
+   * ════════════════════════════════════════════════════════
+   * CANCEL REQUEST (outgoing) / DECLINE REQUEST (incoming)
+   * → Deletes the friendship row entirely
+   * ════════════════════════════════════════════════════════
+   */
   async function handleCancelRequest() {
     if (!currentUserId || !targetUserId) return;
 
@@ -341,9 +360,60 @@ export function useProfile(options: UseProfileOptions = {}) {
         );
       if (error) throw error;
       setFriendStatus("none");
+      setFriendshipDirection(null);
     } catch (err: any) {
       console.error(err);
       alert("Failed to cancel request.");
+    } finally {
+      setIsProcessing(false);
+    }
+  }
+
+  /**
+   * ════════════════════════════════════════════════════════
+   * ACCEPT FRIEND REQUEST (incoming)
+   * → Updates the friendship status to "accepted"
+   * → Notifies the requester that their request was accepted
+   * ════════════════════════════════════════════════════════
+   */
+  async function handleAcceptRequest() {
+    if (!currentUserId || !targetUserId) return;
+
+    setIsProcessing(true);
+    try {
+      // Accept: update the row where THEY are requester and I am receiver
+      const { error } = await supabase
+        .from("friendships")
+        .update({ status: "accepted" })
+        .eq("requester_id", targetUserId)
+        .eq("receiver_id", currentUserId)
+        .eq("status", "pending");
+
+      if (error) throw error;
+
+      setFriendStatus("friends");
+      setFriendshipDirection(null);
+
+      // ── Notify the requester that their request was accepted ──
+      const accepterName = currentUserName || "Someone";
+
+      const { error: notifError } = await supabase
+        .from("notifications")
+        .insert({
+          user_id: targetUserId,
+          actor_id: currentUserId,
+          type: "friend_request",
+          title: "Friend Request Accepted! 🎉",
+          message: `${accepterName} accepted your friend request.`,
+          link: `/dashboard/profile/${currentUserId}`,
+        });
+
+      if (notifError) {
+        console.error("Failed to send acceptance notification:", notifError);
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || "Failed to accept request.");
     } finally {
       setIsProcessing(false);
     }
@@ -372,9 +442,11 @@ export function useProfile(options: UseProfileOptions = {}) {
 
     // Friend
     friendStatus,
+    friendshipDirection,
     isProcessing,
     handleAddFriend,
     handleCancelRequest,
+    handleAcceptRequest,
 
     // Financial
     groups,
