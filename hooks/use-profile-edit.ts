@@ -281,8 +281,8 @@ export function useProfileEdit() {
   /* ── Upload Avatar to Supabase Storage ───────────── */
 
   async function uploadAvatar(file: File, uid: string): Promise<string> {
-    const fileExt = file.name.split(".").pop()?.toLowerCase() || "jpg";
-    const filePath = `${uid}/avatar-${Date.now()}.${fileExt}`;
+    // Use a constant path per user so upsert actually overwrites the same file
+    const filePath = `${uid}/profile_image`;
 
     // Upload file to the 'avatars' bucket
     const { error: uploadError } = await supabase.storage
@@ -299,24 +299,35 @@ export function useProfileEdit() {
       data: { publicUrl },
     } = supabase.storage.from("avatars").getPublicUrl(filePath);
 
-    return publicUrl;
+    // Append cache-busting param so browsers/CDNs fetch the new image
+    return `${publicUrl}?t=${Date.now()}`;
   }
 
   /* ── Delete Old Avatar from Storage ──────────────── */
 
   async function deleteOldAvatar(avatarUrl: string, uid: string) {
     try {
+      // Skip external avatars (e.g. Google OAuth profile pictures)
+      if (!avatarUrl.includes("supabase.co")) return;
+
       // Extract the file path from the URL
       // The URL format is typically: .../storage/v1/object/public/avatars/{uid}/filename
       const url = new URL(avatarUrl);
       const pathParts = url.pathname.split("/avatars/");
       if (pathParts.length > 1) {
-        const filePath = pathParts[1];
-        await supabase.storage.from("avatars").remove([filePath]);
+        // Decode any URI-encoded characters (e.g. %20 → space)
+        const filePath = decodeURIComponent(pathParts[1]);
+        const { error: removeError } = await supabase.storage
+          .from("avatars")
+          .remove([filePath]);
+
+        if (removeError) {
+          console.error("Failed to remove old avatar:", removeError);
+        }
       }
-    } catch {
+    } catch (err) {
       // Silently fail — old avatar cleanup is best-effort
-      console.warn("Could not delete old avatar file.");
+      console.warn("Could not delete old avatar file:", err);
     }
   }
 
