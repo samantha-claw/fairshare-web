@@ -4,9 +4,7 @@ import { useState, useCallback, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Member, Expense } from "@/types/group";
 import { useToast } from "@/hooks/use-toast";
-/**
- * Manages the expense modal state and all expense CRUD operations.
- */
+
 export function useGroupExpenses(
   groupId: string,
   members: Member[],
@@ -14,15 +12,16 @@ export function useGroupExpenses(
 ) {
   const supabase = createClient();
   const toast = useToast();
-  /* ── Modal state ─────────────────────────────────────── */
+
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [expenseName, setExpenseName] = useState("");
   const [expenseAmount, setExpenseAmount] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
-  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
+  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(
+    null
+  );
   const [submittingExpense, setSubmittingExpense] = useState(false);
 
-  /* ── Open for "Add" ──────────────────────────────────── */
   const openAddExpenseModal = useCallback(() => {
     setEditingExpenseId(null);
     setExpenseName("");
@@ -31,7 +30,6 @@ export function useGroupExpenses(
     setIsExpenseModalOpen(true);
   }, [members]);
 
-  /* ── Open for "Edit" ─────────────────────────────────── */
   const openEditExpenseModal = useCallback((exp: Expense) => {
     setEditingExpenseId(exp.id);
     setExpenseName(exp.name);
@@ -42,13 +40,14 @@ export function useGroupExpenses(
     setIsExpenseModalOpen(true);
   }, []);
 
-  /* ── Save (Add / Edit) ──────────────────────────────── */
   const handleSaveExpense = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
       if (!expenseName || !expenseAmount) return;
       if (selectedMembers.length === 0) {
-        toast.error("Please select at least one member to split with.");
+        toast.error(
+          "Please select at least one member to split with."
+        );
         return;
       }
 
@@ -95,18 +94,17 @@ export function useGroupExpenses(
       editingExpenseId,
       supabase,
       refetch,
+      toast,
     ]
   );
 
-  /* ── Delete ──────────────────────────────────────────── */
   const handleDeleteExpense = useCallback(
     async (expenseId: string, name: string) => {
-      if (
-        !confirm(
-          `Are you sure you want to delete "${name}"? This will recalculate all balances.`
-        )
-      )
-        return;
+      const confirmed = await toast.confirm(
+        `Delete "${name}"? This will recalculate all balances.`,
+        { confirmLabel: "Delete" }
+      );
+      if (!confirmed) return;
 
       const { error: delError } = await supabase.rpc("delete_expense", {
         _expense_id: expenseId,
@@ -118,10 +116,9 @@ export function useGroupExpenses(
         refetch();
       }
     },
-    [supabase, refetch]
+    [supabase, refetch, toast]
   );
 
-  /* ── Public API ──────────────────────────────────────── */
   return {
     isExpenseModalOpen,
     setIsExpenseModalOpen,

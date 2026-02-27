@@ -7,9 +7,6 @@ import { formatCurrency } from "@/lib/utils";
 import type { Group, Balance } from "@/types/group";
 import { useToast } from "@/hooks/use-toast";
 
-/**
- * Manages the settings modal, group deletion, and leave-group logic.
- */
 export function useGroupSettings(
   groupId: string,
   group: Group | null,
@@ -18,17 +15,18 @@ export function useGroupSettings(
 ) {
   const router = useRouter();
   const supabase = createClient();
+  const toast = useToast();
 
-  /* ── Modal state ─────────────────────────────────────── */
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [deletingGroup, setDeletingGroup] = useState(false);
   const [leavingGroup, setLeavingGroup] = useState(false);
-  const toast = useToast();
-  /* ── Delete group (owner only) ───────────────────────── */
+
   const handleDeleteGroup = useCallback(async () => {
     if (!group || deleteConfirmText !== group.name) {
-      toast.error("Please type the group name exactly to confirm deletion.");
+      toast.error(
+        "Please type the group name exactly to confirm deletion."
+      );
       return;
     }
 
@@ -41,7 +39,9 @@ export function useGroupSettings(
         .eq("owner_id", currentUser!);
 
       if (deleteError) {
-        toast.error("Error deleting group: " + deleteError.message);
+        toast.error(
+          "Error deleting group: " + deleteError.message
+        );
         return;
       }
 
@@ -52,9 +52,16 @@ export function useGroupSettings(
     } finally {
       setDeletingGroup(false);
     }
-  }, [group, groupId, currentUser, deleteConfirmText, supabase, router]);
+  }, [
+    group,
+    groupId,
+    currentUser,
+    deleteConfirmText,
+    supabase,
+    router,
+    toast,
+  ]);
 
-  /* ── Leave group ─────────────────────────────────────── */
   const handleLeaveGroup = useCallback(async () => {
     if (!currentUser) return;
 
@@ -64,17 +71,16 @@ export function useGroupSettings(
         "You must settle your balances before leaving the group. " +
           (myBal.net_balance > 0
             ? `You are still owed ${formatCurrency(myBal.net_balance, group?.currency)}.`
-            : `You still owe ${formatCurrency(myBal.net_balance, group?.currency)}.`)
+            : `You still owe ${formatCurrency(Math.abs(myBal.net_balance), group?.currency)}.`)
       );
       return;
     }
 
-    if (
-      !confirm(
-        "Are you sure you want to leave this group? This action cannot be undone."
-      )
-    )
-      return;
+    const confirmed = await toast.confirm(
+      "Leave this group? This action cannot be undone.",
+      { confirmLabel: "Leave group" }
+    );
+    if (!confirmed) return;
 
     setLeavingGroup(true);
     try {
@@ -85,7 +91,9 @@ export function useGroupSettings(
         .eq("user_id", currentUser);
 
       if (leaveError) {
-        toast.error("Error leaving group: " + leaveError.message);
+        toast.error(
+          "Error leaving group: " + leaveError.message
+        );
         return;
       }
 
@@ -96,9 +104,16 @@ export function useGroupSettings(
     } finally {
       setLeavingGroup(false);
     }
-  }, [currentUser, groupId, group?.currency, balances, supabase, router]);
+  }, [
+    currentUser,
+    groupId,
+    group?.currency,
+    balances,
+    supabase,
+    router,
+    toast,
+  ]);
 
-  /* ── Public API ──────────────────────────────────────── */
   return {
     isSettingsModalOpen,
     setIsSettingsModalOpen,

@@ -1,8 +1,5 @@
 "use client";
 
-// ==========================================
-// 📦 IMPORTS
-// ==========================================
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -13,29 +10,20 @@ import type {
   ProfileActivity,
   ProfileStats,
 } from "@/types/profile";
-import { ToastContainer } from "@/components/ui/toast-container";
-import { useToast } from "@/hooks/use-toast"; // 
-
-// ==========================================
-// 🧩 TYPES
-// ==========================================
+import { useToast } from "@/hooks/use-toast";
 
 interface UseProfileOptions {
   userId?: string;
 }
 
-// "outgoing" = I sent the request | "incoming" = they sent it to me
 type FriendshipDirection = "incoming" | "outgoing" | null;
-
-// ==========================================
-// ⚙️ LOGIC & STATE
-// ==========================================
 
 export function useProfile(options: UseProfileOptions = {}) {
   const { userId: targetUserId } = options;
   const router = useRouter();
   const supabase = createClient();
-  const toast = useToast();
+  const toast = useToast(); // ← single call, shared via context
+
   /* ── Core State ──────────────────────────────────── */
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +33,8 @@ export function useProfile(options: UseProfileOptions = {}) {
 
   /* ── Friend State ────────────────────────────────── */
   const [friendStatus, setFriendStatus] = useState<FriendStatus>("none");
-  const [friendshipDirection, setFriendshipDirection] = useState<FriendshipDirection>(null);
+  const [friendshipDirection, setFriendshipDirection] =
+    useState<FriendshipDirection>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   /* ── Financial State ─────────────────────────────── */
@@ -64,7 +53,6 @@ export function useProfile(options: UseProfileOptions = {}) {
 
   /* ── Derived ─────────────────────────────────────── */
   const isOwnProfile = !targetUserId || currentUserId === targetUserId;
-  const profileId = targetUserId || currentUserId;
 
   const profileUrl =
     typeof window !== "undefined" && profile
@@ -72,22 +60,19 @@ export function useProfile(options: UseProfileOptions = {}) {
       : "";
 
   /* ── Fetch Data ──────────────────────────────────── */
-
   const fetchData = useCallback(async () => {
     try {
-      // 1. Auth check
-  const {
+      const {
         data: { user },
         error: authError,
-       } = await supabase.auth.getUser();
-    if (!user || authError) {
+      } = await supabase.auth.getUser();
+      if (!user || authError) {
         router.replace("/login");
-    return;
-  }
-setCurrentUserId(user.id);
+        return;
+      }
+      setCurrentUserId(user.id);
       const fetchId = targetUserId || user.id;
 
-      // 1b. Fetch current user's name (needed for notifications when viewing others)
       if (targetUserId && targetUserId !== user.id) {
         const { data: currentUserProfile } = await supabase
           .from("profiles")
@@ -98,14 +83,13 @@ setCurrentUserId(user.id);
         if (currentUserProfile) {
           setCurrentUserName(
             currentUserProfile.display_name ||
-            currentUserProfile.full_name ||
-            currentUserProfile.username ||
-            "Someone"
+              currentUserProfile.full_name ||
+              currentUserProfile.username ||
+              "Someone"
           );
         }
       }
 
-      // 2. Profile
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select(
@@ -117,17 +101,15 @@ setCurrentUserId(user.id);
       if (profileError) throw profileError;
       setProfile(profileData as UserProfile);
 
-      // If viewing own profile, set name from own profile data
       if (!targetUserId || targetUserId === user.id) {
         setCurrentUserName(
           profileData.display_name ||
-          profileData.full_name ||
-          profileData.username ||
-          "Someone"
+            profileData.full_name ||
+            profileData.username ||
+            "Someone"
         );
       }
 
-      // 3. Friend status (only for other users)
       if (targetUserId && targetUserId !== user.id) {
         const { data: friendshipData } = await supabase
           .from("friendships")
@@ -143,12 +125,11 @@ setCurrentUserId(user.id);
             setFriendshipDirection(null);
           } else {
             setFriendStatus("pending");
-            // Determine direction: did I send it or did they?
-            if (friendshipData.requester_id === user.id) {
-              setFriendshipDirection("outgoing"); // I sent it
-            } else {
-              setFriendshipDirection("incoming"); // They sent it to me
-            }
+            setFriendshipDirection(
+              friendshipData.requester_id === user.id
+                ? "outgoing"
+                : "incoming"
+            );
           }
         } else {
           setFriendStatus("none");
@@ -156,7 +137,6 @@ setCurrentUserId(user.id);
         }
       }
 
-      // 4. Groups (for own profile or friends)
       const shouldFetchFinancials =
         !targetUserId || targetUserId === user.id;
 
@@ -165,26 +145,23 @@ setCurrentUserId(user.id);
 
         const { data: memberships } = await supabase
           .from("group_members")
-          .select(`group_id, groups ( id, name, currency, created_at )`)
+          .select("group_id, groups ( id, name, currency, created_at )")
           .eq("user_id", uid);
 
         if (memberships && memberships.length > 0) {
           const groupIds = memberships.map((m) => m.group_id);
 
-          // Expenses paid
           const { data: expensesPaid } = await supabase
             .from("expenses")
             .select("group_id, amount")
             .in("group_id", groupIds)
             .eq("paid_by", uid);
 
-          // Splits owed
           const { data: mySplits } = await supabase
             .from("expense_splits")
             .select("amount, expenses(group_id)")
             .eq("user_id", uid);
 
-          // Completed settlements
           const { data: settlementsSent } = await supabase
             .from("settlements")
             .select("group_id, amount")
@@ -199,7 +176,6 @@ setCurrentUserId(user.id);
             .eq("to_user", uid)
             .eq("status", "completed");
 
-          // Process groups
           const processedGroups: ProfileGroup[] = memberships.map(
             (m: any) => {
               const g = m.groups;
@@ -232,7 +208,6 @@ setCurrentUserId(user.id);
 
           setGroups(processedGroups);
 
-          // Stats
           const totalPaid =
             expensesPaid?.reduce(
               (s, e) => s + Number(e.amount),
@@ -254,15 +229,16 @@ setCurrentUserId(user.id);
           });
         }
 
-        // 5. Recent Activity
         if (memberships && memberships.length > 0) {
           const groupIds = memberships.map((m) => m.group_id);
 
           const { data: recentExpenses } = await supabase
             .from("expenses")
-            .select("id, name, amount, created_at, group_id, groups:group_id(name)")
+            .select(
+              "id, name, amount, created_at, group_id, groups:group_id(name)"
+            )
             .in("group_id", groupIds)
-            .eq("paid_by", uid)
+            .eq("paid_by", user.id)
             .order("created_at", { ascending: false })
             .limit(10);
 
@@ -295,13 +271,6 @@ setCurrentUserId(user.id);
 
   /* ── Friend Actions ──────────────────────────────── */
 
-  /**
-   * ════════════════════════════════════════════════════════
-   * ADD FRIEND
-   * → Sends a friend request via RPC, then notifies the
-   *   target user so they see it in their notification bell.
-   * ════════════════════════════════════════════════════════
-   */
   async function handleAddFriend() {
     if (!currentUserId || !profile) {
       router.push("/login");
@@ -324,12 +293,6 @@ setCurrentUserId(user.id);
     }
   }
 
-  /**
-   * ════════════════════════════════════════════════════════
-   * CANCEL REQUEST (outgoing) / DECLINE REQUEST (incoming)
-   * → Deletes the friendship row entirely
-   * ════════════════════════════════════════════════════════
-   */
   async function handleCancelRequest() {
     if (!currentUserId || !targetUserId) return;
 
@@ -352,19 +315,11 @@ setCurrentUserId(user.id);
     }
   }
 
-  /**
-   * ════════════════════════════════════════════════════════
-   * ACCEPT FRIEND REQUEST (incoming)
-   * → Updates the friendship status to "accepted"
-   * → Notifies the requester that their request was accepted
-   * ════════════════════════════════════════════════════════
-   */
   async function handleAcceptRequest() {
     if (!currentUserId || !targetUserId) return;
 
     setIsProcessing(true);
     try {
-      // Accept: update the row where THEY are requester and I am receiver
       const { error } = await supabase
         .from("friendships")
         .update({ status: "accepted" })
@@ -394,36 +349,25 @@ setCurrentUserId(user.id);
     }
   }
 
-  /* ── Return ──────────────────────────────────────── */
-
   return {
-    // Core
     loading,
     error,
     profile,
     currentUserId,
     isOwnProfile,
     profileUrl,
-
-    // Friend
     friendStatus,
     friendshipDirection,
     isProcessing,
     handleAddFriend,
     handleCancelRequest,
     handleAcceptRequest,
-
-    // Financial
     groups,
     activities,
     stats,
-
-    // Share modal
     isShareModalOpen,
     openShareModal: () => setIsShareModalOpen(true),
     closeShareModal: () => setIsShareModalOpen(false),
-
-    // Navigation
     handleBack,
     navigateToEdit: () => router.push("/dashboard/profile/edit"),
   };

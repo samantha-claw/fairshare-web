@@ -4,10 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Member, SearchResult, InvitableFriend } from "@/types/group";
 import { useToast } from "@/hooks/use-toast";
-/**
- * Manages the add-member modal, username search,
- * invitable-friends list, and member add/remove actions.
- */
+
 export function useGroupMembers(
   groupId: string,
   members: Member[],
@@ -16,20 +13,17 @@ export function useGroupMembers(
   const supabase = createClient();
   const toast = useToast();
 
-  /* ── Modal state ─────────────────────────────────────── */
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
-  const [invitableFriends, setInvitableFriends] = useState<InvitableFriend[]>(
-    []
-  );
+  const [invitableFriends, setInvitableFriends] = useState<
+    InvitableFriend[]
+  >([]);
   const [loadingFriends, setLoadingFriends] = useState(false);
   const [addingMember, setAddingMember] = useState<string | null>(null);
 
-  /* ── Search state ────────────────────────────────────── */
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [searching, setSearching] = useState(false);
 
-  /* ── Debounced live search ───────────────────────────── */
   useEffect(() => {
     if (!searchTerm.trim()) {
       setSearchResults([]);
@@ -48,7 +42,9 @@ export function useGroupMembers(
       if (!searchError && data) {
         const existingIds = members.map((m) => m.id);
         setSearchResults(
-          data.filter((u: any) => !existingIds.includes(u.id)) as SearchResult[]
+          data.filter(
+            (u: any) => !existingIds.includes(u.id)
+          ) as SearchResult[]
         );
       }
 
@@ -58,7 +54,6 @@ export function useGroupMembers(
     return () => clearTimeout(timer);
   }, [searchTerm, members, supabase]);
 
-  /* ── Fetch invitable friends ─────────────────────────── */
   const fetchInvitableFriends = useCallback(async () => {
     setLoadingFriends(true);
     try {
@@ -75,7 +70,6 @@ export function useGroupMembers(
     }
   }, [supabase, groupId]);
 
-  /* ── Open modal ──────────────────────────────────────── */
   const openMemberModal = useCallback(() => {
     setIsMemberModalOpen(true);
     setSearchTerm("");
@@ -83,22 +77,22 @@ export function useGroupMembers(
     fetchInvitableFriends();
   }, [fetchInvitableFriends]);
 
-  /* ── Add member ──────────────────────────────────────── */
   const handleAddMember = useCallback(
     async (targetUserId: string) => {
       setAddingMember(targetUserId);
       try {
-        const { error: addError } = await supabase.rpc("add_member_to_group", {
-          _group_id: groupId,
-          _user_id: targetUserId,
-        });
+        const { error: addError } = await supabase.rpc(
+          "add_member_to_group",
+          { _group_id: groupId, _user_id: targetUserId }
+        );
 
         if (addError) {
-          toast.error("Failed to add member: " + addError.message);
+          toast.error(
+            "Failed to add member: " + addError.message
+          );
           return;
         }
 
-        // Remove from local lists immediately
         setInvitableFriends((prev) =>
           prev.filter((f) => f.friend_id !== targetUserId)
         );
@@ -114,18 +108,16 @@ export function useGroupMembers(
         setAddingMember(null);
       }
     },
-    [groupId, supabase, refetch]
+    [groupId, supabase, refetch, toast]
   );
 
-  /* ── Remove member ───────────────────────────────────── */
   const handleRemoveMember = useCallback(
     async (memberId: string, memberName: string) => {
-      if (
-        !confirm(
-          `Are you sure you want to remove ${memberName} from the group?`
-        )
-      )
-        return;
+      const confirmed = await toast.confirm(
+        `Remove ${memberName} from the group?`,
+        { confirmLabel: "Remove" }
+      );
+      if (!confirmed) return;
 
       const { error: removeError } = await supabase.rpc(
         "remove_member_from_group",
@@ -133,15 +125,16 @@ export function useGroupMembers(
       );
 
       if (removeError) {
-        toast.error("Error removing member: " + removeError.message);
+        toast.error(
+          "Error removing member: " + removeError.message
+        );
       } else {
         refetch();
       }
     },
-    [groupId, supabase, refetch]
+    [groupId, supabase, refetch, toast]
   );
 
-  /* ── Public API ──────────────────────────────────────── */
   return {
     isMemberModalOpen,
     setIsMemberModalOpen,
