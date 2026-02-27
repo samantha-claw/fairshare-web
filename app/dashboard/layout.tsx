@@ -2,6 +2,7 @@
 // 📦 IMPORTS
 // ==========================================
 import { DashboardShell } from "@/components/layout/dashboard-shell";
+import { UserProvider } from "@/contexts/user-context";
 
 // ==========================================
 // 🧩 TYPES
@@ -14,5 +15,9 @@ interface DashboardLayoutProps {
 // 🎨 UI RENDER
 // ==========================================
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  return <DashboardShell>{children}</DashboardShell>;
+  return (
+    <UserProvider>
+      <DashboardShell>{children}</DashboardShell>
+    </UserProvider>
+  );
 }
