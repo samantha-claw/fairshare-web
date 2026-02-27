@@ -4,9 +4,22 @@
 // 📦 IMPORTS
 // ==========================================
 import { useState, useCallback } from "react";
+import { useParams } from "next/navigation";
 import { Spinner } from "@/components/ui/spinner";
-import { useGroup } from "@/hooks/use-group";
 import { createClient } from "@/lib/supabase/client";
+import { QrCode } from "lucide-react";
+
+// ── Decomposed hooks ───────────────────────────────────
+import {
+  useGroupData,
+  useGroupExpenses,
+  useGroupSettlements,
+  useGroupMembers,
+  useGroupSettings,
+  useGroupRealtime,
+} from "@/hooks/group";
+
+// ── Components ─────────────────────────────────────────
 import { SummaryCards } from "./_components/summary-cards";
 import { MembersCard } from "./_components/members-card";
 import { BalancesCard } from "./_components/balances-card";
@@ -18,39 +31,40 @@ import { ExpenseModal } from "./_components/expense-modal";
 import { SettleModal } from "./_components/settle-modal";
 import { SettingsModal } from "./_components/settings-modal";
 import { QRShareModal } from "@/components/modals/qr/qr-share-modal";
-import { QrCode } from "lucide-react";
 import { AllExpensesModal } from "./_components/all-expenses-modal";
+
 // ==========================================
-// 🎨 UI RENDER
+// 🎨 PAGE
 // ==========================================
 export default function GroupDetailsPage() {
-  const g = useGroup();
+  const params = useParams();
+  const groupId = params.id as string;
   const supabase = createClient();
 
+  /* ── Compose focused hooks ───────────────────────────── */
+  const data = useGroupData(groupId);
+  const expenseCtl = useGroupExpenses(groupId, data.members, data.refetch);
+  const settleCtl = useGroupSettlements(groupId, data.currentUser, data.refetch);
+  const memberCtl = useGroupMembers(groupId, data.members, data.refetch);
+  const settingsCtl = useGroupSettings(
+    groupId,
+    data.group,
+    data.currentUser,
+    data.balances
+  );
+  useGroupRealtime(groupId, data.refetch);
+
+  /* ── Page-local UI state ─────────────────────────────── */
+  const [activeTab, setActiveTab] = useState<"expenses" | "activity">("expenses");
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isAllExpensesModalOpen, setIsAllExpensesModalOpen] = useState(false);
-
-  /*
-   * Local override for invite_token after a reset.
-   * When null, we use the token from the DB (g.group.invite_token).
-   */
   const [localToken, setLocalToken] = useState<string | null>(null);
 
-  /*
-   * ════════════════════════════════════════════════
-   * RESET INVITE TOKEN
-   *
-   * Calls the Supabase RPC:
-   *   reset_group_invite_token(p_group_id UUID)
-   *
-   * Updates local state so the QR + URL refresh
-   * instantly without a page reload.
-   * ════════════════════════════════════════════════
-   */
+  /* ── Reset invite token ──────────────────────────────── */
   const handleResetToken = useCallback(async () => {
-    const { data, error } = await supabase.rpc(
+    const { data: rpcData, error } = await supabase.rpc(
       "reset_group_invite_token",
-      { p_group_id: g.group!.id }
+      { p_group_id: data.group!.id }
     );
 
     if (error) {
@@ -58,19 +72,17 @@ export default function GroupDetailsPage() {
       throw new Error(error.message);
     }
 
-    const newToken = typeof data === "string" ? data : data?.token;
+    const newToken = typeof rpcData === "string" ? rpcData : rpcData?.token;
 
     if (newToken) {
       setLocalToken(newToken);
-      console.log("Invite token reset successfully:", newToken);
     } else {
-      console.warn("RPC returned unexpected data:", data);
       throw new Error("No token returned from reset");
     }
-  }, [supabase, g.group]);
+  }, [supabase, data.group]);
 
   /* ── Loading ─────────────────────────────────────────── */
-  if (g.loading) {
+  if (data.loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="flex items-center gap-2 text-gray-500">
@@ -82,15 +94,15 @@ export default function GroupDetailsPage() {
   }
 
   /* ── Error ───────────────────────────────────────────── */
-  if (g.error || !g.group) {
+  if (data.error || !data.group) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="rounded-2xl bg-white p-8 text-center shadow-lg">
           <h2 className="text-xl font-semibold text-red-600">
-            {g.error || "Group not found"}
+            {data.error || "Group not found"}
           </h2>
           <button
-            onClick={g.goBack}
+            onClick={data.goBack}
             className="mt-4 text-blue-600 hover:underline"
           >
             Go Back
@@ -100,48 +112,35 @@ export default function GroupDetailsPage() {
     );
   }
 
-  const currency = g.group.currency || "USD";
+  /* ── Derived constants ───────────────────────────────── */
+  const currency = data.group.currency || "USD";
 
-  /*
-   * ════════════════════════════════════════════════
-   * SECURE SHARE URL
-   *
-   * Format: /join?id=GROUP_ID&token=INVITE_TOKEN
-   *
-   * Priority:
-   * 1. localToken  → set after owner resets the token
-   * 2. g.group.invite_token → fetched from DB
-   * 3. fallback → id-only URL (less secure, still works
-   *    if your /join page handles it)
-   * ════════════════════════════════════════════════
-   */
   const activeToken =
-    localToken || (g.group as any).invite_token || null;
+    localToken || (data.group as any).invite_token || null;
 
   const shareUrl =
     typeof window !== "undefined"
       ? activeToken
-        ? `${window.location.origin}/join?id=${g.group.id}&token=${activeToken}`
-        : `${window.location.origin}/join?id=${g.group.id}`
+        ? `${window.location.origin}/join?id=${data.group.id}&token=${activeToken}`
+        : `${window.location.origin}/join?id=${data.group.id}`
       : "";
 
+  /* ── Render ──────────────────────────────────────────── */
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* ── Header ───────────────────────────────────── */}
       <div className="border-b border-gray-200 bg-white px-4 py-5 sm:px-6 sm:py-6">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
-          {/* Left: Title & subtitle */}
           <div className="min-w-0 flex-1">
             <h1 className="truncate text-xl font-bold tracking-tight text-gray-900 sm:text-2xl">
-              {g.group.name}
+              {data.group.name}
             </h1>
             <p className="mt-1 text-sm text-gray-500">
-              {g.members.length} member{g.members.length !== 1 && "s"} ·{" "}
+              {data.members.length} member{data.members.length !== 1 && "s"} ·{" "}
               {currency}
             </p>
           </div>
 
-          {/* Right: Share & Settings */}
           <div className="flex shrink-0 items-center gap-2">
             <button
               onClick={() => setIsShareModalOpen(true)}
@@ -153,7 +152,7 @@ export default function GroupDetailsPage() {
             </button>
 
             <button
-              onClick={() => g.setIsSettingsModalOpen(true)}
+              onClick={() => settingsCtl.setIsSettingsModalOpen(true)}
               className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 shadow-sm transition-all duration-200 hover:bg-gray-50 active:scale-95"
               title="Group Settings"
             >
@@ -184,61 +183,59 @@ export default function GroupDetailsPage() {
       {/* ── Main Content ─────────────────────────────── */}
       <main className="mx-auto w-full max-w-6xl space-y-6 overflow-hidden px-4 py-6 sm:px-6">
         <SummaryCards
-          totalGroupExpenses={g.totalGroupExpenses}
-          myNetBalance={g.myNetBalance}
-          pendingCount={g.pendingSettlements.length}
+          totalGroupExpenses={data.totalGroupExpenses}
+          myNetBalance={data.myNetBalance}
+          pendingCount={data.pendingSettlements.length}
           currency={currency}
         />
 
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
             <PendingSettlements
-              settlements={g.pendingSettlements}
-              currentUser={g.currentUser}
+              settlements={data.pendingSettlements}
+              currentUser={data.currentUser}
               currency={currency}
-              processingSettlementId={g.processingSettlementId}
-              onApprove={g.handleApproveSettlement}
-              onReject={g.handleRejectSettlement}
-              onDelete={g.handleDeleteSettlement}
+              processingSettlementId={settleCtl.processingSettlementId}
+              onApprove={settleCtl.handleApproveSettlement}
+              onReject={settleCtl.handleRejectSettlement}
+              onDelete={settleCtl.handleDeleteSettlement}
             />
 
             <section className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
               {/* ── Tabs + Action Buttons ── */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-gray-200">
-                {/* Tab Buttons */}
                 <div className="flex">
                   <button
-                    onClick={() => g.setActiveTab("expenses")}
+                    onClick={() => setActiveTab("expenses")}
                     className={`flex-1 px-4 py-3 text-sm font-semibold transition-all duration-200 sm:flex-initial sm:px-6 ${
-                      g.activeTab === "expenses"
+                      activeTab === "expenses"
                         ? "border-b-2 border-blue-600 text-blue-600"
                         : "text-gray-500 hover:text-gray-700"
                     }`}
                   >
-                    💸 Expenses ({g.expenses.length})
+                    💸 Expenses ({data.expenses.length})
                   </button>
                   <button
-                    onClick={() => g.setActiveTab("activity")}
+                    onClick={() => setActiveTab("activity")}
                     className={`flex-1 px-4 py-3 text-sm font-semibold transition-all duration-200 sm:flex-initial sm:px-6 ${
-                      g.activeTab === "activity"
+                      activeTab === "activity"
                         ? "border-b-2 border-blue-600 text-blue-600"
                         : "text-gray-500 hover:text-gray-700"
                     }`}
                   >
-                    📋 Activity ({g.allActivities.length})
+                    📋 Activity ({data.allActivities.length})
                   </button>
                 </div>
 
-                {/* ── Action Buttons ── */}
                 <div className="mt-4 mb-5 flex w-full items-center justify-center gap-3 sm:justify-end">
                   <button
-                    onClick={g.openSettleUpModal}
+                    onClick={settleCtl.openSettleUpModal}
                     className="flex flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-50 active:scale-[0.98]"
                   >
                     <span>🤝</span> Settle Up
                   </button>
                   <button
-                    onClick={g.openAddExpenseModal}
+                    onClick={expenseCtl.openAddExpenseModal}
                     className="flex flex-1 sm:flex-none items-center justify-center gap-2 rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-green-700 active:scale-[0.98]"
                   >
                     <span>💸</span> Add Expense
@@ -246,24 +243,23 @@ export default function GroupDetailsPage() {
                 </div>
               </div>
 
-
               {/* ── Tab Content ── */}
               <div className="p-4 sm:p-6">
-                {g.activeTab === "expenses" && (
+                {activeTab === "expenses" && (
                   <ExpensesTab
-                    expenses={g.expenses}
+                    expenses={data.expenses}
                     currency={currency}
-                    currentUser={g.currentUser}
-                    isOwner={g.isOwner}
-                    onEditExpense={g.openEditExpenseModal}
-                    onDeleteExpense={g.handleDeleteExpense}
+                    currentUser={data.currentUser}
+                    isOwner={data.isOwner}
+                    onEditExpense={expenseCtl.openEditExpenseModal}
+                    onDeleteExpense={expenseCtl.handleDeleteExpense}
                     onViewAll={() => setIsAllExpensesModalOpen(true)}
                   />
                 )}
 
-                {g.activeTab === "activity" && (
+                {activeTab === "activity" && (
                   <ActivityTab
-                    allActivities={g.allActivities}
+                    allActivities={data.allActivities}
                     currency={currency}
                   />
                 )}
@@ -273,98 +269,97 @@ export default function GroupDetailsPage() {
 
           <div className="space-y-6">
             <MembersCard
-              members={g.members}
-              group={g.group}
-              isOwner={g.isOwner}
-              onOpenAddModal={g.openMemberModal}
-              onRemoveMember={g.handleRemoveMember}
+              members={data.members}
+              group={data.group}
+              isOwner={data.isOwner}
+              onOpenAddModal={memberCtl.openMemberModal}
+              onRemoveMember={memberCtl.handleRemoveMember}
             />
-            <BalancesCard balances={g.balances} currency={currency} />
+            <BalancesCard balances={data.balances} currency={currency} />
           </div>
         </div>
       </main>
 
-      {/* ── Existing Modals ──────────────────────────── */}
+      {/* ── Modals ───────────────────────────────────── */}
       <AddMemberModal
-        isOpen={g.isMemberModalOpen}
-        onClose={() => g.setIsMemberModalOpen(false)}
-        invitableFriends={g.invitableFriends}
-        loadingFriends={g.loadingFriends}
-        addingMember={g.addingMember}
-        searchTerm={g.searchTerm}
-        onSearchTermChange={g.setSearchTerm}
-        searchResults={g.searchResults}
-        searching={g.searching}
-        onAddMember={g.handleAddMember}
+        isOpen={memberCtl.isMemberModalOpen}
+        onClose={() => memberCtl.setIsMemberModalOpen(false)}
+        invitableFriends={memberCtl.invitableFriends}
+        loadingFriends={memberCtl.loadingFriends}
+        addingMember={memberCtl.addingMember}
+        searchTerm={memberCtl.searchTerm}
+        onSearchTermChange={memberCtl.setSearchTerm}
+        searchResults={memberCtl.searchResults}
+        searching={memberCtl.searching}
+        onAddMember={memberCtl.handleAddMember}
       />
 
       <ExpenseModal
-        isOpen={g.isExpenseModalOpen}
-        onClose={() => g.setIsExpenseModalOpen(false)}
-        editingExpenseId={g.editingExpenseId}
-        expenseName={g.expenseName}
-        onExpenseNameChange={g.setExpenseName}
-        expenseAmount={g.expenseAmount}
-        onExpenseAmountChange={g.setExpenseAmount}
-        selectedMembers={g.selectedMembers}
-        onSelectedMembersChange={g.setSelectedMembers}
-        members={g.members}
-        submitting={g.submittingExpense}
-        onSubmit={g.handleSaveExpense}
+        isOpen={expenseCtl.isExpenseModalOpen}
+        onClose={() => expenseCtl.setIsExpenseModalOpen(false)}
+        editingExpenseId={expenseCtl.editingExpenseId}
+        expenseName={expenseCtl.expenseName}
+        onExpenseNameChange={expenseCtl.setExpenseName}
+        expenseAmount={expenseCtl.expenseAmount}
+        onExpenseAmountChange={expenseCtl.setExpenseAmount}
+        selectedMembers={expenseCtl.selectedMembers}
+        onSelectedMembersChange={expenseCtl.setSelectedMembers}
+        members={data.members}
+        submitting={expenseCtl.submittingExpense}
+        onSubmit={expenseCtl.handleSaveExpense}
       />
 
       <SettleModal
-        isOpen={g.isSettleModalOpen}
-        onClose={() => g.setIsSettleModalOpen(false)}
-        otherMembers={g.otherMembers}
-        settleReceiver={g.settleReceiver}
-        onReceiverChange={g.setSettleReceiver}
-        settleAmount={g.settleAmount}
-        onAmountChange={g.setSettleAmount}
+        isOpen={settleCtl.isSettleModalOpen}
+        onClose={() => settleCtl.setIsSettleModalOpen(false)}
+        otherMembers={data.otherMembers}
+        settleReceiver={settleCtl.settleReceiver}
+        onReceiverChange={settleCtl.setSettleReceiver}
+        settleAmount={settleCtl.settleAmount}
+        onAmountChange={settleCtl.setSettleAmount}
         currency={currency}
-        submitting={g.submittingSettle}
-        onSubmit={g.handleInitiateSettlement}
+        submitting={settleCtl.submittingSettle}
+        onSubmit={settleCtl.handleInitiateSettlement}
       />
 
       <SettingsModal
-        isOpen={g.isSettingsModalOpen}
-        onClose={() => g.setIsSettingsModalOpen(false)}
-        group={g.group}
-        members={g.members}
-        isOwner={g.isOwner}
-        canLeave={g.canLeave}
-        myNetBalance={g.myNetBalance}
-        deleteConfirmText={g.deleteConfirmText}
-        onDeleteConfirmTextChange={g.setDeleteConfirmText}
-        deletingGroup={g.deletingGroup}
-        leavingGroup={g.leavingGroup}
-        onDeleteGroup={g.handleDeleteGroup}
-        onLeaveGroup={g.handleLeaveGroup}
+        isOpen={settingsCtl.isSettingsModalOpen}
+        onClose={() => settingsCtl.setIsSettingsModalOpen(false)}
+        group={data.group}
+        members={data.members}
+        isOwner={data.isOwner}
+        canLeave={data.canLeave}
+        myNetBalance={data.myNetBalance}
+        deleteConfirmText={settingsCtl.deleteConfirmText}
+        onDeleteConfirmTextChange={settingsCtl.setDeleteConfirmText}
+        deletingGroup={settingsCtl.deletingGroup}
+        leavingGroup={settingsCtl.leavingGroup}
+        onDeleteGroup={settingsCtl.handleDeleteGroup}
+        onLeaveGroup={settingsCtl.handleLeaveGroup}
       />
 
-      {/* ★ QR Share Modal (Secure Token URL) ★ */}
       <QRShareModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
         value={shareUrl}
-        title={g.group.name}
-        subtitle={`${g.members.length} member${
-          g.members.length !== 1 ? "s" : ""
+        title={data.group.name}
+        subtitle={`${data.members.length} member${
+          data.members.length !== 1 ? "s" : ""
         } · ${currency}`}
         type="group"
-        isOwner={g.isOwner}
+        isOwner={data.isOwner}
         onResetToken={handleResetToken}
       />
-      {/* ★ All Expenses Modal ★ */}
+
       <AllExpensesModal
         isOpen={isAllExpensesModalOpen}
         onClose={() => setIsAllExpensesModalOpen(false)}
-        expenses={g.expenses}
+        expenses={data.expenses}
         currency={currency}
-        currentUser={g.currentUser}
-        isOwner={g.isOwner}
-        onEditExpense={g.openEditExpenseModal}
-        onDeleteExpense={g.handleDeleteExpense}
+        currentUser={data.currentUser}
+        isOwner={data.isOwner}
+        onEditExpense={expenseCtl.openEditExpenseModal}
+        onDeleteExpense={expenseCtl.handleDeleteExpense}
       />
     </div>
   );

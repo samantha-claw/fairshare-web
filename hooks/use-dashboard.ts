@@ -41,133 +41,27 @@ export function useDashboard() {
 
   /* ── Core Fetch ──────────────────────────────────────── */
 
-  const fetchDashboard = useCallback(async () => {
-    try {
-      const {
-            data: { user },
-            error: authError,
-             } = await supabase.auth.getUser();
-          if (!user || authError) {
-  router.replace("/login");
-  return;
-          }
-      const uid = user.id;
-      setUserId(uid);
+  // hooks/use-dashboard.ts — AFTER optimization
+const fetchDashboard = useCallback(async () => {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (!user || authError) { router.replace("/login"); return; }
 
-      // 1. Profile
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("display_name, avatar_url")
-        .eq("id", uid)
-        .single();
-      if (profileData)
-        setProfile({
-          display_name: profileData.display_name || "User",
-          avatar_url: profileData.avatar_url || "",
-        });
+    setUserId(user.id);
 
-      // 2. Fetch Groups
-      const { data: memberships } = await supabase
-        .from("group_members")
-        .select(`group_id, groups ( id, name, currency, created_at, owner_id )`)
-        .eq("user_id", uid);
+    // ONE query instead of EIGHT
+    const { data, error } = await supabase.rpc("get_dashboard_data");
+    if (error) throw error;
 
-      if (!memberships || memberships.length === 0) {
-        setGroups([]);
-        setRecentExpenses([]);
-        return;
-      }
-
-      const groupIds = memberships.map((m) => m.group_id);
-
-      // 3. Fetch all financial data
-      const { data: expensesPaidByMe } = await supabase
-        .from("expenses")
-        .select("group_id, amount")
-        .in("group_id", groupIds)
-        .eq("paid_by", uid);
-
-      const { data: mySplits } = await supabase
-        .from("expense_splits")
-        .select("amount, expenses(group_id)")
-        .eq("user_id", uid);
-
-      const { data: settlementsPaidByMe } = await supabase
-        .from("settlements")
-        .select("group_id, amount")
-        .in("group_id", groupIds)
-        .eq("from_user", uid)
-        .eq("status", "completed");
-
-      const { data: settlementsReceivedByMe } = await supabase
-        .from("settlements")
-        .select("group_id, amount")
-        .in("group_id", groupIds)
-        .eq("to_user", uid)
-        .eq("status", "completed");
-
-      // 4. Merge data and calculate correct net balance
-      const processedGroups: GroupBalance[] = memberships.map((m: any) => {
-        const groupInfo = m.groups;
-
-        const expPaid =
-          expensesPaidByMe
-            ?.filter((e) => e.group_id === groupInfo.id)
-            .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
-        const setPaid =
-          settlementsPaidByMe
-            ?.filter((s) => s.group_id === groupInfo.id)
-            .reduce((sum, s) => sum + Number(s.amount), 0) || 0;
-        const totalPaid = expPaid + setPaid;
-
-        const expOwed =
-          mySplits
-            ?.filter((s: any) => s.expenses.group_id === groupInfo.id)
-            .reduce((sum, s) => sum + Number(s.amount), 0) || 0;
-        const setRcvd =
-          settlementsReceivedByMe
-            ?.filter((s) => s.group_id === groupInfo.id)
-            .reduce((sum, s) => sum + Number(s.amount), 0) || 0;
-        const totalOwed = expOwed + setRcvd;
-
-        return {
-          group_id: groupInfo.id,
-          group_name: groupInfo.name,
-          currency: groupInfo.currency || "USD",
-          owner_id: groupInfo.owner_id,
-          created_at: groupInfo.created_at,
-          net_balance: totalPaid - totalOwed,
-        };
-      });
-
-      setGroups(
-        processedGroups.sort(
-          (a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        )
-      );
-
-      // 5. Fetch recent expenses (NEW — does not modify existing queries)
-      const { data: recentData } = await supabase
-        .from("expenses")
-        .select(
-          `id, name, amount, created_at, group_id,
-           paid_by_profile:paid_by(display_name, avatar_url),
-           expense_group:group_id(name)`
-        )
-        .in("group_id", groupIds)
-        .order("created_at", { ascending: false })
-        .limit(8);
-
-      if (recentData) {
-        setRecentExpenses(recentData as unknown as RecentExpense[]);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }, [supabase, router]);
+    setProfile(data.profile);
+    setGroups(data.groups || []);
+    setRecentExpenses(data.recent_expenses || []);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+}, [supabase, router]);
 
   useEffect(() => {
     fetchDashboard();
@@ -175,25 +69,52 @@ export function useDashboard() {
 
   /* ── Realtime ────────────────────────────────────────── */
 
-  useEffect(() => {
-    const channel = supabase
-      .channel("dashboard-realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "expenses" }, () => fetchDashboard())
-      .on("postgres_changes", { event: "*", schema: "public", table: "expense_splits" }, () => fetchDashboard())
-      .on("postgres_changes", { event: "*", schema: "public", table: "settlements" }, () => fetchDashboard())
-      .on("postgres_changes", { event: "*", schema: "public", table: "activity_log" }, () => fetchDashboard())
-      .on("postgres_changes", { event: "*", schema: "public", table: "group_members" }, () => fetchDashboard())
-      .subscribe();
+  
 
-    channelRef.current = channel;
+useEffect(() => {
+  if (!userId) return;
 
-    return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-      }
-    };
-  }, [supabase, fetchDashboard]);
+  // Only subscribe to tables relevant to this user's groups
+  const groupIds = groups.map(g => g.group_id);
+  if (groupIds.length === 0) return;
 
+  // Debounce refetch to avoid cascade
+  let debounceTimer: NodeJS.Timeout;
+  const debouncedFetch = () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => fetchDashboard(), 1000);
+  };
+
+  const channel = supabase
+    .channel(`dashboard-${userId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "group_members",
+        filter: `user_id=eq.${userId}`,  // Only MY membership changes
+      },
+      debouncedFetch
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",  // Only new expenses, not all changes
+        schema: "public",
+        table: "expenses",
+        // Note: Supabase filter supports only single-value eq, not IN
+        // So we'd need one subscription per group or use a different approach
+      },
+      debouncedFetch
+    )
+    .subscribe();
+
+  return () => {
+    clearTimeout(debounceTimer);
+    supabase.removeChannel(channel);
+  };
+}, [userId, groups, supabase, fetchDashboard]);
   /* ── Actions ─────────────────────────────────────────── */
 
   async function handleSignOut() {
