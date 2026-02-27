@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { formatCurrency } from "@/lib/utils";
 import type { Group, Balance } from "@/types/group";
+import { useToast } from "@/hooks/use-toast";
 
 /**
  * Manages the settings modal, group deletion, and leave-group logic.
@@ -23,11 +24,11 @@ export function useGroupSettings(
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [deletingGroup, setDeletingGroup] = useState(false);
   const [leavingGroup, setLeavingGroup] = useState(false);
-
+  const toast = useToast();
   /* ── Delete group (owner only) ───────────────────────── */
   const handleDeleteGroup = useCallback(async () => {
     if (!group || deleteConfirmText !== group.name) {
-      alert("Please type the group name exactly to confirm deletion.");
+      toast.error("Please type the group name exactly to confirm deletion.");
       return;
     }
 
@@ -40,14 +41,14 @@ export function useGroupSettings(
         .eq("owner_id", currentUser!);
 
       if (deleteError) {
-        alert("Error deleting group: " + deleteError.message);
+        toast.error("Error deleting group: " + deleteError.message);
         return;
       }
 
       router.replace("/dashboard");
     } catch (err) {
       console.error(err);
-      alert("An unexpected error occurred.");
+      toast.error("An unexpected error occurred.");
     } finally {
       setDeletingGroup(false);
     }
@@ -59,7 +60,7 @@ export function useGroupSettings(
 
     const myBal = balances.find((b) => b.user_id === currentUser);
     if (myBal && myBal.net_balance !== 0) {
-      alert(
+      toast.error(
         "You must settle your balances before leaving the group. " +
           (myBal.net_balance > 0
             ? `You are still owed ${formatCurrency(myBal.net_balance, group?.currency)}.`
@@ -84,14 +85,14 @@ export function useGroupSettings(
         .eq("user_id", currentUser);
 
       if (leaveError) {
-        alert("Error leaving group: " + leaveError.message);
+        toast.error("Error leaving group: " + leaveError.message);
         return;
       }
 
       router.replace("/dashboard");
     } catch (err) {
       console.error(err);
-      alert("An unexpected error occurred.");
+      toast.error("An unexpected error occurred.");
     } finally {
       setLeavingGroup(false);
     }

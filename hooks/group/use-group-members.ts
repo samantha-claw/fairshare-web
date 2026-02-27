@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Member, SearchResult, InvitableFriend } from "@/types/group";
-
+import { useToast } from "@/hooks/use-toast";
 /**
  * Manages the add-member modal, username search,
  * invitable-friends list, and member add/remove actions.
@@ -14,6 +14,7 @@ export function useGroupMembers(
   refetch: () => void
 ) {
   const supabase = createClient();
+  const toast = useToast();
 
   /* ── Modal state ─────────────────────────────────────── */
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
@@ -93,7 +94,7 @@ export function useGroupMembers(
         });
 
         if (addError) {
-          alert(addError.message);
+          toast.error("Failed to add member: " + addError.message);
           return;
         }
 
@@ -108,6 +109,7 @@ export function useGroupMembers(
         await refetch();
       } catch (err) {
         console.error(err);
+        toast.error("Failed to refresh group members.");
       } finally {
         setAddingMember(null);
       }
@@ -131,7 +133,7 @@ export function useGroupMembers(
       );
 
       if (removeError) {
-        alert("Error: " + removeError.message);
+        toast.error("Error removing member: " + removeError.message);
       } else {
         refetch();
       }

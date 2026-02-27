@@ -3,7 +3,7 @@
 import { useState, useCallback, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Member, Expense } from "@/types/group";
-
+import { useToast } from "@/hooks/use-toast";
 /**
  * Manages the expense modal state and all expense CRUD operations.
  */
@@ -13,7 +13,7 @@ export function useGroupExpenses(
   refetch: () => void
 ) {
   const supabase = createClient();
-
+  const toast = useToast();
   /* ── Modal state ─────────────────────────────────────── */
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [expenseName, setExpenseName] = useState("");
@@ -48,7 +48,7 @@ export function useGroupExpenses(
       e.preventDefault();
       if (!expenseName || !expenseAmount) return;
       if (selectedMembers.length === 0) {
-        alert("Please select at least one member to split with.");
+        toast.error("Please select at least one member to split with.");
         return;
       }
 
@@ -75,7 +75,7 @@ export function useGroupExpenses(
       const { error: rpcError } = await supabase.rpc(rpcName, rpcParams);
 
       if (rpcError) {
-        alert("Error saving expense: " + rpcError.message);
+        toast.error("Error saving expense: " + rpcError.message);
       } else {
         setIsExpenseModalOpen(false);
         setEditingExpenseId(null);
@@ -113,7 +113,7 @@ export function useGroupExpenses(
       });
 
       if (delError) {
-        alert("Error deleting expense: " + delError.message);
+        toast.error("Error deleting expense: " + delError.message);
       } else {
         refetch();
       }
