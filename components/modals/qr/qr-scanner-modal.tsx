@@ -5,6 +5,7 @@
 // ==========================================
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { Modal } from "@/components/ui/modal";
 import {
   X,
   Camera,
@@ -41,13 +42,12 @@ export function QRScannerModal({
   const [state, setState] = useState<ScannerState>("initializing");
   const [errorMessage, setErrorMessage] = useState("");
   const [scannedValue, setScannedValue] = useState("");
-  const [animateIn, setAnimateIn] = useState(false);
 
   const scannerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // ── Cleanup scanner ──
+  // ── Cleanup scanner ──────────────────────────────────
   const stopScanner = useCallback(async () => {
     if (scannerRef.current) {
       try {
@@ -63,25 +63,7 @@ export function QRScannerModal({
     }
   }, []);
 
-  /*
-   * ════════════════════════════════════════════════════
-   * PARSE SCANNED URL — SECURE TOKEN LOGIC
-   *
-   * Supported URL formats:
-   *
-   * 1. Group invite (with token — SECURE):
-   *    /join?id=GROUP_ID&token=INVITE_TOKEN
-   *
-   * 2. Group invite (legacy, id only):
-   *    /join?id=GROUP_ID
-   *
-   * 3. Profile link:
-   *    /dashboard/profile/USER_ID_OR_USERNAME
-   *    /profile/USER_ID_OR_USERNAME
-   *
-   * 4. Any other same-origin URL → navigate to it
-   * ════════════════════════════════════════════════════
-   */
+  // ── Parse scanned URL ────────────────────────────────
   const handleScannedUrl = useCallback(
     (url: string) => {
       setScannedValue(url);
@@ -92,24 +74,17 @@ export function QRScannerModal({
         const pathname = parsed.pathname;
         const searchParams = parsed.searchParams;
 
-        // ── Case 1: Group join link ──
+        // Group join link
         if (pathname === "/join" && searchParams.has("id")) {
           const groupId = searchParams.get("id")!;
-          const token = searchParams.get("token"); // may be null (legacy)
-
-          console.log("[Scanner] Group invite detected:", {
-            groupId,
-            hasToken: !!token,
-          });
+          const token = searchParams.get("token");
 
           stopScanner();
           setTimeout(() => {
             onClose();
             if (onGroupScanned) {
-              // Pass both groupId and token to the callback
               onGroupScanned(groupId, token);
             } else {
-              // Fallback: navigate with both params
               const joinUrl = token
                 ? `/join?id=${groupId}&token=${token}`
                 : `/join?id=${groupId}`;
@@ -119,30 +94,21 @@ export function QRScannerModal({
           return;
         }
 
-        // ── Case 2: Profile link ──
-        // Matches: /profile/ANYTHING or /dashboard/profile/ANYTHING
-        // The [a-zA-Z0-9_\-.]+ pattern supports:
-        //   - UUIDs:    550e8400-e29b-41d4-a716-446655440000
-        //   - Usernames: john_doe, user-123, my.name
+        // Profile link
         const profileMatch = pathname.match(
           /\/(?:dashboard\/)?profile\/([a-zA-Z0-9_\-.]+)/
         );
         if (profileMatch) {
-          const profileIdentifier = profileMatch[1];
-          console.log("[Scanner] Profile detected:", profileIdentifier);
-
           stopScanner();
           setTimeout(() => {
             onClose();
-            router.push(`/dashboard/profile/${profileIdentifier}`);
+            router.push(`/dashboard/profile/${profileMatch[1]}`);
           }, 800);
           return;
         }
 
-        // ── Case 3: Same-origin generic URL ──
+        // Same-origin generic URL
         if (parsed.origin === window.location.origin) {
-          console.log("[Scanner] Same-origin URL:", pathname);
-
           stopScanner();
           setTimeout(() => {
             onClose();
@@ -151,7 +117,7 @@ export function QRScannerModal({
           return;
         }
 
-        // ── Case 4: External / unknown URL ──
+        // External / unknown
         setErrorMessage("This QR code is not a FairShare link.");
         setState("error");
         setTimeout(() => setState("scanning"), 2500);
@@ -164,11 +130,10 @@ export function QRScannerModal({
     [onClose, onGroupScanned, router, stopScanner]
   );
 
-  // ── Start scanner ──
+  // ── Start scanner when modal opens ───────────────────
   useEffect(() => {
     if (!isOpen) return;
 
-    setAnimateIn(true);
     setState("initializing");
     setErrorMessage("");
     setScannedValue("");
@@ -178,7 +143,6 @@ export function QRScannerModal({
     const initScanner = async () => {
       try {
         const { Html5Qrcode } = await import("html5-qrcode");
-
         if (!mounted) return;
 
         const readerId = "qr-reader-container";
@@ -194,11 +158,7 @@ export function QRScannerModal({
 
         await scanner.start(
           { facingMode: "environment" },
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0,
-          },
+          { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
           (decodedText) => {
             if (mounted) handleScannedUrl(decodedText);
           },
@@ -236,160 +196,127 @@ export function QRScannerModal({
     };
   }, [isOpen, handleScannedUrl, stopScanner]);
 
-  // ── Close handler ──
+  // ── Close handler (stops scanner first) ──────────────
   const handleClose = useCallback(() => {
-    setAnimateIn(false);
     stopScanner();
-    setTimeout(onClose, 200);
+    onClose();
   }, [onClose, stopScanner]);
 
-  // ── Escape key ──
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") handleClose();
-    };
-    if (isOpen) window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [isOpen, handleClose]);
-
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
-      {/* ── Backdrop ── */}
-      <div
-        className={`absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity duration-300 ${
-          animateIn ? "opacity-100" : "opacity-0"
-        }`}
-        onClick={handleClose}
-      />
-
-      {/* ── Modal ── */}
-      <div
-        className={`relative w-full max-w-sm transform transition-all duration-300 ${
-          animateIn
-            ? "scale-100 opacity-100 translate-y-0"
-            : "scale-95 opacity-0 translate-y-4"
-        }`}
-      >
-        <div className="overflow-hidden rounded-3xl border border-white/10 bg-gray-950 shadow-2xl">
-          {/* ── Header ── */}
-          <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/20">
-                <QrCode className="h-5 w-5 text-indigo-400" />
-              </div>
-              <div>
-                <h2 className="text-base font-bold text-white">
-                  Scan QR Code
-                </h2>
-                <p className="text-xs text-gray-400">
-                  Point your camera at a FairShare QR
-                </p>
-              </div>
+    <Modal isOpen={isOpen} onClose={handleClose} title="Scan QR Code" maxWidth="sm">
+      {/* Dark-themed container covers the Modal's white bg */}
+      <div className="overflow-hidden bg-gray-950">
+        {/* ── Header ── */}
+        <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/20">
+              <QrCode className="h-5 w-5 text-indigo-400" />
             </div>
-            <button
-              onClick={handleClose}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-gray-400 transition-colors hover:bg-white/20 hover:text-white"
-            >
-              <X className="h-4 w-4" />
-            </button>
+            <div>
+              <h2 className="text-base font-bold text-white">Scan QR Code</h2>
+              <p className="text-xs text-gray-400">
+                Point your camera at a FairShare QR
+              </p>
+            </div>
           </div>
-
-          {/* ── Camera View ── */}
-          <div
-            className="relative aspect-square w-full bg-black"
-            ref={containerRef}
+          <button
+            onClick={handleClose}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-gray-400 transition-colors hover:bg-white/20 hover:text-white"
           >
-            <div
-              id="qr-reader-container"
-              className="h-full w-full [&>video]:!h-full [&>video]:!w-full [&>video]:!object-cover [&_img]:hidden [&_select]:hidden [&_button]:hidden [&>div]:!border-none"
-            />
+            <X className="h-4 w-4" />
+          </button>
+        </div>
 
-            {/* Scanning Overlay */}
-            {state === "scanning" && (
-              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                <div className="relative h-64 w-64">
-                  <div className="absolute left-0 top-0 h-8 w-8 border-l-[3px] border-t-[3px] border-indigo-400 rounded-tl-lg" />
-                  <div className="absolute right-0 top-0 h-8 w-8 border-r-[3px] border-t-[3px] border-indigo-400 rounded-tr-lg" />
-                  <div className="absolute bottom-0 left-0 h-8 w-8 border-b-[3px] border-l-[3px] border-indigo-400 rounded-bl-lg" />
-                  <div className="absolute bottom-0 right-0 h-8 w-8 border-b-[3px] border-r-[3px] border-indigo-400 rounded-br-lg" />
-                  <div className="absolute left-2 right-2 top-0 h-0.5 animate-[scanline_2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-indigo-400 to-transparent" />
-                </div>
-                <div
-                  className="absolute inset-0 bg-black/40"
-                  style={{
-                    maskImage:
-                      "radial-gradient(circle 130px, transparent 128px, black 130px)",
-                    WebkitMaskImage:
-                      "radial-gradient(circle 130px, transparent 128px, black 130px)",
-                  }}
-                />
+        {/* ── Camera View ── */}
+        <div className="relative aspect-square w-full bg-black" ref={containerRef}>
+          <div
+            id="qr-reader-container"
+            className="h-full w-full [&>video]:!h-full [&>video]:!w-full [&>video]:!object-cover [&_img]:hidden [&_select]:hidden [&_button]:hidden [&>div]:!border-none"
+          />
+
+          {/* Scanning Overlay */}
+          {state === "scanning" && (
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <div className="relative h-64 w-64">
+                <div className="absolute left-0 top-0 h-8 w-8 rounded-tl-lg border-l-[3px] border-t-[3px] border-indigo-400" />
+                <div className="absolute right-0 top-0 h-8 w-8 rounded-tr-lg border-r-[3px] border-t-[3px] border-indigo-400" />
+                <div className="absolute bottom-0 left-0 h-8 w-8 rounded-bl-lg border-b-[3px] border-l-[3px] border-indigo-400" />
+                <div className="absolute bottom-0 right-0 h-8 w-8 rounded-br-lg border-b-[3px] border-r-[3px] border-indigo-400" />
+                <div className="absolute left-2 right-2 top-0 h-0.5 animate-[scanline_2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-indigo-400 to-transparent" />
               </div>
-            )}
+              <div
+                className="absolute inset-0 bg-black/40"
+                style={{
+                  maskImage:
+                    "radial-gradient(circle 130px, transparent 128px, black 130px)",
+                  WebkitMaskImage:
+                    "radial-gradient(circle 130px, transparent 128px, black 130px)",
+                }}
+              />
+            </div>
+          )}
 
-            {/* Initializing */}
-            {state === "initializing" && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-950">
-                <Loader2 className="mb-3 h-8 w-8 animate-spin text-indigo-400" />
-                <p className="text-sm text-gray-400">Starting camera…</p>
+          {/* Initializing */}
+          {state === "initializing" && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-950">
+              <Loader2 className="mb-3 h-8 w-8 animate-spin text-indigo-400" />
+              <p className="text-sm text-gray-400">Starting camera…</p>
+            </div>
+          )}
+
+          {/* Permission Denied */}
+          {state === "permission_denied" && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-950 px-6 text-center">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-500/10">
+                <CameraOff className="h-8 w-8 text-red-400" />
               </div>
-            )}
+              <h3 className="text-base font-bold text-white">
+                Camera Access Denied
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-gray-400">
+                {errorMessage}
+              </p>
+              <button
+                onClick={handleClose}
+                className="mt-5 rounded-xl bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/20"
+              >
+                Close
+              </button>
+            </div>
+          )}
 
-            {/* Permission Denied */}
-            {state === "permission_denied" && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-950 px-6 text-center">
-                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-500/10">
-                  <CameraOff className="h-8 w-8 text-red-400" />
-                </div>
-                <h3 className="text-base font-bold text-white">
-                  Camera Access Denied
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-gray-400">
-                  {errorMessage}
-                </p>
-                <button
-                  onClick={handleClose}
-                  className="mt-5 rounded-xl bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/20"
-                >
-                  Close
-                </button>
+          {/* Success */}
+          {state === "success" && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-950/95">
+              <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20">
+                <Camera className="h-8 w-8 text-emerald-400" />
               </div>
-            )}
+              <p className="text-sm font-semibold text-emerald-400">
+                QR Code detected!
+              </p>
+              <p className="mt-1 max-w-[80%] truncate text-xs text-gray-500">
+                {scannedValue}
+              </p>
+              <Loader2 className="mt-3 h-5 w-5 animate-spin text-gray-500" />
+            </div>
+          )}
 
-            {/* Success */}
-            {state === "success" && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-950/95">
-                <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20">
-                  <Camera className="h-8 w-8 text-emerald-400" />
-                </div>
-                <p className="text-sm font-semibold text-emerald-400">
-                  QR Code detected!
-                </p>
-                <p className="mt-1 max-w-[80%] truncate text-xs text-gray-500">
-                  {scannedValue}
-                </p>
-                <Loader2 className="mt-3 h-5 w-5 animate-spin text-gray-500" />
-              </div>
-            )}
+          {/* Error */}
+          {state === "error" && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-950/95 px-6 text-center">
+              <AlertTriangle className="mb-3 h-8 w-8 text-amber-400" />
+              <p className="text-sm text-amber-300">{errorMessage}</p>
+            </div>
+          )}
+        </div>
 
-            {/* Error */}
-            {state === "error" && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-950/95 px-6 text-center">
-                <AlertTriangle className="mb-3 h-8 w-8 text-amber-400" />
-                <p className="text-sm text-amber-300">{errorMessage}</p>
-              </div>
-            )}
-          </div>
-
-          {/* ── Footer ── */}
-          <div className="border-t border-white/10 px-5 py-4">
-            <p className="text-center text-xs text-gray-500">
-              Scan a FairShare group invite or profile QR code
-            </p>
-          </div>
+        {/* ── Footer ── */}
+        <div className="border-t border-white/10 px-5 py-4">
+          <p className="text-center text-xs text-gray-500">
+            Scan a FairShare group invite or profile QR code
+          </p>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

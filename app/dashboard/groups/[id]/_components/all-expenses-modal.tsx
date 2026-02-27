@@ -1,17 +1,12 @@
 "use client";
 
-// ==========================================
-// 📦 IMPORTS
-// ==========================================
-import { useEffect, useRef } from "react";
 import Link from "next/link";
+import { Modal } from "@/components/ui/modal";
 import { Avatar } from "@/components/ui/avatar";
 import { formatCurrency } from "@/lib/utils";
 import type { Expense } from "@/types/group";
 
-// ==========================================
-// 🎨 AVATAR FALLBACK HELPERS
-// ==========================================
+// ── Avatar helpers ──────────────────────────────────────
 const AVATAR_GRADIENTS = [
   "bg-gradient-to-br from-blue-400 to-blue-600",
   "bg-gradient-to-br from-emerald-400 to-emerald-600",
@@ -40,9 +35,7 @@ function getAvatarColor(name: string): string {
   return AVATAR_GRADIENTS[Math.abs(hash) % AVATAR_GRADIENTS.length];
 }
 
-// ==========================================
-// 🧩 TYPES
-// ==========================================
+// ── Types ───────────────────────────────────────────────
 interface AllExpensesModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -54,9 +47,7 @@ interface AllExpensesModalProps {
   onDeleteExpense: (id: string, name: string) => void;
 }
 
-// ==========================================
-// 🎨 UI RENDER
-// ==========================================
+// ── Component ───────────────────────────────────────────
 export function AllExpensesModal({
   isOpen,
   onClose,
@@ -67,55 +58,12 @@ export function AllExpensesModal({
   onEditExpense,
   onDeleteExpense,
 }: AllExpensesModalProps) {
-  const overlayRef = useRef<HTMLDivElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-
-  /* ── Close on Escape key ── */
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
-
-  /* ── Lock body scroll when open ── */
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
-  const canModify = (exp: Expense) =>
-    currentUser === exp.paid_by || isOwner;
+  const canModify = (exp: Expense) => currentUser === exp.paid_by || isOwner;
 
   return (
-    <div
-      ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
-      onClick={(e) => {
-        if (e.target === overlayRef.current) onClose();
-      }}
-    >
-      {/* ── Backdrop ── */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-
-      {/* ── Panel (bottom-sheet on mobile, centered on desktop) ── */}
-      <div
-        ref={panelRef}
-        className="relative z-10 flex w-full max-w-2xl flex-col rounded-t-2xl bg-white shadow-2xl sm:mx-4 sm:my-8 sm:max-h-[85vh] sm:rounded-2xl"
-        style={{ maxHeight: "90vh" }}
-      >
+    <Modal isOpen={isOpen} onClose={onClose} title="All Expenses" maxWidth="lg">
+      {/* Constrain height so the body scrolls, not the whole modal */}
+      <div className="flex max-h-[90vh] flex-col sm:max-h-[85vh]">
         {/* ── Header ── */}
         <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-5 py-4">
           <div>
@@ -129,18 +77,8 @@ export function AllExpensesModal({
             className="flex h-9 w-9 items-center justify-center rounded-full text-gray-400 transition-all duration-200 hover:bg-gray-100 hover:text-gray-600 active:scale-95"
             title="Close"
           >
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
@@ -155,12 +93,8 @@ export function AllExpensesModal({
             <div className="space-y-3">
               {expenses.map((exp) => {
                 const payerName =
-                  exp.profiles.display_name ||
-                  exp.profiles.full_name ||
-                  "Unknown";
-                const payerAvatar =
-                  (exp.profiles as any)?.avatar_url || null;
-
+                  exp.profiles.display_name || exp.profiles.full_name || "Unknown";
+                const payerAvatar = (exp.profiles as any)?.avatar_url || null;
                 const splits = (exp.expense_splits || []) as any[];
                 const visibleSplits = splits.slice(0, 3);
                 const remainingCount = Math.max(0, splits.length - 3);
@@ -171,21 +105,12 @@ export function AllExpensesModal({
                     key={exp.id}
                     className="group rounded-xl border border-gray-100 bg-gray-50/50 p-3 transition-all hover:border-gray-200 hover:shadow-sm sm:p-4"
                   >
-                    {/* ── Top Row: Avatar + Info + Amount ── */}
+                    {/* Top Row */}
                     <div className="flex items-center gap-3">
-                      {/* Payer Avatar (same as members-card pattern) */}
-                      <Link
-                        href={`/dashboard/profile/${exp.paid_by}`}
-                        className="flex-shrink-0"
-                      >
-                        <Avatar
-                          src={payerAvatar}
-                          name={payerName}
-                          size="md"
-                        />
+                      <Link href={`/dashboard/profile/${exp.paid_by}`} className="flex-shrink-0">
+                        <Avatar src={payerAvatar} name={payerName} size="md" />
                       </Link>
 
-                      {/* Expense Info */}
                       <div className="min-w-0 flex-1">
                         <h3 className="truncate text-sm font-semibold text-gray-900 sm:text-base">
                           {exp.name}
@@ -198,33 +123,25 @@ export function AllExpensesModal({
                           >
                             {payerName}
                           </Link>{" "}
-                          ·{" "}
-                          {new Date(exp.created_at).toLocaleDateString()}
+                          · {new Date(exp.created_at).toLocaleDateString()}
                         </p>
                       </div>
 
-                      {/* Amount + Mini Avatars */}
                       <div className="flex flex-shrink-0 flex-col items-end gap-1.5">
                         <p className="text-base font-bold text-gray-900 sm:text-lg">
                           {formatCurrency(exp.amount, currency)}
                         </p>
-
-                        {/* Overlapping participant avatars */}
                         <div className="flex items-center">
                           {visibleSplits.map((split: any, i: number) => {
                             const splitName =
                               split?.profiles?.display_name ||
                               split?.profiles?.full_name ||
                               `M${i + 1}`;
-                            const splitAvatar =
-                              split?.profiles?.avatar_url || null;
-
+                            const splitAvatar = split?.profiles?.avatar_url || null;
                             return (
                               <div
                                 key={split?.id || i}
-                                className={`${
-                                  i > 0 ? "-ml-1.5" : ""
-                                } rounded-full ring-2 ring-white`}
+                                className={`${i > 0 ? "-ml-1.5" : ""} rounded-full ring-2 ring-white`}
                                 title={splitName}
                               >
                                 {splitAvatar ? (
@@ -235,9 +152,7 @@ export function AllExpensesModal({
                                   />
                                 ) : (
                                   <div
-                                    className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-white ${getAvatarColor(
-                                      splitName
-                                    )}`}
+                                    className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-white ${getAvatarColor(splitName)}`}
                                   >
                                     {getInitials(splitName).charAt(0)}
                                   </div>
@@ -257,7 +172,7 @@ export function AllExpensesModal({
                       </div>
                     </div>
 
-                    {/* ── Bottom Row: Action Buttons ── */}
+                    {/* Action Buttons */}
                     {showActions && (
                       <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
                         <button
@@ -268,18 +183,8 @@ export function AllExpensesModal({
                           className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 shadow-sm transition-all duration-200 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 active:scale-95"
                           title={`Edit "${exp.name}"`}
                         >
-                          <svg
-                            className="h-3.5 w-3.5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
-                            />
+                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                           </svg>
                           Edit
                         </button>
@@ -291,18 +196,8 @@ export function AllExpensesModal({
                           className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 shadow-sm transition-all duration-200 hover:border-red-300 hover:bg-red-50 hover:text-red-600 active:scale-95"
                           title={`Delete "${exp.name}"`}
                         >
-                          <svg
-                            className="h-3.5 w-3.5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
+                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
                           Delete
                         </button>
@@ -325,6 +220,6 @@ export function AllExpensesModal({
           </button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
