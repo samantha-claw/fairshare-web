@@ -34,68 +34,80 @@ export function useGroupData(groupId: string) {
   // Track initial load so refetches don't flash the full-page spinner
   const initialLoadDone = useRef(false);
 
-  /* ── Single RPC fetch ────────────────────────────────── */
-  const fetchData = useCallback(async () => {
-    if (!initialLoadDone.current) setLoading(true);
-    setError(null);
+/* ── Single RPC fetch ────────────────────────────────── */
+const fetchData = useCallback(async () => {
+  if (!initialLoadDone.current) setLoading(true);
+  setError(null);
 
-    try {
-      // 1. Auth guard
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
+  try {
+    // 1. Auth guard
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
-      if (!user || authError) {
-        router.replace("/login");
-        return;
-      }
-      setCurrentUser(user.id);
-
-      // 2. Single RPC — replaces 7 separate queries
-      const { data, error: rpcError } = await supabase.rpc("get_group_details", {
-        p_group_id: groupId,
-      });
-
-      if (rpcError) throw rpcError;
-
-      if (!data || !data.group) {
-        setError("Group not found.");
-        return;
-      }
-
-      // 3. Hydrate state
-      setGroup(data.group as Group);
-
-      // Add nested `profiles` property for backward-compat with components
-      setMembers(
-        (data.members || []).map((m: any) => ({
-          ...m,
-          profiles: {
-            username: m.username,
-            full_name: m.full_name,
-            display_name: m.display_name,
-            avatar_url: m.avatar_url,
-          },
-        }))
-      );
-
-      setExpenses((data.expenses as Expense[]) || []);
-      setBalances((data.balances as Balance[]) || []);
-      setPendingSettlements((data.pending_settlements as Settlement[]) || []);
-      setCompletedSettlements((data.completed_settlements as Settlement[]) || []);
-    } catch (err: any) {
-      console.error("useGroupData fetchData error:", err);
-      setError(err?.message || "Failed to load group data.");
-    } finally {
-      setLoading(false);
-      initialLoadDone.current = true;
+    if (!user || authError) {
+      router.replace("/login");
+      return;
     }
-  }, [groupId, supabase, router]);
+    setCurrentUser(user.id);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    // 2. Single RPC — replaces 7 separate queries
+    const { data, error: rpcError } = await supabase.rpc("get_group_details", {
+      p_group_id: groupId,
+    });
+
+    if (rpcError) throw rpcError;
+
+    if (!data || !data.group) {
+      setError("Group not found.");
+      return;
+    }
+
+    // 3. Hydrate state
+    setGroup(data.group as Group);
+
+    setMembers(
+      (data.members || []).map((m: any) => ({
+        ...m,
+        profiles: m.profiles || {
+          username: m.username,
+          full_name: m.full_name,
+          display_name: m.display_name,
+          avatar_url: m.avatar_url,
+        },
+      }))
+    );
+
+    setExpenses((data.expenses as Expense[]) || []);
+    setBalances((data.balances as Balance[]) || []);
+
+    // إصلاح تعارض واجهة المستخدم (UI Shape Mismatch) للتسويات
+    const mapSettlements = (arr: any[]) => {
+      return (arr || []).map((s) => ({
+        ...s,
+        // نقوم بنسخ البيانات للأماكن التي قد تتوقعها واجهة المستخدم القديمة
+        // لضمان عدم حدوث TypeError: Cannot read properties of undefined
+        from_profile: s.from_profile,
+        to_profile: s.to_profile,
+        profiles_from: s.from_profile, 
+        profiles_to: s.to_profile,
+      }));
+    };
+
+    setPendingSettlements(mapSettlements(data.pending_settlements));
+    setCompletedSettlements(mapSettlements(data.completed_settlements));
+  } catch (err) {
+    setError(err instanceof Error ? err.message : "Failed to fetch group data.");
+  } finally {
+    setLoading(false);
+    initialLoadDone.current = true;
+  }
+}, [supabase, groupId, router]);
+
+useEffect(() => {
+  fetchData();
+}, [fetchData]);
 
   /* ── Derived values ──────────────────────────────────── */
   const isOwner = currentUser === group?.owner_id;
