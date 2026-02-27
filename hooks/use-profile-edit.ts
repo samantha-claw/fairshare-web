@@ -80,21 +80,19 @@ export function useProfileEdit() {
 
   const fetchProfile = useCallback(async () => {
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        router.replace("/login");
-        return;
-      }
-
-      setUserId(session.user.id);
-
+     const {
+  data: { user },
+  error: authError,
+} = await supabase.auth.getUser();
+if (!user || authError) {
+  router.replace("/login");
+  return;
+}
+setUserId(user.id);
       const { data, error } = await supabase
         .from("profiles")
         .select("display_name, username, full_name, avatar_url, bio")
-        .eq("id", session.user.id)
+        .eq("id", user.id)
         .single();
 
       if (error) throw error;

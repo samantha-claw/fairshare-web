@@ -74,24 +74,23 @@ export function useProfile(options: UseProfileOptions = {}) {
   const fetchData = useCallback(async () => {
     try {
       // 1. Auth check
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
+  const {
+        data: { user },
+        error: authError,
+       } = await supabase.auth.getUser();
+    if (!user || authError) {
         router.replace("/login");
-        return;
-      }
-      setCurrentUserId(session.user.id);
-
-      const fetchId = targetUserId || session.user.id;
+    return;
+  }
+setCurrentUserId(user.id);
+      const fetchId = targetUserId || user.id;
 
       // 1b. Fetch current user's name (needed for notifications when viewing others)
-      if (targetUserId && targetUserId !== session.user.id) {
+      if (targetUserId && targetUserId !== user.id) {
         const { data: currentUserProfile } = await supabase
           .from("profiles")
           .select("display_name, full_name, username")
-          .eq("id", session.user.id)
+          .eq("id", user.id)
           .single();
 
         if (currentUserProfile) {
@@ -117,7 +116,7 @@ export function useProfile(options: UseProfileOptions = {}) {
       setProfile(profileData as UserProfile);
 
       // If viewing own profile, set name from own profile data
-      if (!targetUserId || targetUserId === session.user.id) {
+      if (!targetUserId || targetUserId === user.id) {
         setCurrentUserName(
           profileData.display_name ||
           profileData.full_name ||
@@ -127,12 +126,12 @@ export function useProfile(options: UseProfileOptions = {}) {
       }
 
       // 3. Friend status (only for other users)
-      if (targetUserId && targetUserId !== session.user.id) {
+      if (targetUserId && targetUserId !== user.id) {
         const { data: friendshipData } = await supabase
           .from("friendships")
           .select("id, status, requester_id, receiver_id")
           .or(
-            `and(requester_id.eq.${session.user.id},receiver_id.eq.${targetUserId}),and(requester_id.eq.${targetUserId},receiver_id.eq.${session.user.id})`
+            `and(requester_id.eq.${user.id},receiver_id.eq.${targetUserId}),and(requester_id.eq.${targetUserId},receiver_id.eq.${user.id})`
           )
           .maybeSingle();
 
@@ -143,7 +142,7 @@ export function useProfile(options: UseProfileOptions = {}) {
           } else {
             setFriendStatus("pending");
             // Determine direction: did I send it or did they?
-            if (friendshipData.requester_id === session.user.id) {
+            if (friendshipData.requester_id === user.id) {
               setFriendshipDirection("outgoing"); // I sent it
             } else {
               setFriendshipDirection("incoming"); // They sent it to me
@@ -157,10 +156,10 @@ export function useProfile(options: UseProfileOptions = {}) {
 
       // 4. Groups (for own profile or friends)
       const shouldFetchFinancials =
-        !targetUserId || targetUserId === session.user.id;
+        !targetUserId || targetUserId === user.id;
 
       if (shouldFetchFinancials) {
-        const uid = session.user.id;
+        const uid = user.id;
 
         const { data: memberships } = await supabase
           .from("group_members")
@@ -315,27 +314,9 @@ export function useProfile(options: UseProfileOptions = {}) {
       if (error) throw error;
       setFriendStatus("pending");
       setFriendshipDirection("outgoing");
-
-      // ── Notify the target user about the friend request ──
-      const senderName = currentUserName || "Someone";
-
-      const { error: notifError } = await supabase
-        .from("notifications")
-        .insert({
-          user_id: profile.id,
-          actor_id: currentUserId,
-          type: "friend_request",
-          title: "New Friend Request! 👋",
-          message: `${senderName} sent you a friend request.`,
-          link: `/dashboard/profile/${currentUserId}`,
-        });
-
-      if (notifError) {
-        console.error("Failed to send friend request notification:", notifError);
-      }
     } catch (err: any) {
       console.error(err);
-      alert(err.message || "Failed to send request.");
+      alert("Failed to send friend request.");
     } finally {
       setIsProcessing(false);
     }
@@ -393,27 +374,9 @@ export function useProfile(options: UseProfileOptions = {}) {
 
       setFriendStatus("friends");
       setFriendshipDirection(null);
-
-      // ── Notify the requester that their request was accepted ──
-      const accepterName = currentUserName || "Someone";
-
-      const { error: notifError } = await supabase
-        .from("notifications")
-        .insert({
-          user_id: targetUserId,
-          actor_id: currentUserId,
-          type: "friend_request",
-          title: "Friend Request Accepted! 🎉",
-          message: `${accepterName} accepted your friend request.`,
-          link: `/dashboard/profile/${currentUserId}`,
-        });
-
-      if (notifError) {
-        console.error("Failed to send acceptance notification:", notifError);
-      }
     } catch (err: any) {
       console.error(err);
-      alert(err.message || "Failed to accept request.");
+      alert("Failed to accept request.");
     } finally {
       setIsProcessing(false);
     }

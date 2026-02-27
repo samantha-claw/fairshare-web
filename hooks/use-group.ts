@@ -104,106 +104,109 @@ export function useGroup() {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, members, supabase]);
 
-  /* ── Data Fetching ───────────────────────────────────── */
+/* ── Data Fetching ───────────────────────────────────── */
 
-  const fetchData = useCallback(async () => {
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) {
-        router.replace("/login");
-        return;
-      }
-      setCurrentUser(session.user.id);
+const fetchData = useCallback(async () => {
+  setLoading(true);
+  setError(null);
+  try {
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (!user || authError) {
+      router.replace("/login");
+      return;
+    }
+    setCurrentUser(user.id);
 
-      const { data: groupData, error: groupError } = await supabase
-        .from("groups")
-        .select("*")
-        .eq("id", groupId)
-        .single();
-      if (groupError) throw groupError;
-      setGroup(groupData as Group);
+    const { data: groupData, error: groupError } = await supabase
+      .from("groups")
+      .select("*")
+      .eq("id", groupId)
+      .single();
+    if (groupError) throw groupError;
+    setGroup(groupData as Group);
 
-      const { data: membersData } = await supabase
-        .from("group_members")
-        .select(`*, profiles ( username, full_name, display_name, avatar_url )`)
-        .eq("group_id", groupId);
+    const { data: membersData } = await supabase
+      .from("group_members")
+      .select(`*, profiles ( username, full_name, display_name, avatar_url )`)
+      .eq("group_id", groupId);
 
-      if (membersData) {
-        setMembers(
-          membersData.map((m: any) => ({
-            id: m.user_id,
-            ...m.profiles,
-            profiles: m.profiles,
-          }))
-        );
-      }
+    if (membersData) {
+      setMembers(
+        membersData.map((m: any) => ({
+          id: m.user_id,
+          ...m.profiles,
+          profiles: m.profiles,
+        }))
+      );
+    }
 
-      const { data: expensesData, error: expError } = await supabase
-        .from("expenses")
-        .select(
-         `id, name, amount, created_at, paid_by,
-          profiles:paid_by ( full_name, username, display_name, avatar_url ),
-          expense_splits ( user_id, profiles ( full_name, display_name, avatar_url ) )`
+    const { data: expensesData, error: expError } = await supabase
+      .from("expenses")
+      .select(
+        `id, name, amount, created_at, paid_by,
+        profiles:paid_by ( full_name, username, display_name, avatar_url ),
+        expense_splits ( user_id, profiles ( full_name, display_name, avatar_url ) )`
       )
-       .eq("group_id", groupId)
+      .eq("group_id", groupId)
       .order("created_at", { ascending: false });
 
-      if (expError) console.error("Error fetching expenses:", expError);
-      if (expensesData) {
-        // @ts-ignore
-        setExpenses(expensesData);
-      }
-
-      const { data: balancesData } = await supabase.rpc("get_group_balances", {
-        _group_id: groupId,
-      });
-      if (balancesData) {
-        // @ts-ignore
-        setBalances(balancesData);
-      }
-
-      const { data: pendingSettlementsData } = await supabase
-        .from("settlements")
-        .select(
-          `*,
-           from_profile:from_user ( display_name, username, avatar_url ),
-           to_profile:to_user ( display_name, username, avatar_url )`
-        )
-        .eq("group_id", groupId)
-        .eq("status", "pending")
-        .order("created_at", { ascending: false });
-
-      if (pendingSettlementsData) {
-        setPendingSettlements(pendingSettlementsData as unknown as Settlement[]);
-      }
-
-      const { data: completedSettlementsData } = await supabase
-        .from("settlements")
-        .select(
-          `*,
-           from_profile:from_user ( display_name, username, avatar_url ),
-           to_profile:to_user ( display_name, username, avatar_url )`
-        )
-        .eq("group_id", groupId)
-        .eq("status", "completed")
-        .order("created_at", { ascending: false });
-
-      if (completedSettlementsData) {
-        setCompletedSettlements(completedSettlementsData as unknown as Settlement[]);
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Failed to load group data.");
-    } finally {
-      setLoading(false);
+    if (expError) console.error("Error fetching expenses:", expError);
+    if (expensesData) {
+      // @ts-ignore
+      setExpenses(expensesData);
     }
-  }, [groupId, supabase, router]);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    const { data: balancesData } = await supabase.rpc("get_group_balances", {
+      _group_id: groupId,
+    });
+    if (balancesData) {
+      // @ts-ignore
+      setBalances(balancesData);
+    }
+
+    const { data: pendingSettlementsData } = await supabase
+      .from("settlements")
+      .select(
+        `*,
+         from_profile:from_user ( display_name, username, avatar_url ),
+         to_profile:to_user ( display_name, username, avatar_url )`
+      )
+      .eq("group_id", groupId)
+      .eq("status", "pending")
+      .order("created_at", { ascending: false });
+
+    if (pendingSettlementsData) {
+      setPendingSettlements(pendingSettlementsData as unknown as Settlement[]);
+    }
+
+    const { data: completedSettlementsData } = await supabase
+      .from("settlements")
+      .select(
+        `*,
+         from_profile:from_user ( display_name, username, avatar_url ),
+         to_profile:to_user ( display_name, username, avatar_url )`
+      )
+      .eq("group_id", groupId)
+      .eq("status", "completed")
+      .order("created_at", { ascending: false });
+
+    if (completedSettlementsData) {
+      setCompletedSettlements(completedSettlementsData as unknown as Settlement[]);
+    }
+  } catch (err) {
+    console.error(err);
+    setError("Failed to load group data.");
+  } finally {
+    setLoading(false);
+  }
+}, [groupId, supabase, router]);
+
+useEffect(() => {
+  fetchData();
+}, [fetchData]);
 
   /* ── Realtime Subscriptions ──────────────────────────── */
 
@@ -318,19 +321,7 @@ export function useGroup() {
         return;
       }
 
-      // ── Notify the added member ──
-      const groupName = group?.name || "a group";
-      await supabase.from("notifications").insert({
-        user_id: targetUserId,
-        title: "New Group Invitation 🤝",
-        message: `You have been added to the group: ${groupName}`,
-        type: "group",
-        link: `/dashboard/groups/${groupId}`,
-      }).then(({ error: notifError }) => {
-        if (notifError) {
-          console.error("Failed to send group invitation notification:", notifError);
-        }
-      });
+      
 
       setInvitableFriends((prev) => prev.filter((f) => f.friend_id !== targetUserId));
       setSearchResults((prev) => prev.filter((u) => u.id !== targetUserId));
@@ -380,29 +371,7 @@ export function useGroup() {
     if (rpcError) {
       alert("Error saving expense: " + rpcError.message);
     } else {
-      // ── Notify all participants except the current user ──
-      const currency = group?.currency || "USD";
-      const formattedAmount = formatCurrency(parseFloat(expenseAmount), currency);
-      const membersToNotify = selectedMembers.filter((id) => id !== currentUser);
-
-      if (membersToNotify.length > 0) {
-        const notifications = membersToNotify.map((memberId) => ({
-          user_id: memberId,
-          title: "New Expense Added 💸",
-          message: `You were added to an expense: ${expenseName} for ${formattedAmount}`,
-          type: "expense",
-          link: `/dashboard/groups/${groupId}`,
-        }));
-
-        const { error: notifError } = await supabase
-          .from("notifications")
-          .insert(notifications);
-
-        if (notifError) {
-          console.error("Failed to send expense notifications:", notifError);
-        }
-      }
-
+      
       setIsExpenseModalOpen(false);
       setEditingExpenseId(null);
       setExpenseName("");
@@ -464,24 +433,7 @@ export function useGroup() {
         },
       });
 
-      // ── Notify the settlement receiver ──
-      const currency = group?.currency || "USD";
-      const formattedAmount = formatCurrency(parseFloat(settleAmount), currency);
-
-      const { error: notifError } = await supabase
-        .from("notifications")
-        .insert({
-          user_id: settleReceiver,
-          title: "Payment Confirmation Needed 🤝",
-          message: `A payment of ${formattedAmount} was sent to you. Please confirm receipt.`,
-          type: "settlement",
-          link: `/dashboard/groups/${groupId}`,
-        });
-
-      if (notifError) {
-        console.error("Failed to send settlement notification:", notifError);
-      }
-
+     
       setIsSettleModalOpen(false);
       setSettleReceiver("");
       setSettleAmount("");
@@ -495,61 +447,46 @@ export function useGroup() {
   }
 
   async function handleApproveSettlement(settlementId: string) {
-    if (!currentUser) return;
-    setProcessingSettlementId(settlementId);
-
-    try {
-      const { error: updateError } = await supabase
-        .from("settlements")
-        .update({ status: "completed" })
-        .eq("id", settlementId)
-        .eq("to_user", currentUser);
-
-      if (updateError) {
-        alert("Error: " + updateError.message);
-        return;
-      }
-
-      await supabase.from("activity_log").insert({
-        group_id: groupId,
-        user_id: currentUser,
-        action: "settlement_approved",
-        metadata: { settlement_id: settlementId },
-      });
-
-      fetchData();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setProcessingSettlementId(null);
+  if (!currentUser) return;
+  setProcessingSettlementId(settlementId);
+  try {
+    const { error: rpcError } = await supabase.rpc("respond_to_settlement", {
+      p_settlement_id: settlementId,
+      p_action: "approve",
+    });
+    if (rpcError) {
+      alert("Error: " + rpcError.message); // Will be replaced with toast in Batch 7
+      return;
     }
+    fetchData();
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setProcessingSettlementId(null);
   }
+}
+
 
   async function handleRejectSettlement(settlementId: string) {
-    if (!currentUser) return;
-    if (!confirm("Are you sure you want to reject this settlement?")) return;
-    setProcessingSettlementId(settlementId);
-
-    try {
-      const { error: deleteError } = await supabase
-        .from("settlements")
-        .delete()
-        .eq("id", settlementId)
-        .eq("to_user", currentUser)
-        .eq("status", "pending");
-
-      if (deleteError) {
-        alert("Error: " + deleteError.message);
-        return;
-      }
-
-      fetchData();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setProcessingSettlementId(null);
+  if (!currentUser) return;
+  if (!confirm("Are you sure you want to reject this settlement?")) return;
+  setProcessingSettlementId(settlementId);
+  try {
+    const { error: rpcError } = await supabase.rpc("respond_to_settlement", {
+      p_settlement_id: settlementId,
+      p_action: "reject",
+    });
+    if (rpcError) {
+      alert("Error: " + rpcError.message);
+      return;
     }
+    fetchData();
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setProcessingSettlementId(null);
   }
+}
 
   async function handleDeleteSettlement(settlementId: string) {
     if (!currentUser) return;

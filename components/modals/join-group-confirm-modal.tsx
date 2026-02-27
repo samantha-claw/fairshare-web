@@ -231,52 +231,55 @@ export function JoinGroupConfirmModal({
   }, [isOpen, groupId, token]);
 
   // ── Join group ──
-  const handleJoin = useCallback(async () => {
-    setState("joining");
 
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
 
-      if (!user) {
-        setErrorMsg("Authentication required.");
-        setState("error");
-        return;
-      }
+const handleJoin = useCallback(async () => {
+  setState("joining");
 
-      const { error: insertErr } = await supabase
-        .from("group_members")
-        .insert({
-          group_id: groupId,
-          user_id: user.id,
-        });
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-      if (insertErr) {
-        if (insertErr.code === "23505") {
+    if (!user) {
+      setErrorMsg("Authentication required.");
+      setState("error");
+      return;
+    }
+
+    if (token) {
+      // Secure path: use RPC with token validation
+      const { error } = await supabase.rpc("join_group_securely", {
+        p_group_id: groupId,
+        p_token: token,
+      });
+
+      if (error) {
+        if (error.message.includes("already a member")) {
           setState("already_member");
           return;
         }
-        console.error("Join group error:", insertErr);
-        setErrorMsg(`Failed to join: ${insertErr.message}`);
-        setState("error");
-        return;
+        throw new Error(error.message);
       }
-
-      setState("success");
-
-      setTimeout(() => {
-        onClose();
-        router.push(`/dashboard/groups/${groupId}`);
-        router.refresh();
-      }, 1500);
-    } catch (err) {
-      console.error("Join error:", err);
-      setErrorMsg("Something went wrong.");
+    } else {
+      // No token: reject — all invite links should have tokens
       setState("error");
+      setErrorMsg("This invite link is missing a security token. Please ask the group owner for a new link.");
+      return;
     }
-  }, [supabase, groupId, router, onClose]);
 
+    setState("success");
+    setTimeout(() => {
+      onClose();
+      router.push(`/dashboard/groups/${groupId}`);
+      router.refresh();
+    }, 1500);
+  } catch (err: any) {
+    console.error("Join error:", err);
+    setState("error");
+    setErrorMsg(err.message || "Failed to join the group.");
+  }
+}, [supabase, groupId, token, router, onClose]);
   // ── Go to group ──
   const handleGoToGroup = useCallback(() => {
     onClose();

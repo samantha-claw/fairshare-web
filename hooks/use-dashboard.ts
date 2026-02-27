@@ -44,13 +44,14 @@ export function useDashboard() {
   const fetchDashboard = useCallback(async () => {
     try {
       const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) {
-        router.replace("/login");
-        return;
-      }
-      const uid = session.user.id;
+            data: { user },
+            error: authError,
+             } = await supabase.auth.getUser();
+          if (!user || authError) {
+  router.replace("/login");
+  return;
+          }
+      const uid = user.id;
       setUserId(uid);
 
       // 1. Profile
