@@ -1,8 +1,11 @@
+// app/dashboard/groups/[id]/error.tsx
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
+import { AlertTriangle, RotateCcw, Home } from "lucide-react";
 
-export default function ErrorBoundary({
+export default function GroupErrorBoundary({
   error,
   reset,
 }: {
@@ -10,31 +13,52 @@ export default function ErrorBoundary({
   reset: () => void;
 }) {
   useEffect(() => {
-    // بيطبع الخطأ في الكونسول (لو كنت فاتح من كمبيوتر)
-    console.error("💥 الكراش حصل هنا:", error);
+    // Log to error reporting service in production
+    console.error("Group page error:", error);
+    // TODO: Send to Sentry/LogRocket
+    // captureException(error);
   }, [error]);
 
+  const isDev = process.env.NODE_ENV === "development";
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-red-50 p-6 text-left" dir="ltr">
-      <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl border-2 border-red-500">
-        <h2 className="text-2xl font-bold text-red-700 mb-4">🚨 كراش في التطبيق!</h2>
-        
-        <p className="text-gray-700 font-bold mb-2">رسالة الخطأ (صور دي أو انسخها):</p>
-        <div className="bg-gray-950 text-red-400 p-4 rounded-xl overflow-auto text-sm font-mono mb-4 border border-gray-800">
-          {error.message}
+    <div className="flex min-h-[60vh] items-center justify-center p-6">
+      <div className="w-full max-w-md rounded-3xl border border-gray-100 bg-white p-8 text-center shadow-lg">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50">
+          <AlertTriangle className="h-8 w-8 text-red-500" />
         </div>
+        <h2 className="text-xl font-bold text-gray-900">Something went wrong</h2>
+        <p className="mt-2 text-sm text-gray-500">
+          We encountered an error loading this group. Please try again.
+        </p>
 
-        <p className="text-gray-700 font-bold mb-2">مكان المشكلة (Stack Trace):</p>
-        <div className="bg-gray-950 text-gray-400 p-4 rounded-xl overflow-auto text-xs font-mono max-h-64 border border-gray-800">
-          {error.stack}
+        {isDev && (
+          <details className="mt-4 rounded-xl bg-gray-50 p-3 text-left">
+            <summary className="cursor-pointer text-xs font-medium text-gray-500">
+              Debug Info (dev only)
+            </summary>
+            <pre className="mt-2 max-h-40 overflow-auto text-xs text-red-600">
+              {error.message}
+            </pre>
+          </details>
+        )}
+
+        <div className="mt-6 flex gap-3">
+          <button
+            onClick={reset}
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+          >
+            <RotateCcw className="h-4 w-4" />
+            Try Again
+          </button>
+          <Link
+            href="/dashboard"
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+          >
+            <Home className="h-4 w-4" />
+            Dashboard
+          </Link>
         </div>
-
-        <button
-          onClick={() => reset()}
-          className="mt-6 rounded-xl bg-red-600 px-4 py-3 text-white font-bold hover:bg-red-700 w-full transition-colors"
-        >
-          🔄 حاول تفتح الصفحة تاني
-        </button>
       </div>
     </div>
   );

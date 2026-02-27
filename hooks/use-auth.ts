@@ -1,4 +1,3 @@
-// hooks/use-auth.ts
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
@@ -45,19 +44,16 @@ function generateCandidates(base: string): string[] {
   const rand4 = () => Math.floor(Math.random() * 9000) + 1000;
 
   const candidates = new Set<string>([
-    // Number suffixes
     `${base}${rand2()}`,
     `${base}${rand3()}`,
     `${base}${rand4()}`,
     `${base}_${rand2()}`,
-    // Stylised suffixes
     `${base}_sd`,
     `${base}_eg`,
     `${base}_x`,
     `${base}_pro`,
     `${base}_go`,
     `${base}_io`,
-    // Year variants
     `${base}${shortYear}`,
     `${base}_${shortYear}`,
   ]);
@@ -71,7 +67,6 @@ export function useAuth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<AuthError | null>(null);
 
-  // Username availability state
   const [usernameStatus, setUsernameStatus] =
     useState<UsernameStatus>("idle");
   const [usernameSuggestions, setUsernameSuggestions] = useState<string[]>([]);
@@ -79,11 +74,9 @@ export function useAuth() {
   const router = useRouter();
   const supabase = createClient();
 
-  // Refs for debounce + race-condition guard
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const latestCheckRef = useRef<string>("");
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -95,13 +88,11 @@ export function useAuth() {
   // ─── CHECK USERNAME (debounced, 500 ms) ─────────────────────
   const checkUsername = useCallback(
     (username: string) => {
-      // Clear any pending timer
       if (debounceRef.current) clearTimeout(debounceRef.current);
 
       const trimmed = username.trim().toLowerCase();
       const usernameRegex = /^[a-z0-9_]{3,30}$/;
 
-      // Reset when empty or format-invalid
       if (!trimmed || !usernameRegex.test(trimmed)) {
         setUsernameStatus("idle");
         setUsernameSuggestions([]);
@@ -109,24 +100,20 @@ export function useAuth() {
         return;
       }
 
-      // Show spinner immediately
       setUsernameStatus("checking");
       setUsernameSuggestions([]);
       latestCheckRef.current = trimmed;
 
       debounceRef.current = setTimeout(async () => {
-        // Stale guard — user kept typing
         if (latestCheckRef.current !== trimmed) return;
 
         try {
-          // 1. Check if username exists
           const { data: existing, error: lookupErr } = await supabase
             .from("profiles")
             .select("id")
             .eq("username", trimmed)
             .maybeSingle();
 
-          // Stale guard after await
           if (latestCheckRef.current !== trimmed) return;
 
           if (lookupErr && lookupErr.code !== "PGRST116") {
@@ -135,12 +122,10 @@ export function useAuth() {
           }
 
           if (existing) {
-            // ── TAKEN → generate & verify suggestions ──
             setUsernameStatus("taken");
 
             const candidates = generateCandidates(trimmed);
 
-            // Single query to find which candidates are already taken
             const { data: takenRows } = await supabase
               .from("profiles")
               .select("username")
@@ -158,7 +143,6 @@ export function useAuth() {
 
             setUsernameSuggestions(verified);
           } else {
-            // ── AVAILABLE ──
             setUsernameStatus("available");
             setUsernameSuggestions([]);
           }
@@ -172,15 +156,12 @@ export function useAuth() {
     [supabase]
   );
 
-  // ─── SELECT SUGGESTION ──────────────────────────────────────
   const selectSuggestion = useCallback(() => {
-    // We already verified it's available in checkUsername
     if (debounceRef.current) clearTimeout(debounceRef.current);
     setUsernameStatus("available");
     setUsernameSuggestions([]);
   }, []);
 
-  // ─── RESET USERNAME CHECK ───────────────────────────────────
   const resetUsernameCheck = useCallback(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     latestCheckRef.current = "";
@@ -188,7 +169,7 @@ export function useAuth() {
     setUsernameSuggestions([]);
   }, []);
 
-  // ─── SIGN IN ────────────────────────────────────────────────
+  // ─── SIGN IN (with ?next= redirect support) ────────────────
   const signIn = useCallback(
     async ({ email, password }: SignInPayload) => {
       setLoading(true);
@@ -229,7 +210,20 @@ export function useAuth() {
         }
 
         if (data.session) {
-          router.push("/dashboard");
+          // ── Read ?next= param for post-login redirect ──
+          // This is critical for invite flows:
+          //   /login?next=/join?id=GROUP_ID&token=TOKEN
+          // Without this, users who click an invite link while
+          // logged out would lose the invite context after login.
+          const params = new URLSearchParams(window.location.search);
+          const next = params.get("next");
+
+          // Security: only allow relative paths (starts with "/")
+          // to prevent open-redirect attacks via ?next=https://evil.com
+          const redirectTo =
+            next && next.startsWith("/") ? next : "/dashboard";
+
+          router.push(redirectTo);
           router.refresh();
         }
       } catch (err) {
@@ -257,8 +251,6 @@ export function useAuth() {
       setError(null);
 
       try {
-        // ── Validation ──
-
         if (!fullName.trim()) {
           setError({ message: "Full name is required.", field: "full_name" });
           setLoading(false);
@@ -307,7 +299,6 @@ export function useAuth() {
           return;
         }
 
-        // ── Confirm Password check ──
         if (password !== confirmPassword) {
           setError({
             message: "Passwords do not match.",
@@ -317,7 +308,6 @@ export function useAuth() {
           return;
         }
 
-        // ── Safety-net: check username uniqueness at submit time ──
         const { data: existingUser, error: lookupError } = await supabase
           .from("profiles")
           .select("id")
@@ -344,7 +334,6 @@ export function useAuth() {
           return;
         }
 
-        // ── Create Auth User ──
         const { data: authData, error: signUpError } =
           await supabase.auth.signUp({
             email: email.trim().toLowerCase(),
@@ -378,7 +367,6 @@ export function useAuth() {
           return;
         }
 
-        // ── CRITICAL: Update the profiles row (trigger-created) ──
         const profilePayload = {
           username: username.trim().toLowerCase(),
           full_name: fullName.trim(),
@@ -386,38 +374,29 @@ export function useAuth() {
           is_public: true,
         };
 
-        console.log("PROFILE UPDATE PAYLOAD:", profilePayload);
-
         const { error: profileError } = await supabase
           .from("profiles")
           .update(profilePayload)
           .eq("id", authData.user.id);
 
         if (profileError) {
-          console.error("PROFILE INSERT ERROR DETAILS:", profileError);
-          console.error("Error code:", profileError.code);
-          console.error("Error message:", profileError.message);
-          console.error("Error details:", profileError.details);
-          console.error("Error hint:", profileError.hint);
-          console.error("Auth user ID used:", authData.user.id);
-          console.error("Auth session present:", !!authData.session);
-
+          console.error("Profile update error:", profileError);
           setError({
-            message: `Account created but profile setup failed: ${profileError.message} (Code: ${profileError.code}). Check browser console for full details.`,
+            message: `Account created but profile setup failed: ${profileError.message}`,
             field: "general",
           });
           setLoading(false);
           return;
         }
 
-        console.log(
-          "PROFILE INSERT SUCCESS for user:",
-          authData.user.id
-        );
-
-        // ── Success: redirect ──
         if (authData.session) {
-          router.push("/dashboard");
+          // ── Same ?next= redirect logic for sign-up ──
+          const params = new URLSearchParams(window.location.search);
+          const next = params.get("next");
+          const redirectTo =
+            next && next.startsWith("/") ? next : "/dashboard";
+
+          router.push(redirectTo);
           router.refresh();
         } else {
           setLoading(false);
@@ -452,7 +431,6 @@ export function useAuth() {
     loading,
     error,
     clearError,
-    // Username checker
     usernameStatus,
     usernameSuggestions,
     checkUsername,
