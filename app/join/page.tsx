@@ -220,55 +220,44 @@ function JoinGroupContent() {
   }, [groupId, token, router]);
 
   // ── Join group ──
-  const handleJoin = useCallback(async () => {
-    if (!currentUserId || !groupId) return;
+  // app/join/page.tsx
+// FIND the handleJoin function and REPLACE the body:
 
-    setState("joining");
+const handleJoin = useCallback(async () => {
+  if (!currentUserId || !groupId) return;
 
-    try {
-      if (token) {
-        // Use secure RPC when token is available
-        const { error } = await supabase.rpc("join_group_securely", {
-          p_group_id: groupId,
-          p_token: token,
-        });
+  setState("joining");
 
-        if (error) {
-          if (error.message.includes("already a member")) {
-            setState("already_member");
-            return;
-          }
-          throw new Error(error.message);
+  try {
+    if (token) {
+      const { error } = await supabase.rpc("join_group_securely", {
+        p_group_id: groupId,
+        p_token: token,
+      });
+
+      if (error) {
+        if (error.message.includes("already a member")) {
+          setState("already_member");
+          return;
         }
-      } else {
-        // Legacy: direct insert
-        const { error: insertErr } = await supabase
-          .from("group_members")
-          .insert({
-            group_id: groupId,
-            user_id: currentUserId,
-          });
-
-        if (insertErr) {
-          if (insertErr.code === "23505") {
-            setState("already_member");
-            return;
-          }
-          throw new Error(insertErr.message);
-        }
+        throw new Error(error.message);
       }
-
-      setState("success");
-      setTimeout(() => {
-        router.push(`/dashboard/groups/${groupId}`);
-      }, 1500);
-    } catch (err: any) {
-      console.error("Join error:", err);
+    } else {
       setState("error");
-      setErrorMsg(err.message || "Failed to join the group.");
+      setErrorMsg("This invite link is missing a security token. Please ask the group owner for a new link.");
+      return;
     }
-  }, [currentUserId, groupId, token, supabase, router]);
 
+    setState("success");
+    setTimeout(() => {
+      router.push(`/dashboard/groups/${groupId}`);
+    }, 1500);
+  } catch (err: any) {
+    console.error("Join error:", err);
+    setState("error");
+    setErrorMsg(err.message || "Failed to join the group.");
+  }
+}, [currentUserId, groupId, token, supabase, router]);
   // ── Go to group (already member) ──
   const handleGoToGroup = useCallback(() => {
     router.push(`/dashboard/groups/${groupId}`);

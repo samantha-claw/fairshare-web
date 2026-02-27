@@ -63,23 +63,23 @@ export function DashboardShell({ children }: DashboardShellProps) {
   const initialize = useCallback(async () => {
     try {
       const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        router.replace("/login");
-        return;
-      }
+  data: { user },
+  error: authError,
+} = await supabase.auth.getUser();
+if (!user || authError) {
+  router.replace("/login");
+  return;
+}
 
       const { data: profileData } = await supabase
         .from("profiles")
         .select("display_name, avatar_url")
-        .eq("id", session.user.id)
+        .eq("id", user.id)
         .single();
 
       if (profileData) {
         setProfile({
-          id: session.user.id,
+          id: user.id,
           display_name: profileData.display_name || "User",
           avatar_url: profileData.avatar_url || "",
         });
