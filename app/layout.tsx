@@ -1,7 +1,6 @@
 // app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { RealtimeProvider } from "@/components/providers/realtime-provider";
 
 // 1. إعدادات الـ Metadata (الاسم، الوصف، الـ Manifest، وأيقونة الآيفون)
 export const metadata: Metadata = {
@@ -26,9 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-gray-50 text-gray-900 antialiased">
-        <RealtimeProvider>
-          {children}
-        </RealtimeProvider>
+        {children}
       </body>
     </html>
   );
