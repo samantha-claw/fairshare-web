@@ -390,19 +390,6 @@ export function QRScannerModal({
           </div>
         </div>
       </div>
-
-      {/* Scanline animation */}
-      <style jsx global>{`
-        @keyframes scanline {
-          0%,
-          100% {
-            top: 0;
-          }
-          50% {
-            top: calc(100% - 2px);
-          }
-        }
-      `}</style>
     </div>
   );
 }
