@@ -13,7 +13,7 @@ import { ToastContainer } from "@/components/ui/toast-container";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 /* ── Types ──────────────────────────────────────────── */
-interface Toast {
+export interface Toast {
   id: string;
   type: "success" | "error" | "info";
   message: string;
