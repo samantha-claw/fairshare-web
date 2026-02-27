@@ -3,10 +3,7 @@
 import { useState, useCallback, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-/**
- * Manages the settle-up modal and all settlement actions
- * (initiate, approve, reject, delete).
- */
+
 export function useGroupSettlements(
   groupId: string,
   currentUser: string | null,
@@ -14,25 +11,21 @@ export function useGroupSettlements(
 ) {
   const supabase = createClient();
   const toast = useToast();
-  /* ── Modal state ─────────────────────────────────────── */
+
   const [isSettleModalOpen, setIsSettleModalOpen] = useState(false);
   const [settleReceiver, setSettleReceiver] = useState("");
   const [settleAmount, setSettleAmount] = useState("");
   const [submittingSettle, setSubmittingSettle] = useState(false);
-
-  /* ── Action loading ──────────────────────────────────── */
   const [processingSettlementId, setProcessingSettlementId] = useState<
     string | null
   >(null);
 
-  /* ── Open modal ──────────────────────────────────────── */
   const openSettleUpModal = useCallback(() => {
     setSettleReceiver("");
     setSettleAmount("");
     setIsSettleModalOpen(true);
   }, []);
 
-  /* ── Initiate ────────────────────────────────────────── */
   const handleInitiateSettlement = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
@@ -92,10 +85,17 @@ export function useGroupSettlements(
         setSubmittingSettle(false);
       }
     },
-    [groupId, currentUser, settleReceiver, settleAmount, supabase, refetch]
+    [
+      groupId,
+      currentUser,
+      settleReceiver,
+      settleAmount,
+      supabase,
+      refetch,
+      toast,
+    ]
   );
 
-  /* ── Approve ─────────────────────────────────────────── */
   const handleApproveSettlement = useCallback(
     async (settlementId: string) => {
       if (!currentUser) return;
@@ -112,18 +112,24 @@ export function useGroupSettlements(
         refetch();
       } catch (err) {
         console.error(err);
+        toast.error("Failed to approve settlement.");
       } finally {
         setProcessingSettlementId(null);
       }
     },
-    [currentUser, supabase, refetch]
+    [currentUser, supabase, refetch, toast]
   );
 
-  /* ── Reject ──────────────────────────────────────────── */
   const handleRejectSettlement = useCallback(
     async (settlementId: string) => {
       if (!currentUser) return;
-      if (!confirm("Are you sure you want to reject this settlement?")) return;
+
+      const confirmed = await toast.confirm(
+        "Reject this settlement?",
+        { confirmLabel: "Reject" }
+      );
+      if (!confirmed) return;
+
       setProcessingSettlementId(settlementId);
       try {
         const { error: rpcError } = await supabase.rpc(
@@ -137,19 +143,26 @@ export function useGroupSettlements(
         refetch();
       } catch (err) {
         console.error(err);
-        toast.error("An unexpected error occurred while rejecting settlement.");
+        toast.error(
+          "An unexpected error occurred while rejecting settlement."
+        );
       } finally {
         setProcessingSettlementId(null);
       }
     },
-    [currentUser, supabase, refetch]
+    [currentUser, supabase, refetch, toast]
   );
 
-  /* ── Delete (cancel own pending) ─────────────────────── */
   const handleDeleteSettlement = useCallback(
     async (settlementId: string) => {
       if (!currentUser) return;
-      if (!confirm("Cancel this settlement request?")) return;
+
+      const confirmed = await toast.confirm(
+        "Cancel this settlement request?",
+        { confirmLabel: "Cancel request", cancelLabel: "Keep it" }
+      );
+      if (!confirmed) return;
+
       setProcessingSettlementId(settlementId);
 
       try {
@@ -175,14 +188,14 @@ export function useGroupSettlements(
         refetch();
       } catch (err) {
         console.error(err);
+        toast.error("Failed to cancel settlement.");
       } finally {
         setProcessingSettlementId(null);
       }
     },
-    [groupId, currentUser, supabase, refetch]
+    [groupId, currentUser, supabase, refetch, toast]
   );
 
-  /* ── Public API ──────────────────────────────────────── */
   return {
     isSettleModalOpen,
     setIsSettleModalOpen,
