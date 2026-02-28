@@ -1,4 +1,3 @@
-// components/ui/modal.tsx
 "use client";
 
 import { useEffect, useRef, useCallback, type ReactNode } from "react";
@@ -9,6 +8,7 @@ interface ModalProps {
   children: ReactNode;
   title: string;
   maxWidth?: "sm" | "md" | "lg";
+  position?: "bottom" | "center";
 }
 
 const MAX_WIDTH_MAP = {
@@ -23,6 +23,7 @@ export function Modal({
   children,
   title,
   maxWidth = "md",
+  position = "bottom",
 }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -79,9 +80,15 @@ export function Modal({
 
   if (!isOpen) return null;
 
+  // تحديد كلاس التمركز بناءً على الخاصية الممررة
+  const positionClass =
+    position === "center"
+      ? "items-center" // في المنتصف دائماً
+      : "items-end sm:items-center"; // في الأسفل للجوال والمنتصف للشاشات الكبيرة
+
   return (
     <div
-      className="fixed inset-0 z-100 flex items-end justify-center p-4 sm:items-center"
+      className={`fixed inset-0 z-[100] flex justify-center p-4 ${positionClass}`}
       role="presentation"
     >
       {/* Backdrop */}
