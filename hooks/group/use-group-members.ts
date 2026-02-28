@@ -3,15 +3,17 @@
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Member, SearchResult, InvitableFriend } from "@/types/group";
-import { useToast } from "@/hooks/use-toast";
 
+/**
+ * Manages the add-member modal, username search,
+ * invitable-friends list, and member add/remove actions.
+ */
 export function useGroupMembers(
   groupId: string,
   members: Member[],
   refetch: () => void
 ) {
   const supabase = createClient();
-  const toast = useToast();
 
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
   const [invitableFriends, setInvitableFriends] = useState<
@@ -87,9 +89,7 @@ export function useGroupMembers(
         );
 
         if (addError) {
-          toast.error(
-            "Failed to add member: " + addError.message
-          );
+          alert(addError.message);
           return;
         }
 
@@ -103,19 +103,17 @@ export function useGroupMembers(
         await refetch();
       } catch (err) {
         console.error(err);
-        toast.error("Failed to refresh group members.");
       } finally {
         setAddingMember(null);
       }
     },
-    [groupId, supabase, refetch, toast]
+    [groupId, supabase, refetch]
   );
 
   const handleRemoveMember = useCallback(
     async (memberId: string, memberName: string) => {
-      const confirmed = await toast.confirm(
-        `Remove ${memberName} from the group?`,
-        { confirmLabel: "Remove" }
+      const confirmed = confirm(
+        `Remove ${memberName} from the group?`
       );
       if (!confirmed) return;
 
@@ -125,14 +123,12 @@ export function useGroupMembers(
       );
 
       if (removeError) {
-        toast.error(
-          "Error removing member: " + removeError.message
-        );
+        alert("Error: " + removeError.message);
       } else {
         refetch();
       }
     },
-    [groupId, supabase, refetch, toast]
+    [groupId, supabase, refetch]
   );
 
   return {

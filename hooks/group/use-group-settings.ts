@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { formatCurrency } from "@/lib/utils";
 import type { Group, Balance } from "@/types/group";
-import { useToast } from "@/hooks/use-toast";
 
 export function useGroupSettings(
   groupId: string,
@@ -15,18 +14,16 @@ export function useGroupSettings(
 ) {
   const router = useRouter();
   const supabase = createClient();
-  const toast = useToast();
 
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [deletingGroup, setDeletingGroup] = useState(false);
   const [leavingGroup, setLeavingGroup] = useState(false);
 
+  /* ── Delete group (owner only) ───────────────────────── */
   const handleDeleteGroup = useCallback(async () => {
     if (!group || deleteConfirmText !== group.name) {
-      toast.error(
-        "Please type the group name exactly to confirm deletion."
-      );
+      alert("Please type the group name exactly to confirm deletion.");
       return;
     }
 
@@ -39,16 +36,14 @@ export function useGroupSettings(
         .eq("owner_id", currentUser!);
 
       if (deleteError) {
-        toast.error(
-          "Error deleting group: " + deleteError.message
-        );
+        alert("Error deleting group: " + deleteError.message);
         return;
       }
 
       router.replace("/dashboard");
     } catch (err) {
       console.error(err);
-      toast.error("An unexpected error occurred.");
+      alert("An unexpected error occurred.");
     } finally {
       setDeletingGroup(false);
     }
@@ -59,7 +54,6 @@ export function useGroupSettings(
     deleteConfirmText,
     supabase,
     router,
-    toast,
   ]);
 
   const handleLeaveGroup = useCallback(async () => {
@@ -67,7 +61,7 @@ export function useGroupSettings(
 
     const myBal = balances.find((b) => b.user_id === currentUser);
     if (myBal && myBal.net_balance !== 0) {
-      toast.error(
+      alert(
         "You must settle your balances before leaving the group. " +
           (myBal.net_balance > 0
             ? `You are still owed ${formatCurrency(myBal.net_balance, group?.currency)}.`
@@ -76,9 +70,8 @@ export function useGroupSettings(
       return;
     }
 
-    const confirmed = await toast.confirm(
-      "Leave this group? This action cannot be undone.",
-      { confirmLabel: "Leave group" }
+    const confirmed = confirm(
+      "Leave this group? This action cannot be undone."
     );
     if (!confirmed) return;
 
@@ -91,16 +84,14 @@ export function useGroupSettings(
         .eq("user_id", currentUser);
 
       if (leaveError) {
-        toast.error(
-          "Error leaving group: " + leaveError.message
-        );
+        alert("Error leaving group: " + leaveError.message);
         return;
       }
 
       router.replace("/dashboard");
     } catch (err) {
       console.error(err);
-      toast.error("An unexpected error occurred.");
+      alert("An unexpected error occurred.");
     } finally {
       setLeavingGroup(false);
     }
@@ -111,7 +102,6 @@ export function useGroupSettings(
     balances,
     supabase,
     router,
-    toast,
   ]);
 
   return {
