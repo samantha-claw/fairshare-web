@@ -10,7 +10,10 @@ import type {
   ProfileActivity,
   ProfileStats,
 } from "@/types/profile";
-import { useToast } from "@/hooks/use-toast";
+
+// ==========================================
+// 🧩 TYPES
+// ==========================================
 
 interface UseProfileOptions {
   userId?: string;
@@ -22,7 +25,6 @@ export function useProfile(options: UseProfileOptions = {}) {
   const { userId: targetUserId } = options;
   const router = useRouter();
   const supabase = createClient();
-  const toast = useToast(); // ← single call, shared via context
 
   /* ── Core State ──────────────────────────────────── */
   const [loading, setLoading] = useState(true);
@@ -287,7 +289,7 @@ export function useProfile(options: UseProfileOptions = {}) {
       setFriendshipDirection("outgoing");
     } catch (err: any) {
       console.error(err);
-      toast.error("Failed to send friend request.");
+      alert("Failed to send friend request.");
     } finally {
       setIsProcessing(false);
     }
@@ -309,7 +311,7 @@ export function useProfile(options: UseProfileOptions = {}) {
       setFriendshipDirection(null);
     } catch (err: any) {
       console.error(err);
-      toast.error("Failed to cancel request.");
+      alert("Failed to cancel request.");
     } finally {
       setIsProcessing(false);
     }
@@ -333,7 +335,7 @@ export function useProfile(options: UseProfileOptions = {}) {
       setFriendshipDirection(null);
     } catch (err: any) {
       console.error(err);
-      toast.error("Failed to accept request.");
+      alert("Failed to accept request.");
     } finally {
       setIsProcessing(false);
     }

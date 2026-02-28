@@ -3,16 +3,18 @@
 import { useState, useCallback, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Member, Expense } from "@/types/group";
-import { useToast } from "@/hooks/use-toast";
 
+/**
+ * Manages the expense modal state and all expense CRUD operations.
+ */
 export function useGroupExpenses(
   groupId: string,
   members: Member[],
   refetch: () => void
 ) {
   const supabase = createClient();
-  const toast = useToast();
 
+  /* ── Modal state ─────────────────────────────────────── */
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [expenseName, setExpenseName] = useState("");
   const [expenseAmount, setExpenseAmount] = useState("");
@@ -45,9 +47,7 @@ export function useGroupExpenses(
       e.preventDefault();
       if (!expenseName || !expenseAmount) return;
       if (selectedMembers.length === 0) {
-        toast.error(
-          "Please select at least one member to split with."
-        );
+        alert("Please select at least one member to split with.");
         return;
       }
 
@@ -74,7 +74,7 @@ export function useGroupExpenses(
       const { error: rpcError } = await supabase.rpc(rpcName, rpcParams);
 
       if (rpcError) {
-        toast.error("Error saving expense: " + rpcError.message);
+        alert("Error saving expense: " + rpcError.message);
       } else {
         setIsExpenseModalOpen(false);
         setEditingExpenseId(null);
@@ -94,15 +94,13 @@ export function useGroupExpenses(
       editingExpenseId,
       supabase,
       refetch,
-      toast,
     ]
   );
 
   const handleDeleteExpense = useCallback(
     async (expenseId: string, name: string) => {
-      const confirmed = await toast.confirm(
-        `Delete "${name}"? This will recalculate all balances.`,
-        { confirmLabel: "Delete" }
+      const confirmed = confirm(
+        `Delete "${name}"? This will recalculate all balances.`
       );
       if (!confirmed) return;
 
@@ -111,12 +109,12 @@ export function useGroupExpenses(
       });
 
       if (delError) {
-        toast.error("Error deleting expense: " + delError.message);
+        alert("Error deleting expense: " + delError.message);
       } else {
         refetch();
       }
     },
-    [supabase, refetch, toast]
+    [supabase, refetch]
   );
 
   return {
