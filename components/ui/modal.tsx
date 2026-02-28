@@ -81,7 +81,7 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
+      className="fixed inset-0 z-100 flex items-end justify-center p-4 sm:items-center"
       role="presentation"
     >
       {/* Backdrop */}
