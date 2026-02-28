@@ -203,7 +203,7 @@ export function QRScannerModal({
   }, [onClose, stopScanner]);
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Scan QR Code" maxWidth="sm">
+    <Modal isOpen={isOpen} onClose={handleClose} title="Scan QR Code" maxWidth="sm" position="center">
       {/* Dark-themed container covers the Modal's white bg */}
       <div className="overflow-hidden bg-gray-950">
         {/* ── Header ── */}
