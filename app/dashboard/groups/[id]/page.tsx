@@ -294,20 +294,22 @@ export default function GroupDetailsPage() {
         onAddMember={memberCtl.handleAddMember}
       />
 
-      <ExpenseModal
-        isOpen={expenseCtl.isExpenseModalOpen}
-        onClose={() => expenseCtl.setIsExpenseModalOpen(false)}
-        editingExpenseId={expenseCtl.editingExpenseId}
-        expenseName={expenseCtl.expenseName}
-        onExpenseNameChange={expenseCtl.setExpenseName}
-        expenseAmount={expenseCtl.expenseAmount}
-        onExpenseAmountChange={expenseCtl.setExpenseAmount}
-        
-        
-        members={data.members}
-        submitting={expenseCtl.submittingExpense}
-        onSubmit={expenseCtl.handleSaveExpense}
-      />
+<ExpenseModal
+  isOpen={expenseCtl.isExpenseModalOpen}
+  onClose={() => expenseCtl.setIsExpenseModalOpen(false)}
+  editingExpenseId={expenseCtl.editingExpenseId}
+  expenseName={expenseCtl.expenseName}
+  onExpenseNameChange={expenseCtl.setExpenseName}
+  expenseAmount={expenseCtl.expenseAmount}
+  onExpenseAmountChange={expenseCtl.setExpenseAmount}
+  members={data.members}
+  submitting={expenseCtl.submittingExpense}
+  onSubmit={expenseCtl.handleSaveExpense}
+  onSplitDataChange={(splits, splitType, isValid) => {
+    expenseCtl.setComputedSplits(splits);
+    expenseCtl.setIsValidSplit(isValid);
+  }}
+/>
 
       <SettleModal
         isOpen={settleCtl.isSettleModalOpen}

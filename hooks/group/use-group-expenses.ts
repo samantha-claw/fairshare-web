@@ -18,27 +18,26 @@ export function useGroupExpenses(
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [expenseName, setExpenseName] = useState("");
   const [expenseAmount, setExpenseAmount] = useState("");
-  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
-  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(
-    null
-  );
+  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
   const [submittingExpense, setSubmittingExpense] = useState(false);
+
+  /* ── Custom Splits State (الجديد) ────────────────────── */
+  const [computedSplits, setComputedSplits] = useState<any[]>([]);
+  const [isValidSplit, setIsValidSplit] = useState(false);
 
   const openAddExpenseModal = useCallback(() => {
     setEditingExpenseId(null);
     setExpenseName("");
     setExpenseAmount("");
-    setSelectedMembers(members.map((m) => m.id));
+    setComputedSplits([]);
+    setIsValidSplit(false);
     setIsExpenseModalOpen(true);
-  }, [members]);
+  }, []);
 
   const openEditExpenseModal = useCallback((exp: Expense) => {
     setEditingExpenseId(exp.id);
     setExpenseName(exp.name);
     setExpenseAmount(exp.amount.toString());
-    setSelectedMembers(
-      exp.expense_splits?.map((split) => split.user_id) || []
-    );
     setIsExpenseModalOpen(true);
   }, []);
 
@@ -46,8 +45,10 @@ export function useGroupExpenses(
     async (e: FormEvent) => {
       e.preventDefault();
       if (!expenseName || !expenseAmount) return;
-      if (selectedMembers.length === 0) {
-        alert("Please select at least one member to split with.");
+
+      // حماية إضافية: التأكد من أن التقسيم سليم قبل الإرسال
+      if (!isValidSplit || computedSplits.length === 0) {
+        alert("Please ensure the split is valid and amounts match the total.");
         return;
       }
 
@@ -57,18 +58,24 @@ export function useGroupExpenses(
         ? "edit_expense_custom_split"
         : "add_expense_custom_split";
 
+      // 🎯 السر هنا: تجهيز البيانات لترسل المبالغ المحددة لكل شخص
+      const splitsPayload = computedSplits.map((split) => ({
+        user_id: split.userId,
+        amount: split.amount,
+      }));
+
       const rpcParams = editingExpenseId
         ? {
             _expense_id: editingExpenseId,
             _name: expenseName,
             _amount: parseFloat(expenseAmount),
-            _participant_ids: selectedMembers,
+            _splits: splitsPayload, // نرسل الأرقام المحسوبة بدلاً من الـ IDs فقط
           }
         : {
             _group_id: groupId,
             _name: expenseName,
             _amount: parseFloat(expenseAmount),
-            _participant_ids: selectedMembers,
+            _splits: splitsPayload, // نرسل الأرقام المحسوبة بدلاً من الـ IDs فقط
           };
 
       const { error: rpcError } = await supabase.rpc(rpcName, rpcParams);
@@ -80,7 +87,7 @@ export function useGroupExpenses(
         setEditingExpenseId(null);
         setExpenseName("");
         setExpenseAmount("");
-        setSelectedMembers([]);
+        setComputedSplits([]);
         refetch();
       }
 
@@ -90,7 +97,8 @@ export function useGroupExpenses(
       groupId,
       expenseName,
       expenseAmount,
-      selectedMembers,
+      computedSplits,
+      isValidSplit,
       editingExpenseId,
       supabase,
       refetch,
@@ -124,8 +132,10 @@ export function useGroupExpenses(
     setExpenseName,
     expenseAmount,
     setExpenseAmount,
-    selectedMembers,
-    setSelectedMembers,
+    computedSplits, // تم التصدير
+    setComputedSplits, // تم التصدير
+    isValidSplit, // تم التصدير
+    setIsValidSplit, // تم التصدير
     editingExpenseId,
     submittingExpense,
     openAddExpenseModal,
