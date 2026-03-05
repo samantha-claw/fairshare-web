@@ -1,7 +1,6 @@
-// expense-modal.tsx
 "use client";
 
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, useRef, type FormEvent } from "react";
 import { Modal } from "@/components/ui/modal";
 import type { Member } from "@/types/group";
 import {
@@ -10,7 +9,7 @@ import {
   type ComputedSplit,
 } from "./split-selector";
 
-// ─── Updated Props Interface ───
+// ─── Props Interface ───
 interface ExpenseModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -22,7 +21,6 @@ interface ExpenseModalProps {
   members: Member[];
   submitting: boolean;
   onSubmit: (e: FormEvent) => void;
-  /** Parent receives computed split results whenever they change */
   onSplitDataChange?: (
     splits: ComputedSplit[],
     splitType: SplitType,
@@ -56,6 +54,11 @@ export function ExpenseModal({
   const [computedSplits, setComputedSplits] = useState<ComputedSplit[]>([]);
   const [isValidSplit, setIsValidSplit] = useState(false);
 
+  // ─── Scroll-shadow state ───
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [showTopShadow, setShowTopShadow] = useState(false);
+  const [showBottomShadow, setShowBottomShadow] = useState(false);
+
   // ─── Initialize / reset when modal opens ───
   useEffect(() => {
     if (isOpen && members.length > 0) {
@@ -72,17 +75,61 @@ export function ExpenseModal({
     onSplitDataChange?.(computedSplits, splitType, isValidSplit);
   }, [computedSplits, splitType, isValidSplit, onSplitDataChange]);
 
+  // ─── Update scroll shadows ───
+  const updateShadows = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setShowTopShadow(el.scrollTop > 2);
+    setShowBottomShadow(
+      el.scrollTop + el.clientHeight < el.scrollHeight - 2
+    );
+  };
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || !isOpen) return;
+
+    // Defer to allow DOM to paint first
+    const raf = requestAnimationFrame(updateShadows);
+    el.addEventListener("scroll", updateShadows, { passive: true });
+    return () => {
+      cancelAnimationFrame(raf);
+      el.removeEventListener("scroll", updateShadows);
+    };
+  }, [isOpen, members, splitType]);
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
-      <div className="px-6 pb-6 pt-6">
-        <h3 className="text-xl font-bold text-gray-900">{title}</h3>
-        <p className="mt-1 text-sm text-gray-500">
-          Split among selected members.
-        </p>
+      {/*
+        Flex column layout:
+        ┌──────────────────────┐
+        │  FIXED TOP (inputs)  │  shrink-0
+        ├──────────────────────┤
+        │  SCROLLABLE MIDDLE   │  overflow-y-auto, max-h constrained
+        │  (split selector)    │
+        ├──────────────────────┤
+        │  FIXED BOTTOM (btns) │  shrink-0
+        └──────────────────────┘
+      */}
+      <form
+        onSubmit={onSubmit}
+        className="flex max-h-[85vh] flex-col overflow-hidden sm:max-h-[80vh]"
+      >
+        {/* ═══════════════════════════════════════════ */}
+        {/* ██  FIXED TOP — Header + Inputs           ██ */}
+        {/* ═══════════════════════════════════════════ */}
+        <div className="shrink-0 px-5 pt-5 sm:px-6 sm:pt-6">
+          <div className="mb-4">
+            <h3 className="text-lg font-bold text-gray-900 sm:text-xl">
+              {title}
+            </h3>
+            <p className="mt-0.5 text-sm text-gray-500">
+              Split among selected members.
+            </p>
+          </div>
 
-        <form onSubmit={onSubmit} className="mt-6 space-y-4">
-          {/* ── Description (UNCHANGED) ── */}
-          <div>
+          {/* ── Description ── */}
+          <div className="mb-3">
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Description
             </label>
@@ -90,14 +137,14 @@ export function ExpenseModal({
               type="text"
               required
               placeholder="e.g. Dinner"
-              className="w-full rounded-xl border border-gray-300 p-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               value={expenseName}
               onChange={(e) => onExpenseNameChange(e.target.value)}
             />
           </div>
 
-          {/* ── Amount (UNCHANGED) ── */}
-          <div>
+          {/* ── Amount ── */}
+          <div className="mb-1">
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Amount
             </label>
@@ -106,16 +153,28 @@ export function ExpenseModal({
               required
               step="0.01"
               placeholder="0.00"
-              className="w-full rounded-xl border border-gray-300 p-3 font-mono text-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-xl border border-gray-300 px-3 py-2.5 font-mono text-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               value={expenseAmount}
               onChange={(e) => onExpenseAmountChange(e.target.value)}
             />
           </div>
+        </div>
 
-          {/* ══════════════════════════════════════════════ */}
-          {/* ██  REPLACED: old checklist → SplitTypeSelector  ██ */}
-          {/* ══════════════════════════════════════════════ */}
-          <div className="pt-2">
+        {/* ═══════════════════════════════════════════ */}
+        {/* ██  SCROLLABLE MIDDLE — Split Selector    ██ */}
+        {/* ═══════════════════════════════════════════ */}
+        <div className="relative min-h-0 flex-1">
+          {/* Top scroll shadow */}
+          <div
+            className={`pointer-events-none absolute inset-x-0 top-0 z-10 h-4 bg-gradient-to-b from-white to-transparent transition-opacity duration-200 ${
+              showTopShadow ? "opacity-100" : "opacity-0"
+            }`}
+          />
+
+          <div
+            ref={scrollRef}
+            className="max-h-[35vh] overflow-y-auto overscroll-contain px-5 py-3 sm:max-h-[40vh] sm:px-6"
+          >
             <label className="mb-2 block text-sm font-medium text-gray-700">
               Split between
             </label>
@@ -143,19 +202,30 @@ export function ExpenseModal({
             />
           </div>
 
-          {/* ── Action Buttons (submit disabled tied to isValidSplit) ── */}
-          <div className="mt-4 flex gap-3 border-t border-gray-100 pt-4">
+          {/* Bottom scroll shadow */}
+          <div
+            className={`pointer-events-none absolute inset-x-0 bottom-0 z-10 h-4 bg-gradient-to-t from-white to-transparent transition-opacity duration-200 ${
+              showBottomShadow ? "opacity-100" : "opacity-0"
+            }`}
+          />
+        </div>
+
+        {/* ═══════════════════════════════════════════ */}
+        {/* ██  FIXED BOTTOM — Action Buttons         ██ */}
+        {/* ═══════════════════════════════════════════ */}
+        <div className="shrink-0 border-t border-gray-200 bg-gray-50/80 px-5 py-4 sm:px-6">
+          <div className="flex gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-xl bg-gray-100 py-3 text-sm font-medium text-gray-700 hover:bg-gray-200"
+              className="flex-1 rounded-xl bg-gray-100 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 active:bg-gray-300"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting || !isValidSplit}
-              className="flex-1 rounded-xl bg-blue-600 py-3 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex-1 rounded-xl bg-blue-600 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-700 active:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {submitting
                 ? "Saving…"
@@ -164,8 +234,8 @@ export function ExpenseModal({
                   : "Add Expense"}
             </button>
           </div>
-        </form>
-      </div>
+        </div>
+      </form>
     </Modal>
   );
 }
