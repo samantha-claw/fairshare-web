@@ -154,70 +154,76 @@ export function BalancesCard({ balances, currency }: BalancesCardProps) {
         {/* 🛡️ NET BALANCES VIEW                      */}
         {/* ========================================= */}
         {view === "net" && (
-          <div className="space-y-2">
+          <div>
             {balances.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50/50 px-4 py-8 text-center">
-                <p className="text-sm text-gray-500">
-                  No balances to show yet.
+              <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50/60 px-4 py-8 text-center">
+                <p className="text-sm font-bold text-gray-900">
+                  No balances yet
+                </p>
+                <p className="mt-1 text-xs font-medium text-gray-500">
+                  Add an expense to see balances.
                 </p>
               </div>
             ) : (
-              balances.map((bal) => {
-                const isPositive = bal.net_balance > 0;
-                const isNegative = bal.net_balance < 0;
-                const isSettled = bal.net_balance === 0;
+              <ul className="divide-y divide-gray-100">
+                {balances.map((bal) => {
+                  const isPositive = bal.net_balance > 0;
+                  const isNegative = bal.net_balance < 0;
+                  const isSettled = bal.net_balance === 0;
 
-                return (
-                  <Link
-                    key={bal.user_id}
-                    href={`/dashboard/profile/${bal.user_id}`}
-                    className="group flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-3 transition-colors hover:border-gray-200 hover:bg-gray-50/80 sm:p-4"
-                  >
-                    {/* Avatar */}
-                    <div className="shrink-0">
-                      <Avatar
-                        src={bal.avatar_url}
-                        name={bal.display_name}
-                        size="sm"
-                      />
-                    </div>
-
-                    {/* Name */}
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-gray-900 group-hover:text-indigo-600">
-                        {bal.display_name}
-                      </p>
-                      <p className="text-[11px] font-medium text-gray-400">
-                        {isPositive && "Gets back"}
-                        {isNegative && "Owes"}
-                        {isSettled && "All clear"}
-                      </p>
-                    </div>
-
-                    {/* Amount */}
-                    <div className="shrink-0 text-right">
-                      {isPositive && (
-                        <span className="inline-block rounded-md bg-emerald-50 px-2.5 py-1 text-sm font-bold text-emerald-600 ring-1 ring-inset ring-emerald-200">
-                          +{formatCurrency(bal.net_balance, currency)}
+                  return (
+                    <li
+                      key={bal.user_id}
+                      className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
+                    >
+                      <Link
+                        href={`/dashboard/profile/${bal.user_id}`}
+                        className="flex min-w-0 flex-1 items-center gap-3 hover:opacity-80"
+                      >
+                        <Avatar
+                          src={bal.avatar_url}
+                          name={bal.display_name}
+                          size="sm"
+                        />
+                        <span className="truncate text-sm font-semibold text-gray-900">
+                          {bal.display_name}
                         </span>
-                      )}
-                      {isNegative && (
-                        <span className="inline-block rounded-md bg-red-50 px-2.5 py-1 text-sm font-bold text-red-600 ring-1 ring-inset ring-red-200">
-                          -{formatCurrency(Math.abs(bal.net_balance), currency)}
-                        </span>
-                      )}
-                      {isSettled && (
-                        <span className="inline-block rounded-md bg-gray-50 px-2.5 py-1 text-sm font-bold text-gray-400 ring-1 ring-inset ring-gray-200">
-                          Settled
-                        </span>
-                      )}
-                    </div>
+                      </Link>
 
-                    {/* Chevron */}
-                    <ChevronRight className="hidden h-4 w-4 shrink-0 text-gray-300 group-hover:text-gray-400 sm:block" />
-                  </Link>
-                );
-              })
+                      <div className="shrink-0 text-right">
+                        {isSettled ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-400">
+                            Settled
+                          </span>
+                        ) : (
+                          <div className="flex flex-col items-end">
+                            <span
+                              className={`text-sm font-bold tabular-nums ${
+                                isPositive ? "text-emerald-600" : "text-red-600"
+                              }`}
+                            >
+                              {isPositive ? "+" : "-"}
+                              {formatCurrency(
+                                Math.abs(bal.net_balance),
+                                currency
+                              )}
+                            </span>
+                            <span
+                              className={`text-[10px] font-medium ${
+                                isPositive
+                                  ? "text-emerald-500"
+                                  : "text-red-400"
+                              }`}
+                            >
+                              {isPositive ? "is owed" : "owes"}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
             )}
           </div>
         )}
