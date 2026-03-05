@@ -302,8 +302,8 @@ export default function GroupDetailsPage() {
         onExpenseNameChange={expenseCtl.setExpenseName}
         expenseAmount={expenseCtl.expenseAmount}
         onExpenseAmountChange={expenseCtl.setExpenseAmount}
-        selectedMembers={expenseCtl.selectedMembers}
-        onSelectedMembersChange={expenseCtl.setSelectedMembers}
+        
+        
         members={data.members}
         submitting={expenseCtl.submittingExpense}
         onSubmit={expenseCtl.handleSaveExpense}
