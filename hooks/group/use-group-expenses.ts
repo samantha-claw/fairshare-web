@@ -24,6 +24,7 @@ export function useGroupExpenses(
   /* ── Custom Splits State (الجديد) ────────────────────── */
   const [computedSplits, setComputedSplits] = useState<any[]>([]);
   const [isValidSplit, setIsValidSplit] = useState(false);
+  const [splitType, setSplitType] = useState<string>("equal");
 
   const openAddExpenseModal = useCallback(() => {
     setEditingExpenseId(null);
@@ -38,6 +39,7 @@ export function useGroupExpenses(
     setEditingExpenseId(exp.id);
     setExpenseName(exp.name);
     setExpenseAmount(exp.amount.toString());
+    
     setIsExpenseModalOpen(true);
   }, []);
 
@@ -69,13 +71,15 @@ export function useGroupExpenses(
             _expense_id: editingExpenseId,
             _name: expenseName,
             _amount: parseFloat(expenseAmount),
-            _splits: splitsPayload, // نرسل الأرقام المحسوبة بدلاً من الـ IDs فقط
+            _splits: splitsPayload, // send the computed splits to the backend 
+            _split_type: splitType, // send the split type to the backend
           }
         : {
             _group_id: groupId,
             _name: expenseName,
             _amount: parseFloat(expenseAmount),
-            _splits: splitsPayload, // نرسل الأرقام المحسوبة بدلاً من الـ IDs فقط
+            _splits: splitsPayload, // send the computed splits to the backend
+            _split_type: splitType, // send the split type to the backend
           };
 
       const { error: rpcError } = await supabase.rpc(rpcName, rpcParams);
@@ -98,6 +102,7 @@ export function useGroupExpenses(
       expenseName,
       expenseAmount,
       computedSplits,
+      splitType,
       isValidSplit,
       editingExpenseId,
       supabase,
@@ -142,5 +147,7 @@ export function useGroupExpenses(
     openEditExpenseModal,
     handleSaveExpense,
     handleDeleteExpense,
+    splitType, // تم التصدير
+    setSplitType,
   };
 }
