@@ -35,15 +35,15 @@ function getAvatarColor(name: string): string {
   return AVATAR_GRADIENTS[Math.abs(hash) % AVATAR_GRADIENTS.length];
 }
 
-// ── Split Badge Helper ──────────────────────────────────
+// ── Split Badge ─────────────────────────────────────────
 function SplitBadge({ type }: { type?: string }) {
   const normalizedType = (type || "equal").toLowerCase();
 
   const config: Record<string, { label: string; style: string; icon: string }> = {
-    equal: { label: "Equal", style: "bg-blue-50 text-blue-700 ring-blue-200", icon: "⚖️" },
-    exact: { label: "Exact", style: "bg-emerald-50 text-emerald-700 ring-emerald-200", icon: "💰" },
-    percentage: { label: "Percentage", style: "bg-purple-50 text-purple-700 ring-purple-200", icon: "📊" },
-    shares: { label: "Shares", style: "bg-orange-50 text-orange-700 ring-orange-200", icon: "🎯" },
+    equal:      { label: "Equal",      style: "bg-blue-50 text-blue-700 ring-blue-200",       icon: "⚖️" },
+    exact:      { label: "Exact",      style: "bg-emerald-50 text-emerald-700 ring-emerald-200", icon: "💰" },
+    percentage: { label: "Percentage", style: "bg-purple-50 text-purple-700 ring-purple-200",  icon: "📊" },
+    shares:     { label: "Shares",     style: "bg-orange-50 text-orange-700 ring-orange-200",  icon: "🎯" },
   };
 
   const { label, style, icon } = config[normalizedType] || config.equal;
