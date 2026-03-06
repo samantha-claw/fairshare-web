@@ -10,7 +10,8 @@ import type { Member, Expense } from "@/types/group";
 export function useGroupExpenses(
   groupId: string,
   members: Member[],
-  refetch: () => void
+  refetch: () => void,
+  currentUserId: string
 ) {
   const supabase = createClient();
 
@@ -21,7 +22,10 @@ export function useGroupExpenses(
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
   const [submittingExpense, setSubmittingExpense] = useState(false);
 
-  /* ── Custom Splits State (الجديد) ────────────────────── */
+  /* ── Who Paid State (الجديد) ─────────────────────────── */
+  const [paidBy, setPaidBy] = useState<string>("");
+
+  /* ── Custom Splits State ─────────────────────────────── */
   const [computedSplits, setComputedSplits] = useState<any[]>([]);
   const [isValidSplit, setIsValidSplit] = useState(false);
   const [splitType, setSplitType] = useState<string>("equal");
@@ -30,16 +34,17 @@ export function useGroupExpenses(
     setEditingExpenseId(null);
     setExpenseName("");
     setExpenseAmount("");
+    setPaidBy(currentUserId);
     setComputedSplits([]);
     setIsValidSplit(false);
     setIsExpenseModalOpen(true);
-  }, []);
+  }, [currentUserId]);
 
   const openEditExpenseModal = useCallback((exp: Expense) => {
     setEditingExpenseId(exp.id);
     setExpenseName(exp.name);
     setExpenseAmount(exp.amount.toString());
-    
+    setPaidBy(exp.paid_by);
     setIsExpenseModalOpen(true);
   }, []);
 
@@ -60,7 +65,7 @@ export function useGroupExpenses(
         ? "edit_expense_custom_split"
         : "add_expense_custom_split";
 
-      // 🎯 السر هنا: تجهيز البيانات لترسل المبالغ المحددة لكل شخص
+      // 🎯 تجهيز البيانات لترسل المبالغ المحددة لكل شخص
       const splitsPayload = computedSplits.map((split) => ({
         user_id: split.userId,
         amount: split.amount,
@@ -71,15 +76,17 @@ export function useGroupExpenses(
             _expense_id: editingExpenseId,
             _name: expenseName,
             _amount: parseFloat(expenseAmount),
-            _splits: splitsPayload, // send the computed splits to the backend 
-            _split_type: splitType, // send the split type to the backend
+            _paid_by: paidBy,
+            _splits: splitsPayload,
+            _split_type: splitType,
           }
         : {
             _group_id: groupId,
             _name: expenseName,
             _amount: parseFloat(expenseAmount),
-            _splits: splitsPayload, // send the computed splits to the backend
-            _split_type: splitType, // send the split type to the backend
+            _paid_by: paidBy,
+            _splits: splitsPayload,
+            _split_type: splitType,
           };
 
       const { error: rpcError } = await supabase.rpc(rpcName, rpcParams);
@@ -91,6 +98,7 @@ export function useGroupExpenses(
         setEditingExpenseId(null);
         setExpenseName("");
         setExpenseAmount("");
+        setPaidBy("");
         setComputedSplits([]);
         refetch();
       }
@@ -101,6 +109,7 @@ export function useGroupExpenses(
       groupId,
       expenseName,
       expenseAmount,
+      paidBy,
       computedSplits,
       splitType,
       isValidSplit,
@@ -137,17 +146,19 @@ export function useGroupExpenses(
     setExpenseName,
     expenseAmount,
     setExpenseAmount,
-    computedSplits, // تم التصدير
-    setComputedSplits, // تم التصدير
-    isValidSplit, // تم التصدير
-    setIsValidSplit, // تم التصدير
+    paidBy,
+    setPaidBy,
+    computedSplits,
+    setComputedSplits,
+    isValidSplit,
+    setIsValidSplit,
     editingExpenseId,
     submittingExpense,
     openAddExpenseModal,
     openEditExpenseModal,
     handleSaveExpense,
     handleDeleteExpense,
-    splitType, // تم التصدير
+    splitType,
     setSplitType,
   };
 }
