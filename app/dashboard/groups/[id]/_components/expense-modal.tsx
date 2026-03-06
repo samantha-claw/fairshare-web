@@ -210,18 +210,29 @@ export function ExpenseModal({
         {/* ═══════════════════════════════════════════ */}
         {/* ██  SCROLLABLE MIDDLE — Split Selector    ██ */}
         {/* ═══════════════════════════════════════════ */}
-        <div className="relative min-h-0 flex-1">
-          {/* Top scroll shadow */}
-          <div
-            className={`pointer-events-none absolute inset-x-0 top-0 z-10 h-4 bg-gradient-to-b from-white to-transparent transition-opacity duration-200 ${
-              showTopShadow ? "opacity-100" : "opacity-0"
-            }`}
-          />
+        <div className="relative min-h-0 flex-1 flex flex-col">
 
-          <div
-            ref={scrollRef}
-            className="max-h-[35vh] overflow-y-auto overscroll-contain px-5 py-3 sm:max-h-[40vh] sm:px-6"
-          >
+{/* Top scroll shadow */}
+
+<div
+
+className={`pointer-events-none absolute inset-x-0 top-0 z-10 h-4 bg-gradient-to-b from-white to-transparent transition-opacity duration-200 ${
+
+showTopShadow ? "opacity-100" : "opacity-0"
+
+}`}
+
+/>
+
+
+<div
+
+ref={scrollRef}
+
+className="flex-1 overflow-y-auto overscroll-contain px-5 py-3 sm:px-6 custom-scrollbar"
+
+>
+
             <label className="mb-2 block text-sm font-medium text-gray-700">
               Split between
             </label>
