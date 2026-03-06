@@ -26,6 +26,9 @@ interface ExpenseModalProps {
     splitType: SplitType,
     isValid: boolean
   ) => void;
+  paidBy: string;
+  onPaidByChange: (val: string) => void;
+  currentUserId: string;
 }
 
 export function ExpenseModal({
@@ -40,6 +43,9 @@ export function ExpenseModal({
   submitting,
   onSubmit,
   onSplitDataChange,
+  paidBy,
+  onPaidByChange,
+  currentUserId,
 }: ExpenseModalProps) {
   const title = editingExpenseId ? "Edit Expense" : "Add Expense";
 
@@ -144,7 +150,7 @@ export function ExpenseModal({
           </div>
 
           {/* ── Amount ── */}
-          <div className="mb-1">
+          <div className="mb-3">
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Amount
             </label>
@@ -158,23 +164,75 @@ export function ExpenseModal({
               onChange={(e) => onExpenseAmountChange(e.target.value)}
             />
           </div>
+
+          {/* ── Paid By ── */}
+          <div className="mb-1">
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Paid by
+            </label>
+            <div className="relative">
+              <select
+                value={paidBy}
+                onChange={(e) => onPaidByChange(e.target.value)}
+                className="w-full appearance-none rounded-xl border border-gray-300 bg-white px-3 py-2.5 pr-10 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                {members.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.id === currentUserId
+                      ? "You"
+                      : (member as any).display_name ||
+                        (member as any).name ||
+                        (member as any).full_name ||
+                        "Unknown"}
+                  </option>
+                ))}
+              </select>
+              {/* Custom dropdown chevron */}
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                <svg
+                  className="h-4 w-4 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* ═══════════════════════════════════════════ */}
         {/* ██  SCROLLABLE MIDDLE — Split Selector    ██ */}
         {/* ═══════════════════════════════════════════ */}
-        <div className="relative min-h-0 flex-1">
-          {/* Top scroll shadow */}
-          <div
-            className={`pointer-events-none absolute inset-x-0 top-0 z-10 h-4 bg-gradient-to-b from-white to-transparent transition-opacity duration-200 ${
-              showTopShadow ? "opacity-100" : "opacity-0"
-            }`}
-          />
+        <div className="relative min-h-0 flex-1 flex flex-col">
 
-          <div
-            ref={scrollRef}
-            className="max-h-[35vh] overflow-y-auto overscroll-contain px-5 py-3 sm:max-h-[40vh] sm:px-6"
-          >
+{/* Top scroll shadow */}
+
+<div
+
+className={`pointer-events-none absolute inset-x-0 top-0 z-10 h-4 bg-gradient-to-b from-white to-transparent transition-opacity duration-200 ${
+
+showTopShadow ? "opacity-100" : "opacity-0"
+
+}`}
+
+/>
+
+
+<div
+
+ref={scrollRef}
+
+className="flex-1 overflow-y-auto overscroll-contain px-5 py-3 sm:px-6 custom-scrollbar"
+
+>
+
             <label className="mb-2 block text-sm font-medium text-gray-700">
               Split between
             </label>
