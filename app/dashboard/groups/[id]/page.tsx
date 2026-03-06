@@ -43,7 +43,13 @@ export default function GroupDetailsPage() {
 
   /* ── Compose focused hooks ───────────────────────────── */
   const data = useGroupData(groupId);
-  const expenseCtl = useGroupExpenses(groupId, data.members, data.refetch);
+  const expenseCtl = useGroupExpenses(
+  groupId,
+  data.members,
+  data.refetch,
+  data.currentUser || ""
+);
+
   const settleCtl = useGroupSettlements(groupId, data.currentUser, data.refetch);
   const memberCtl = useGroupMembers(groupId, data.members, data.refetch);
   const settingsCtl = useGroupSettings(
@@ -203,7 +209,7 @@ export default function GroupDetailsPage() {
 
             <section className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
               {/* ── Tabs + Action Buttons ── */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-gray-200">
+              <div className="flex flex-col border-b border-gray-200 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex">
                   <button
                     onClick={() => setActiveTab("expenses")}
@@ -227,16 +233,16 @@ export default function GroupDetailsPage() {
                   </button>
                 </div>
 
-                <div className="mt-4 mb-5 flex w-full items-center justify-center gap-3 sm:justify-end">
+                <div className="mb-5 mt-4 flex w-full items-center justify-center gap-3 sm:justify-end">
                   <button
                     onClick={settleCtl.openSettleUpModal}
-                    className="flex flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-50 active:scale-[0.98]"
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-50 active:scale-[0.98] sm:flex-none"
                   >
                     <span>🤝</span> Settle Up
                   </button>
                   <button
                     onClick={expenseCtl.openAddExpenseModal}
-                    className="flex flex-1 sm:flex-none items-center justify-center gap-2 rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-green-700 active:scale-[0.98]"
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-green-700 active:scale-[0.98] sm:flex-none"
                   >
                     <span>💸</span> Add Expense
                   </button>
@@ -294,22 +300,26 @@ export default function GroupDetailsPage() {
         onAddMember={memberCtl.handleAddMember}
       />
 
-<ExpenseModal
-  isOpen={expenseCtl.isExpenseModalOpen}
-  onClose={() => expenseCtl.setIsExpenseModalOpen(false)}
-  editingExpenseId={expenseCtl.editingExpenseId}
-  expenseName={expenseCtl.expenseName}
-  onExpenseNameChange={expenseCtl.setExpenseName}
-  expenseAmount={expenseCtl.expenseAmount}
-  onExpenseAmountChange={expenseCtl.setExpenseAmount}
-  members={data.members}
-  submitting={expenseCtl.submittingExpense}
-  onSubmit={expenseCtl.handleSaveExpense}
-   onSplitDataChange={(splits, splitType, isValid) => {
-    expenseCtl.setComputedSplits(splits);
-    expenseCtl.setSplitType(splitType); // 👈 السطر ده هو اللي هيحل المشكلة للأبد!
-    expenseCtl.setIsValidSplit(isValid);  }}
-/>
+      <ExpenseModal
+        isOpen={expenseCtl.isExpenseModalOpen}
+        onClose={() => expenseCtl.setIsExpenseModalOpen(false)}
+        editingExpenseId={expenseCtl.editingExpenseId}
+        expenseName={expenseCtl.expenseName}
+        onExpenseNameChange={expenseCtl.setExpenseName}
+        expenseAmount={expenseCtl.expenseAmount}
+        onExpenseAmountChange={expenseCtl.setExpenseAmount}
+        members={data.members}
+        submitting={expenseCtl.submittingExpense}
+        onSubmit={expenseCtl.handleSaveExpense}
+        onSplitDataChange={(splits, splitType, isValid) => {
+          expenseCtl.setComputedSplits(splits);
+          expenseCtl.setSplitType(splitType);
+          expenseCtl.setIsValidSplit(isValid);
+        }}
+        paidBy={expenseCtl.paidBy}
+        onPaidByChange={expenseCtl.setPaidBy}
+        currentUserId={data.currentUser || ""}
+      />
 
       <SettleModal
         isOpen={settleCtl.isSettleModalOpen}
