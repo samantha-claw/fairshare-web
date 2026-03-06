@@ -40,6 +40,30 @@ function getAvatarColor(name: string): string {
 }
 
 // ==========================================
+// 🏷️ SPLIT BADGE
+// ==========================================
+function SplitBadge({ type }: { type?: string }) {
+  const normalizedType = (type || "equal").toLowerCase();
+
+  const config: Record<string, { label: string; style: string; icon: string }> = {
+    equal:      { label: "Equal",      style: "bg-blue-50 text-blue-700 ring-blue-200",       icon: "⚖️" },
+    exact:      { label: "Exact",      style: "bg-emerald-50 text-emerald-700 ring-emerald-200", icon: "💰" },
+    percentage: { label: "Percentage", style: "bg-purple-50 text-purple-700 ring-purple-200",  icon: "📊" },
+    shares:     { label: "Shares",     style: "bg-orange-50 text-orange-700 ring-orange-200",  icon: "🎯" },
+  };
+
+  const { label, style, icon } = config[normalizedType] || config.equal;
+
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ring-1 ring-inset ${style}`}
+    >
+      <span>{icon}</span> {label}
+    </span>
+  );
+}
+
+// ==========================================
 // 🧩 TYPES
 // ==========================================
 interface ExpensesTabProps {
@@ -91,10 +115,9 @@ export function ExpensesTab({
           return (
             <div
               key={exp.id}
-              className="flex items-start sm:items-center gap-3 rounded-xl border border-gray-100 bg-gray-50/50 p-3 transition-all hover:border-gray-200 hover:shadow-sm sm:p-4"
+              className="flex items-start gap-3 rounded-xl border border-gray-100 bg-gray-50/50 p-3 transition-all hover:border-gray-200 hover:shadow-sm sm:items-center sm:p-4"
             >
               {/* ── Left: Payer Avatar ── */}
-              {/* ضفنا mt-1 للموبايل عشان لو النص كتر الأفاتار يفضل محاذي صح من فوق */}
               <Link
                 href={`/dashboard/profile/${exp.paid_by}`}
                 className="mt-1 shrink-0 sm:mt-0"
@@ -104,19 +127,19 @@ export function ExpensesTab({
 
               {/* ── Middle: Expense Info ── */}
               <div className="min-w-0 flex-1">
-                <h3 className="truncate text-sm font-semibold text-gray-900 sm:text-base">
-                  {exp.name}
-                </h3>
-                
-                {/* تم تعديل السطر ده: 
-                  استخدمنا flex-wrap عشان التاريخ ينزل سطر جديد لوحده براحته
-                  بدون ما يدخل تحت الأفاتارات اليمين 
-                */}
+                {/* Name + SplitBadge */}
+                <div className="mb-0.5 flex items-center gap-2">
+                  <h3 className="truncate text-sm font-semibold text-gray-900 sm:text-base">
+                    {exp.name}
+                  </h3>
+                  <SplitBadge type={(exp as any).split_type} />
+                </div>
+
                 <div className="mt-0.5 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs text-gray-500">
                   <span>Paid by</span>
                   <Link
                     href={`/dashboard/profile/${exp.paid_by}`}
-                    className="truncate max-w-[80px] sm:max-w-[120px] font-medium text-gray-700 hover:text-blue-600 hover:underline"
+                    className="max-w-[80px] truncate font-medium text-gray-700 hover:text-blue-600 hover:underline sm:max-w-[120px]"
                     title={payerName}
                   >
                     {payerName}

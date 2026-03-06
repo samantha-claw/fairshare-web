@@ -305,10 +305,10 @@ export default function GroupDetailsPage() {
   members={data.members}
   submitting={expenseCtl.submittingExpense}
   onSubmit={expenseCtl.handleSaveExpense}
-  onSplitDataChange={(splits, splitType, isValid) => {
+   onSplitDataChange={(splits, splitType, isValid) => {
     expenseCtl.setComputedSplits(splits);
-    expenseCtl.setIsValidSplit(isValid);
-  }}
+    expenseCtl.setSplitType(splitType); // 👈 السطر ده هو اللي هيحل المشكلة للأبد!
+    expenseCtl.setIsValidSplit(isValid);  }}
 />
 
       <SettleModal
