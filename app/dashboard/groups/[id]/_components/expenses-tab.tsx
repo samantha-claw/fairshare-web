@@ -43,7 +43,7 @@ function getAvatarColor(name: string): string {
 // 🏷️ SPLIT BADGE
 // ==========================================
 function SplitBadge({ type }: { type?: string }) {
-  console.log("Split type received:", type); 
+  
   const normalizedType = (type || "equal").toLowerCase();
 
   const config: Record<string, { label: string; style: string; icon: string }> = {
