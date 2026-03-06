@@ -35,6 +35,28 @@ function getAvatarColor(name: string): string {
   return AVATAR_GRADIENTS[Math.abs(hash) % AVATAR_GRADIENTS.length];
 }
 
+// ── Split Badge Helper ──────────────────────────────────
+function SplitBadge({ type }: { type?: string }) {
+  const normalizedType = (type || "equal").toLowerCase();
+
+  const config: Record<string, { label: string; style: string; icon: string }> = {
+    equal: { label: "Equal", style: "bg-blue-50 text-blue-700 ring-blue-200", icon: "⚖️" },
+    exact: { label: "Exact", style: "bg-emerald-50 text-emerald-700 ring-emerald-200", icon: "💰" },
+    percentage: { label: "Percentage", style: "bg-purple-50 text-purple-700 ring-purple-200", icon: "📊" },
+    shares: { label: "Shares", style: "bg-orange-50 text-orange-700 ring-orange-200", icon: "🎯" },
+  };
+
+  const { label, style, icon } = config[normalizedType] || config.equal;
+
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ring-1 ring-inset ${style}`}
+    >
+      <span>{icon}</span> {label}
+    </span>
+  );
+}
+
 // ── Types ───────────────────────────────────────────────
 interface AllExpensesModalProps {
   isOpen: boolean;
@@ -112,9 +134,14 @@ export function AllExpensesModal({
                       </Link>
 
                       <div className="min-w-0 flex-1">
-                        <h3 className="truncate text-sm font-semibold text-gray-900 sm:text-base">
-                          {exp.name}
-                        </h3>
+                        {/* Name + SplitBadge */}
+                        <div className="mb-0.5 flex items-center gap-2">
+                          <h3 className="truncate text-sm font-semibold text-gray-900 sm:text-base">
+                            {exp.name}
+                          </h3>
+                          <SplitBadge type={(exp as any).split_type} />
+                        </div>
+
                         <p className="truncate text-xs text-gray-500">
                           Paid by{" "}
                           <Link
