@@ -40,16 +40,16 @@ function getAvatarColor(name: string): string {
 }
 
 // ==========================================
-// 🏷️ SPLIT BADGE HELPER
+// 🏷️ SPLIT BADGE
 // ==========================================
 function SplitBadge({ type }: { type?: string }) {
   const normalizedType = (type || "equal").toLowerCase();
 
   const config: Record<string, { label: string; style: string; icon: string }> = {
-    equal: { label: "Equal", style: "bg-blue-50 text-blue-700 ring-blue-200", icon: "⚖️" },
-    exact: { label: "Exact", style: "bg-emerald-50 text-emerald-700 ring-emerald-200", icon: "💰" },
-    percentage: { label: "Percentage", style: "bg-purple-50 text-purple-700 ring-purple-200", icon: "📊" },
-    shares: { label: "Shares", style: "bg-orange-50 text-orange-700 ring-orange-200", icon: "🎯" },
+    equal:      { label: "Equal",      style: "bg-blue-50 text-blue-700 ring-blue-200",       icon: "⚖️" },
+    exact:      { label: "Exact",      style: "bg-emerald-50 text-emerald-700 ring-emerald-200", icon: "💰" },
+    percentage: { label: "Percentage", style: "bg-purple-50 text-purple-700 ring-purple-200",  icon: "📊" },
+    shares:     { label: "Shares",     style: "bg-orange-50 text-orange-700 ring-orange-200",  icon: "🎯" },
   };
 
   const { label, style, icon } = config[normalizedType] || config.equal;
@@ -135,7 +135,6 @@ export function ExpensesTab({
                   <SplitBadge type={(exp as any).split_type} />
                 </div>
 
-                {/* Meta line */}
                 <div className="mt-0.5 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs text-gray-500">
                   <span>Paid by</span>
                   <Link
