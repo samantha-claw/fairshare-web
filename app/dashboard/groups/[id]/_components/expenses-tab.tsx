@@ -43,12 +43,13 @@ function getAvatarColor(name: string): string {
 // 🏷️ SPLIT BADGE
 // ==========================================
 function SplitBadge({ type }: { type?: string }) {
+  console.log("Split type received:", type); 
   const normalizedType = (type || "equal").toLowerCase();
 
   const config: Record<string, { label: string; style: string; icon: string }> = {
     equal:      { label: "Equal",      style: "bg-blue-50 text-blue-700 ring-blue-200",       icon: "⚖️" },
     exact:      { label: "Exact",      style: "bg-emerald-50 text-emerald-700 ring-emerald-200", icon: "💰" },
-    percentage: { label: "Percentage", style: "bg-purple-50 text-purple-700 ring-purple-200",  icon: "📊" },
+    percentage: { label: "Percent", style: "bg-purple-50 text-purple-700 ring-purple-200",  icon: "📊" },
     shares:     { label: "Shares",     style: "bg-orange-50 text-orange-700 ring-orange-200",  icon: "🎯" },
   };
 
