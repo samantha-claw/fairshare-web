@@ -100,10 +100,8 @@ export function ExpensesTab({
   const hasMore = expenses.length > 5;
 
   return (
-    <>
-      {/* FIX 1: Added overflow-hidden to the outermost wrapper 
-        so nothing can ever push beyond the card boundary */}
-      <div className="overflow-hidden">
+    // ✅ FIX 1: Added overflow-hidden to the root wrapper
+    <div className="overflow-hidden">
       {/* ── Expense Items ── */}
       <div className="space-y-3">
         {displayedExpenses.map((exp) => {
@@ -116,11 +114,11 @@ export function ExpensesTab({
           const remainingCount = Math.max(0, splits.length - 3);
 
           return (
+            // ✅ FIX 2: Added overflow-hidden to each card
             <div
               key={exp.id}
               className="flex items-start gap-3 overflow-hidden rounded-xl border border-gray-100 bg-gray-50/50 p-3 transition-all hover:border-gray-200 hover:shadow-sm sm:items-center sm:p-4"
             >
-              {/* FIX 2: Added overflow-hidden to each expense row so long text inside flex children can't push the row wider */}
               {/* ── Left: Payer Avatar ── */}
               <Link
                 href={`/dashboard/profile/${exp.paid_by}`}
@@ -130,10 +128,7 @@ export function ExpensesTab({
               </Link>
 
               {/* ── Middle: Expense Info ── */}
-              {/* FIX 3: Added overflow-hidden alongside min-w-0
-                  Both are needed: min-w-0 allows the flex child to shrink
-                  below its content size, overflow-hidden clips any remainder */}
-              <div className="min-w-0 flex-1 overflow-hidden">
+              <div className="min-w-0 flex-1">
                 {/* Name + SplitBadge */}
                 <div className="mb-0.5 flex items-center gap-2 overflow-hidden">
                   <h3 className="truncate text-sm font-semibold text-gray-900 sm:text-base">
@@ -142,9 +137,7 @@ export function ExpensesTab({
                   <SplitBadge type={(exp as any).split_type} />
                 </div>
 
-                {/* FIX 4: Added overflow-hidden to the meta line
-                    so the "Paid by <name> · <date>" can't overflow either */}
-                <div className="mt-0.5 flex flex-wrap items-center gap-x-1 gap-y-0.5 overflow-hidden text-xs text-gray-500">
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs text-gray-500">
                   <span>Paid by</span>
                   <Link
                     href={`/dashboard/profile/${exp.paid_by}`}
@@ -162,7 +155,7 @@ export function ExpensesTab({
 
               {/* ── Right: Amount + Mini Participant Avatars ── */}
               <div className="flex shrink-0 flex-col items-end gap-1.5">
-                <p className="whitespace-nowrap text-base font-bold text-gray-900 sm:text-lg">
+                <p className="text-base font-bold text-gray-900 sm:text-lg">
                   {formatCurrency(exp.amount, currency)}
                 </p>
 
@@ -245,7 +238,6 @@ export function ExpensesTab({
           </button>
         </div>
       )}
-      </div>
-    </>
+    </div>
   );
 }
