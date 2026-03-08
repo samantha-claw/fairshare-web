@@ -43,14 +43,13 @@ function getAvatarColor(name: string): string {
 // 🏷️ SPLIT BADGE
 // ==========================================
 function SplitBadge({ type }: { type?: string }) {
-  
   const normalizedType = (type || "equal").toLowerCase();
 
   const config: Record<string, { label: string; style: string; icon: string }> = {
-    equal:      { label: "Equal",      style: "bg-blue-50 text-blue-700 ring-blue-200",       icon: "⚖️" },
-    exact:      { label: "Exact",      style: "bg-emerald-50 text-emerald-700 ring-emerald-200", icon: "💰" },
-    percentage: { label: "Percent", style: "bg-purple-50 text-purple-700 ring-purple-200",  icon: "📊" },
-    shares:     { label: "Shares",     style: "bg-orange-50 text-orange-700 ring-orange-200",  icon: "🎯" },
+    equal:      { label: "Equal",   style: "bg-blue-50 text-blue-700 ring-blue-200",          icon: "⚖️" },
+    exact:      { label: "Exact",   style: "bg-emerald-50 text-emerald-700 ring-emerald-200", icon: "💰" },
+    percentage: { label: "Percent", style: "bg-purple-50 text-purple-700 ring-purple-200",    icon: "📊" },
+    shares:     { label: "Shares",  style: "bg-orange-50 text-orange-700 ring-orange-200",    icon: "🎯" },
   };
 
   const { label, style, icon } = config[normalizedType] || config.equal;
@@ -101,7 +100,10 @@ export function ExpensesTab({
   const hasMore = expenses.length > 5;
 
   return (
-    <div>
+    <>
+      {/* FIX 1: Added overflow-hidden to the outermost wrapper 
+        so nothing can ever push beyond the card boundary */}
+      <div className="overflow-hidden">
       {/* ── Expense Items ── */}
       <div className="space-y-3">
         {displayedExpenses.map((exp) => {
@@ -116,8 +118,9 @@ export function ExpensesTab({
           return (
             <div
               key={exp.id}
-              className="flex items-start gap-3 rounded-xl border border-gray-100 bg-gray-50/50 p-3 transition-all hover:border-gray-200 hover:shadow-sm sm:items-center sm:p-4"
+              className="flex items-start gap-3 overflow-hidden rounded-xl border border-gray-100 bg-gray-50/50 p-3 transition-all hover:border-gray-200 hover:shadow-sm sm:items-center sm:p-4"
             >
+              {/* FIX 2: Added overflow-hidden to each expense row so long text inside flex children can't push the row wider */}
               {/* ── Left: Payer Avatar ── */}
               <Link
                 href={`/dashboard/profile/${exp.paid_by}`}
@@ -127,17 +130,21 @@ export function ExpensesTab({
               </Link>
 
               {/* ── Middle: Expense Info ── */}
-              <div className="min-w-0 flex-1">
+              {/* FIX 3: Added overflow-hidden alongside min-w-0
+                  Both are needed: min-w-0 allows the flex child to shrink
+                  below its content size, overflow-hidden clips any remainder */}
+              <div className="min-w-0 flex-1 overflow-hidden">
                 {/* Name + SplitBadge */}
-<div className="mb-0.5 flex items-center gap-2 overflow-hidden">
-  <h3 className="truncate text-sm font-semibold text-gray-900 sm:text-base">
-    {exp.name}
-  </h3>
-  <SplitBadge type={(exp as any).split_type} />
-</div>
+                <div className="mb-0.5 flex items-center gap-2 overflow-hidden">
+                  <h3 className="truncate text-sm font-semibold text-gray-900 sm:text-base">
+                    {exp.name}
+                  </h3>
+                  <SplitBadge type={(exp as any).split_type} />
+                </div>
 
-
-                <div className="mt-0.5 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs text-gray-500">
+                {/* FIX 4: Added overflow-hidden to the meta line
+                    so the "Paid by <name> · <date>" can't overflow either */}
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-1 gap-y-0.5 overflow-hidden text-xs text-gray-500">
                   <span>Paid by</span>
                   <Link
                     href={`/dashboard/profile/${exp.paid_by}`}
@@ -155,7 +162,7 @@ export function ExpensesTab({
 
               {/* ── Right: Amount + Mini Participant Avatars ── */}
               <div className="flex shrink-0 flex-col items-end gap-1.5">
-                <p className="text-base font-bold text-gray-900 sm:text-lg">
+                <p className="whitespace-nowrap text-base font-bold text-gray-900 sm:text-lg">
                   {formatCurrency(exp.amount, currency)}
                 </p>
 
@@ -238,6 +245,7 @@ export function ExpensesTab({
           </button>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
