@@ -44,11 +44,11 @@ export default function GroupDetailsPage() {
   /* ── Compose focused hooks ───────────────────────────── */
   const data = useGroupData(groupId);
   const expenseCtl = useGroupExpenses(
-  groupId,
-  data.members,
-  data.refetch,
-  data.currentUser || ""
-);
+    groupId,
+    data.members,
+    data.refetch,
+    data.currentUser || ""
+  );
 
   const settleCtl = useGroupSettlements(groupId, data.currentUser, data.refetch);
   const memberCtl = useGroupMembers(groupId, data.members, data.refetch);
@@ -196,7 +196,8 @@ export default function GroupDetailsPage() {
         />
 
         <div className="grid gap-6 lg:grid-cols-3">
-          <div className="space-y-6 lg:col-span-2">
+          {/* ✅ FIX 1: Added min-w-0 overflow-hidden to left column */}
+          <div className="min-w-0 space-y-6 overflow-hidden lg:col-span-2">
             <PendingSettlements
               settlements={data.pendingSettlements}
               currentUser={data.currentUser}
@@ -273,7 +274,8 @@ export default function GroupDetailsPage() {
             </section>
           </div>
 
-          <div className="space-y-6">
+          {/* ✅ FIX 2: Added min-w-0 overflow-hidden to right column (Members + Balances) */}
+          <div className="min-w-0 space-y-6 overflow-hidden">
             <MembersCard
               members={data.members}
               group={data.group}
