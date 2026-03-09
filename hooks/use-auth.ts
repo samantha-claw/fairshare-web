@@ -134,7 +134,7 @@ export function useAuth() {
             if (latestCheckRef.current !== trimmed) return;
 
             const takenSet = new Set(
-              takenRows?.map((r) => r.username) ?? []
+              takenRows?.map((r: { username: string }) => r.username) ?? []
             );
 
             const verified = candidates
