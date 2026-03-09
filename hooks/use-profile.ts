@@ -21,6 +21,55 @@ interface UseProfileOptions {
 
 type FriendshipDirection = "incoming" | "outgoing" | null;
 
+// Local row interfaces for type safety
+interface GroupRowFragment {
+  id: string;
+  name: string;
+  currency: string | null;
+  created_at: string;
+}
+
+interface GroupMemberRow {
+  group_id: string;
+  groups: GroupRowFragment;
+}
+
+interface ExpensePaidRow {
+  group_id: string;
+  amount: number | string;
+}
+
+interface ExpenseSplitRow {
+  amount: number | string;
+  expenses: {
+    group_id: string;
+  };
+}
+
+interface SettlementRow {
+  group_id: string;
+  amount: number | string;
+}
+
+interface RecentExpenseRow {
+  id: string;
+  name: string;
+  amount: number | string;
+  created_at: string;
+  group_id: string;
+  groups: {
+    name: string;
+  } | null;
+}
+
+const createDefaultStats = (): ProfileStats => ({
+  totalGroups: 0,
+  totalExpensesPaid: 0,
+  totalOwed: 0,
+  totalOwes: 0,
+  netBalance: 0,
+});
+
 export function useProfile(options: UseProfileOptions = {}) {
   const { userId: targetUserId } = options;
   const router = useRouter();
@@ -42,13 +91,7 @@ export function useProfile(options: UseProfileOptions = {}) {
   /* ── Financial State ─────────────────────────────── */
   const [groups, setGroups] = useState<ProfileGroup[]>([]);
   const [activities, setActivities] = useState<ProfileActivity[]>([]);
-  const [stats, setStats] = useState<ProfileStats>({
-    totalGroups: 0,
-    totalExpensesPaid: 0,
-    totalOwed: 0,
-    totalOwes: 0,
-    netBalance: 0,
-  });
+  const [stats, setStats] = useState<ProfileStats>(createDefaultStats);
 
   /* ── Share Modal State ───────────────────────────── */
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -142,6 +185,12 @@ export function useProfile(options: UseProfileOptions = {}) {
       const shouldFetchFinancials =
         !targetUserId || targetUserId === user.id;
 
+      const resetFinancialState = () => {
+        setGroups([]);
+        setActivities([]);
+        setStats(createDefaultStats());
+      };
+
       if (shouldFetchFinancials) {
         const uid = user.id;
 
@@ -150,19 +199,24 @@ export function useProfile(options: UseProfileOptions = {}) {
           .select("group_id, groups ( id, name, currency, created_at )")
           .eq("user_id", uid);
 
-        if (memberships && memberships.length > 0) {
-          const groupIds = memberships.map((m) => m.group_id);
+        if (!memberships || memberships.length === 0) {
+          resetFinancialState();
+        } else {
+          const typedMemberships = memberships as GroupMemberRow[];
+          const groupIds = typedMemberships.map((m) => m.group_id);
 
           const { data: expensesPaid } = await supabase
             .from("expenses")
             .select("group_id, amount")
             .in("group_id", groupIds)
             .eq("paid_by", uid);
+          const typedExpensesPaid = (expensesPaid || []) as ExpensePaidRow[];
 
           const { data: mySplits } = await supabase
             .from("expense_splits")
             .select("amount, expenses(group_id)")
             .eq("user_id", uid);
+          const typedMySplits = (mySplits || []) as ExpenseSplitRow[];
 
           const { data: settlementsSent } = await supabase
             .from("settlements")
@@ -170,6 +224,7 @@ export function useProfile(options: UseProfileOptions = {}) {
             .in("group_id", groupIds)
             .eq("from_user", uid)
             .eq("status", "completed");
+          const typedSettlementsSent = (settlementsSent || []) as SettlementRow[];
 
           const { data: settlementsReceived } = await supabase
             .from("settlements")
@@ -177,26 +232,23 @@ export function useProfile(options: UseProfileOptions = {}) {
             .in("group_id", groupIds)
             .eq("to_user", uid)
             .eq("status", "completed");
+          const typedSettlementsReceived = (settlementsReceived || []) as SettlementRow[];
 
-          const processedGroups: ProfileGroup[] = memberships.map(
-            (m: any) => {
+          const processedGroups: ProfileGroup[] = typedMemberships.map(
+            (m) => {
               const g = m.groups;
-              const paidExp =
-                expensesPaid
-                  ?.filter((e) => e.group_id === g.id)
-                  .reduce((s, e) => s + Number(e.amount), 0) || 0;
-              const paidSet =
-                settlementsSent
-                  ?.filter((s) => s.group_id === g.id)
-                  .reduce((s, e) => s + Number(e.amount), 0) || 0;
-              const owedExp =
-                mySplits
-                  ?.filter((s: any) => s.expenses.group_id === g.id)
-                  .reduce((s, e) => s + Number(e.amount), 0) || 0;
-              const owedSet =
-                settlementsReceived
-                  ?.filter((s) => s.group_id === g.id)
-                  .reduce((s, e) => s + Number(e.amount), 0) || 0;
+              const paidExp = typedExpensesPaid
+                .filter((e) => e.group_id === g.id)
+                .reduce((s, e) => s + Number(e.amount), 0);
+              const paidSet = typedSettlementsSent
+                .filter((s) => s.group_id === g.id)
+                .reduce((s, e) => s + Number(e.amount), 0);
+              const owedExp = typedMySplits
+                .filter((s) => s.expenses.group_id === g.id)
+                .reduce((s, e) => s + Number(e.amount), 0);
+              const owedSet = typedSettlementsReceived
+                .filter((s) => s.group_id === g.id)
+                .reduce((s, e) => s + Number(e.amount), 0);
 
               return {
                 group_id: g.id,
@@ -210,11 +262,10 @@ export function useProfile(options: UseProfileOptions = {}) {
 
           setGroups(processedGroups);
 
-          const totalPaid =
-            expensesPaid?.reduce(
-              (s, e) => s + Number(e.amount),
-              0
-            ) || 0;
+          const totalPaid = typedExpensesPaid.reduce(
+            (s, e) => s + Number(e.amount),
+            0
+          );
           const totalOwed = processedGroups
             .filter((g) => g.net_balance > 0)
             .reduce((s, g) => s + g.net_balance, 0);
@@ -223,16 +274,12 @@ export function useProfile(options: UseProfileOptions = {}) {
             .reduce((s, g) => s + Math.abs(g.net_balance), 0);
 
           setStats({
-            totalGroups: memberships.length,
+            totalGroups: typedMemberships.length,
             totalExpensesPaid: totalPaid,
             totalOwed,
             totalOwes,
             netBalance: totalOwed - totalOwes,
           });
-        }
-
-        if (memberships && memberships.length > 0) {
-          const groupIds = memberships.map((m) => m.group_id);
 
           const { data: recentExpenses } = await supabase
             .from("expenses")
@@ -243,21 +290,22 @@ export function useProfile(options: UseProfileOptions = {}) {
             .eq("paid_by", user.id)
             .order("created_at", { ascending: false })
             .limit(10);
+          const typedRecentExpenses = (recentExpenses || []) as RecentExpenseRow[];
 
-          if (recentExpenses) {
-            setActivities(
-              recentExpenses.map((e: any) => ({
-                id: e.id,
-                name: e.name,
-                amount: Number(e.amount),
-                created_at: e.created_at,
-                group_name: e.groups?.name || "Unknown",
-                group_id: e.group_id,
-                type: "expense" as const,
-              }))
-            );
-          }
+          setActivities(
+            typedRecentExpenses.map((e) => ({
+              id: e.id,
+              name: e.name,
+              amount: Number(e.amount),
+              created_at: e.created_at,
+              group_name: e.groups?.name || "Unknown",
+              group_id: e.group_id,
+              type: "expense" as const,
+            }))
+          );
         }
+      } else {
+        resetFinancialState();
       }
     } catch (err) {
       console.error(err);
