@@ -2,6 +2,7 @@
 
 import { useState, useCallback, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import type { Member, Expense } from "@/types/group";
 
 /**
@@ -14,6 +15,7 @@ export function useGroupExpenses(
   currentUserId: string
 ) {
   const supabase = createClient();
+  const toast = useToast();
 
   /* ── Modal state ─────────────────────────────────────── */
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
@@ -55,7 +57,7 @@ export function useGroupExpenses(
 
       // حماية إضافية: التأكد من أن التقسيم سليم قبل الإرسال
       if (!isValidSplit || computedSplits.length === 0) {
-        alert("Please ensure the split is valid and amounts match the total.");
+        toast.error("Please ensure the split is valid and amounts match the total.");
         return;
       }
 
@@ -92,7 +94,7 @@ export function useGroupExpenses(
       const { error: rpcError } = await supabase.rpc(rpcName, rpcParams);
 
       if (rpcError) {
-        alert("Error saving expense: " + rpcError.message);
+        toast.error(rpcError.message);
       } else {
         setIsExpenseModalOpen(false);
         setEditingExpenseId(null);
@@ -121,8 +123,12 @@ export function useGroupExpenses(
 
   const handleDeleteExpense = useCallback(
     async (expenseId: string, name: string) => {
-      const confirmed = confirm(
-        `Delete "${name}"? This will recalculate all balances.`
+      const confirmed = await toast.confirm(
+        `Delete "${name}"? This will recalculate all balances.`,
+        {
+          confirmLabel: "Delete",
+          cancelLabel: "Cancel"
+        }
       );
       if (!confirmed) return;
 
@@ -131,7 +137,7 @@ export function useGroupExpenses(
       });
 
       if (delError) {
-        alert("Error deleting expense: " + delError.message);
+        toast.error(delError.message);
       } else {
         refetch();
       }
