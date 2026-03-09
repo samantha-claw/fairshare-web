@@ -94,7 +94,13 @@ export function useGroupExpenses(
       const { error: rpcError } = await supabase.rpc(rpcName, rpcParams);
 
       if (rpcError) {
-        toast.error(rpcError.message);
+        
+      console.error("Failed to save expense:", rpcError);
+       toast.error(
+          editingExpenseId
+            ? "Failed to update the expense."
+           : "Failed to add the expense."
+       );
       } else {
         setIsExpenseModalOpen(false);
         setEditingExpenseId(null);
@@ -137,7 +143,8 @@ export function useGroupExpenses(
       });
 
       if (delError) {
-        toast.error(delError.message);
+        console.error("Failed to delete expense:", delError);
+        toast.error("Failed to delete the expense.");
       } else {
         refetch();
       }
