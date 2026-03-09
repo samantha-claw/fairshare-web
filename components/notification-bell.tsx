@@ -24,7 +24,7 @@ export function NotificationBell({ userId }: { userId: string }) {
 
     if (data && !error) {
       setNotifications(data);
-      setUnreadCount(data.filter((n) => !n.is_read).length);
+      setUnreadCount(data.filter((n: any) => !n.is_read).length);
     }
   };
 
@@ -37,7 +37,7 @@ export function NotificationBell({ userId }: { userId: string }) {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
-        (payload) => {
+        (payload: { new: any }) => {
           // لما ييجي إشعار جديد، زوده في القائمة وزود العداد
           setNotifications((prev) => [payload.new, ...prev]);
           setUnreadCount((prev) => prev + 1);
