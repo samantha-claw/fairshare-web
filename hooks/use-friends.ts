@@ -6,13 +6,13 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import type {
   Friend,
   PendingRequest,
   OutgoingRequest,
   SearchResultUser,
-  ToastMessage,
 } from "@/types/friend";
 
 // ==========================================
@@ -22,6 +22,7 @@ import type {
 export function useFriends() {
   const supabase = createClient();
   const router = useRouter();
+  const toast = useToast();
   const channelRef = useRef<RealtimeChannel | null>(null);
 
   /* ── Core State ──────────────────────────────────────── */
@@ -47,21 +48,6 @@ export function useFriends() {
   const [searching, setSearching] = useState(false);
   const [sendingToId, setSendingToId] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
-
-  /* ── Toast ───────────────────────────────────────────── */
-  const [toasts, setToasts] = useState<ToastMessage[]>([]);
-
-  function showToast(type: "success" | "error", message: string) {
-    const id = crypto.randomUUID();
-    setToasts((prev) => [...prev, { id, type, message }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
-  }
-
-  function dismissToast(id: string) {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }
 
   /* ── Auth Init ───────────────────────────────────────── */
 
@@ -223,14 +209,14 @@ export function useFriends() {
       });
 
       if (error) {
-        showToast("error", error.message || "Failed to send request.");
+        toast.error(error.message || "Failed to send request.");
         return;
       }
 
-      showToast("success", `Request sent to @${targetUsername}`);
+      toast.success(`Request sent to @${targetUsername}`);
       await fetchOutgoingRequests();
     } catch (err) {
-      showToast("error", "An unexpected error occurred.");
+      toast.error("An unexpected error occurred.");
     } finally {
       setSendingToId(null);
     }
@@ -249,14 +235,14 @@ export function useFriends() {
         .eq("status", "pending");
 
       if (error) {
-        showToast("error", "Failed to cancel request.");
+        toast.error("Failed to cancel request.");
         return;
       }
 
       setOutgoingRequests((prev) => prev.filter((r) => r.request_id !== requestId));
-      showToast("success", "Request cancelled.");
+      toast.success("Request cancelled.");
     } catch (err) {
-      showToast("error", "An unexpected error occurred.");
+      toast.error("An unexpected error occurred.");
     } finally {
       setCancellingId(null);
     }
@@ -271,15 +257,15 @@ export function useFriends() {
         request_id: requestId,
       });
       if (error) {
-        showToast("error", error.message || "Failed to accept request.");
+        toast.error(error.message || "Failed to accept request.");
         return;
       }
 
       setPendingRequests((prev) => prev.filter((r) => r.request_id !== requestId));
       await fetchFriends();
-      showToast("success", "Friend request accepted!");
+      toast.success("Friend request accepted!");
     } catch (err) {
-      showToast("error", "An unexpected error occurred.");
+      toast.error("An unexpected error occurred.");
     } finally {
       setAcceptingId(null);
     }
@@ -321,10 +307,10 @@ export function useFriends() {
       if (error) throw error;
 
       setPendingRequests((prev) => prev.filter((r) => r.request_id !== requestId));
-      showToast("success", "Request declined.");
+      toast.success("Request declined.");
     } catch (err) {
       console.error("Failed to decline request:", err);
-      showToast("error", "Failed to decline request.");
+      toast.error("Failed to decline request.");
     } finally {
       setDecliningId(null);
     }
@@ -333,7 +319,15 @@ export function useFriends() {
   /* ── Remove Friend ───────────────────────────────────── */
 
   async function handleRemoveFriend(friendId: string) {
-    if (!confirm("Are you sure you want to remove this friend?")) return;
+    const confirmed = await toast.confirm(
+      "Are you sure you want to remove this friend?",
+      {
+        confirmLabel: "Remove",
+        cancelLabel: "Cancel"
+      }
+    );
+    if (!confirmed) return;
+
     try {
       const { error } = await supabase
         .from("friendships")
@@ -345,9 +339,9 @@ export function useFriends() {
 
       if (error) throw error;
       setFriends((prev) => prev.filter((f) => f.friend_id !== friendId));
-      showToast("success", "Friend removed.");
+      toast.success("Friend removed.");
     } catch (err) {
-      showToast("error", "Failed to remove friend.");
+      toast.error("Failed to remove friend.");
     }
   }
 
@@ -401,10 +395,6 @@ export function useFriends() {
     isOutgoingPending,
     getOutgoingRequestId,
     clearSearch,
-
-    // Toast
-    toasts,
-    dismissToast,
 
     // Navigation
     navigateToDashboard: () => router.push("/dashboard"),

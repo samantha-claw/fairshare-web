@@ -2,6 +2,7 @@
 
 import { useState, useCallback, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 /**
  * Manages the settle-up modal and all settlement actions
@@ -13,6 +14,7 @@ export function useGroupSettlements(
   refetch: () => void
 ) {
   const supabase = createClient();
+  const toast = useToast();
 
   /* ── Modal state ─────────────────────────────────────── */
   const [isSettleModalOpen, setIsSettleModalOpen] = useState(false);
@@ -34,15 +36,15 @@ export function useGroupSettlements(
       e.preventDefault();
 
       if (!settleReceiver) {
-        alert("Please select who you are paying.");
+        toast.error("Please select who you are paying.");
         return;
       }
       if (!settleAmount || parseFloat(settleAmount) <= 0) {
-        alert("Please enter a valid amount.");
+        toast.error("Please enter a valid amount.");
         return;
       }
       if (!currentUser) {
-        alert("Session expired. Please refresh.");
+        toast.error("Session expired. Please refresh.");
         return;
       }
 
@@ -62,7 +64,7 @@ export function useGroupSettlements(
           });
 
         if (insertError) {
-          alert("Error: " + insertError.message);
+          toast.error(insertError.message);
           return;
         }
 
@@ -83,7 +85,7 @@ export function useGroupSettlements(
         refetch();
       } catch (err) {
         console.error(err);
-        alert("An unexpected error occurred.");
+        toast.error("An unexpected error occurred.");
       } finally {
         setSubmittingSettle(false);
       }
@@ -108,7 +110,7 @@ export function useGroupSettlements(
           { p_settlement_id: settlementId, p_action: "approve" }
         );
         if (rpcError) {
-          alert("Error: " + rpcError.message);
+          toast.error(rpcError.message);
           return;
         }
         refetch();
@@ -125,8 +127,12 @@ export function useGroupSettlements(
     async (settlementId: string) => {
       if (!currentUser) return;
 
-      const confirmed = confirm(
-        "Reject this settlement?"
+      const confirmed = await toast.confirm(
+        "Reject this settlement?",
+        {
+          confirmLabel: "Reject",
+          cancelLabel: "Cancel"
+        }
       );
       if (!confirmed) return;
 
@@ -137,7 +143,7 @@ export function useGroupSettlements(
           { p_settlement_id: settlementId, p_action: "reject" }
         );
         if (rpcError) {
-          alert("Error: " + rpcError.message);
+          toast.error(rpcError.message);
           return;
         }
         refetch();
@@ -154,8 +160,12 @@ export function useGroupSettlements(
     async (settlementId: string) => {
       if (!currentUser) return;
 
-      const confirmed = confirm(
-        "Cancel this settlement request?"
+      const confirmed = await toast.confirm(
+        "Cancel this settlement request?",
+        {
+          confirmLabel: "Cancel Request",
+          cancelLabel: "Keep"
+        }
       );
       if (!confirmed) return;
 
@@ -170,7 +180,7 @@ export function useGroupSettlements(
           .eq("status", "pending");
 
         if (deleteError) {
-          alert("Error: " + deleteError.message);
+          toast.error(deleteError.message);
           return;
         }
 
