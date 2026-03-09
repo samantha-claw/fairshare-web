@@ -151,7 +151,7 @@ export function useProfile(options: UseProfileOptions = {}) {
           .eq("user_id", uid);
 
         if (memberships && memberships.length > 0) {
-          const groupIds = memberships.map((m) => m.group_id);
+          const groupIds = memberships.map((m: any) => m.group_id);
 
           const { data: expensesPaid } = await supabase
             .from("expenses")
@@ -183,20 +183,20 @@ export function useProfile(options: UseProfileOptions = {}) {
               const g = m.groups;
               const paidExp =
                 expensesPaid
-                  ?.filter((e) => e.group_id === g.id)
-                  .reduce((s, e) => s + Number(e.amount), 0) || 0;
+                  ?.filter((e: any) => e.group_id === g.id)
+                  .reduce((s: number, e: any) => s + Number(e.amount), 0) || 0;
               const paidSet =
                 settlementsSent
-                  ?.filter((s) => s.group_id === g.id)
-                  .reduce((s, e) => s + Number(e.amount), 0) || 0;
+                  ?.filter((s: any) => s.group_id === g.id)
+                  .reduce((s: number, e: any) => s + Number(e.amount), 0) || 0;
               const owedExp =
                 mySplits
                   ?.filter((s: any) => s.expenses.group_id === g.id)
-                  .reduce((s, e) => s + Number(e.amount), 0) || 0;
+                  .reduce((s: number, e: any) => s + Number(e.amount), 0) || 0;
               const owedSet =
                 settlementsReceived
-                  ?.filter((s) => s.group_id === g.id)
-                  .reduce((s, e) => s + Number(e.amount), 0) || 0;
+                  ?.filter((s: any) => s.group_id === g.id)
+                  .reduce((s: number, e: any) => s + Number(e.amount), 0) || 0;
 
               return {
                 group_id: g.id,
@@ -212,7 +212,7 @@ export function useProfile(options: UseProfileOptions = {}) {
 
           const totalPaid =
             expensesPaid?.reduce(
-              (s, e) => s + Number(e.amount),
+              (s: number, e: any) => s + Number(e.amount),
               0
             ) || 0;
           const totalOwed = processedGroups
@@ -232,7 +232,7 @@ export function useProfile(options: UseProfileOptions = {}) {
         }
 
         if (memberships && memberships.length > 0) {
-          const groupIds = memberships.map((m) => m.group_id);
+          const groupIds = memberships.map((m: any) => m.group_id);
 
           const { data: recentExpenses } = await supabase
             .from("expenses")

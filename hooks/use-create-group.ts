@@ -136,7 +136,7 @@ export function useCreateGroup() {
       }
 
       // Extract friend IDs (the other person in each friendship)
-      const friendIds = friendships.map((f) =>
+      const friendIds = friendships.map((f: { requester_id: string; receiver_id: string }) =>
         f.requester_id === currentUserId ? f.receiver_id : f.requester_id
       );
 
@@ -157,7 +157,7 @@ export function useCreateGroup() {
 
       if (profilesError) throw profilesError;
 
-      const friendsList: Friend[] = (profiles || []).map((p) => ({
+      const friendsList: Friend[] = (profiles || []).map((p: { id: string; display_name: string | null; username: string | null; avatar_url: string | null }) => ({
         id: p.id,
         display_name: p.display_name || p.username || "User",
         username: p.username || "",
