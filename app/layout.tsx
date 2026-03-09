@@ -1,6 +1,7 @@
 // app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { ToastProvider } from "@/providers/toast-provider"; // 👈 1. ضفنا الاستيراد هنا
 
 // 1. إعدادات الـ Metadata (الاسم، الوصف، الـ Manifest، وأيقونة الآيفون)
 export const metadata: Metadata = {
@@ -25,7 +26,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-gray-50 text-gray-900 antialiased">
-        {children}
+        {/* 👈 2. غلفنا التطبيق بتاعك كله بالمزود عشان الإشعارات تشتغل في كل مكان */}
+        <ToastProvider>
+          {children}
+        </ToastProvider>
       </body>
     </html>
   );
