@@ -43,12 +43,42 @@ export function useGroupExpenses(
   }, [currentUserId]);
 
   const openEditExpenseModal = useCallback((exp: Expense) => {
+    const rawSplits = ((exp as any).expense_splits || []) as any[];
+    const splitMemberIds = rawSplits
+      .map((s) => s?.user_id)
+      .filter((id): id is string => typeof id === "string" && id.length > 0);
+    const fallbackIds = splitMemberIds.length > 0
+      ? splitMemberIds
+      : members.map((m) => m.id);
+
+    const evenAmount = fallbackIds.length > 0 ? exp.amount / fallbackIds.length : 0;
+
+    const derivedSplits = fallbackIds.map((userId) => {
+      const split = rawSplits.find((s) => s?.user_id === userId);
+      const directAmount = Number(
+        split?.amount ?? split?.split_amount ?? split?.owed_amount
+      );
+      const amount = Number.isFinite(directAmount) && directAmount > 0
+        ? directAmount
+        : evenAmount;
+
+      return {
+        userId,
+        amount,
+        percentage: exp.amount > 0 ? +((amount / exp.amount) * 100).toFixed(2) : 0,
+        shares: Number(split?.shares ?? 1),
+      };
+    });
+
     setEditingExpenseId(exp.id);
     setExpenseName(exp.name);
     setExpenseAmount(exp.amount.toString());
     setPaidBy(exp.paid_by);
+    setSplitType(((exp as any).split_type as string) || "equal");
+    setComputedSplits(derivedSplits);
+    setIsValidSplit(derivedSplits.length > 0);
     setIsExpenseModalOpen(true);
-  }, []);
+  }, [members]);
 
   const handleSaveExpense = useCallback(
     async (e: FormEvent) => {
