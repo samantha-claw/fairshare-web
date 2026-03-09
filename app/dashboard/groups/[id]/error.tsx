@@ -32,18 +32,33 @@ export default function GroupErrorBoundary({
           We encountered an error loading this group. Please try again.
         </p>
 
-        {isDev && (
-          <details className="mt-4 rounded-xl bg-gray-50 p-3 text-left">
-            <summary className="cursor-pointer text-xs font-medium text-gray-500">
-              Debug Info (dev only)
-            </summary>
-            <pre className="mt-2 max-h-40 overflow-auto text-xs text-red-600">
-              {error.message}
-            </pre>
-          </details>
-        )}
+                {/* شيلنا شرط الـ isDev عشان نعرض الخطأ في كل الحالات مؤقتاً */}
+        <details className="mt-4 w-full rounded-xl bg-red-50 p-3 text-left border border-red-100">
+          <summary className="cursor-pointer text-sm font-bold text-red-700">
+            🚨 Show Detailed Error (Debug)
+          </summary>
+          <div className="mt-2 text-xs text-red-800">
+            <p className="font-bold border-b border-red-200 pb-1 mb-2">Error Message:</p>
+            <p className="whitespace-pre-wrap font-mono mb-4">{error.message}</p>
+            
+            {error.stack && (
+              <>
+                <p className="font-bold border-b border-red-200 pb-1 mb-2">Stack Trace (Where it happened):</p>
+                <pre className="max-h-60 overflow-auto whitespace-pre-wrap font-mono bg-white p-2 rounded border border-red-100">
+                  {error.stack}
+                </pre>
+              </>
+            )}
 
-        <div className="mt-6 flex gap-3">
+            {error.digest && (
+              <p className="mt-4 font-mono text-gray-500 border-t border-red-200 pt-2">
+                Digest: {error.digest}
+              </p>
+            )}
+  </div>
+</details>
+
+<div className="mt-6 flex gap-3">
           <button
             onClick={reset}
             className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
