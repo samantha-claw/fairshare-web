@@ -100,7 +100,7 @@ if (!user || authError) {
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event: string, session: any) => {
       if (!session) {
         router.replace("/login");
       }
