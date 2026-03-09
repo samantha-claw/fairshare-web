@@ -91,27 +91,35 @@ export function useGroupExpenses(
             _split_type: splitType,
           };
 
-      const { error: rpcError } = await supabase.rpc(rpcName, rpcParams);
+      try {
+        const { error: rpcError } = await supabase.rpc(rpcName, rpcParams);
 
-      if (rpcError) {
-        
-      console.error("Failed to save expense:", rpcError);
-       toast.error(
+        if (rpcError) {
+          console.error("Failed to save expense:", rpcError);
+          toast.error(
+            editingExpenseId
+              ? "Failed to update the expense."
+              : "Failed to add the expense."
+          );
+        } else {
+          setIsExpenseModalOpen(false);
+          setEditingExpenseId(null);
+          setExpenseName("");
+          setExpenseAmount("");
+          setPaidBy("");
+          setComputedSplits([]);
+          refetch();
+        }
+      } catch (error) {
+        console.error("Failed to save expense:", error);
+        toast.error(
           editingExpenseId
             ? "Failed to update the expense."
-           : "Failed to add the expense."
-       );
-      } else {
-        setIsExpenseModalOpen(false);
-        setEditingExpenseId(null);
-        setExpenseName("");
-        setExpenseAmount("");
-        setPaidBy("");
-        setComputedSplits([]);
-        refetch();
+            : "Failed to add the expense."
+        );
+      } finally {
+        setSubmittingExpense(false);
       }
-
-      setSubmittingExpense(false);
     },
     [
       groupId,
@@ -124,6 +132,7 @@ export function useGroupExpenses(
       editingExpenseId,
       supabase,
       refetch,
+      toast,
     ]
   );
 
@@ -149,7 +158,7 @@ export function useGroupExpenses(
         refetch();
       }
     },
-    [supabase, refetch]
+    [supabase, refetch, toast]
   );
 
   return {
