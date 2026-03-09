@@ -126,10 +126,18 @@ export function useAuth() {
 
             const candidates = generateCandidates(trimmed);
 
-            const { data: takenRows } = await supabase
+            const { data: takenRows, error } = await supabase
               .from("profiles")
               .select("username")
               .in("username", candidates);
+
+            if (error) {
+              // Bail out early if the verification query fails
+              if (latestCheckRef.current === trimmed) {
+                setUsernameStatus("error");
+              }
+              return;
+            }
 
             if (latestCheckRef.current !== trimmed) return;
 
