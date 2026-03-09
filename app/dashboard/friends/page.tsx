@@ -51,35 +51,6 @@ export default function FriendsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20 md:pb-10">
-      {/* ── Toast Stack ──────────────────────────────── */}
-      {f.toasts.length > 0 && (
-        <div className="fixed right-4 top-4 z-50 space-y-2">
-          {f.toasts.map((toast) => (
-            <div
-              key={toast.id}
-              className={`flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium shadow-lg backdrop-blur-sm transition-all duration-300 ${
-                toast.type === "success"
-                  ? "border border-emerald-200 bg-emerald-50/90 text-emerald-800"
-                  : "border border-red-200 bg-red-50/90 text-red-800"
-              }`}
-            >
-              {toast.type === "success" ? (
-                <Check className="h-4 w-4" />
-              ) : (
-                <X className="h-4 w-4" />
-              )}
-              <span>{toast.message}</span>
-              <button
-                onClick={() => f.dismissToast(toast.id)}
-                className="ml-2 rounded-full p-0.5 opacity-60 transition-opacity hover:opacity-100"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
         {/* ── Back Button ────────────────────────────── */}
         <button

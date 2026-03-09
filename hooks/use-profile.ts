@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import type {
   UserProfile,
   FriendStatus,
@@ -74,6 +75,7 @@ export function useProfile(options: UseProfileOptions = {}) {
   const { userId: targetUserId } = options;
   const router = useRouter();
   const supabase = createClient();
+  const toast = useToast();
 
   /* ── Core State ──────────────────────────────────── */
   const [loading, setLoading] = useState(true);
@@ -337,7 +339,7 @@ export function useProfile(options: UseProfileOptions = {}) {
       setFriendshipDirection("outgoing");
     } catch (err: any) {
       console.error(err);
-      alert("Failed to send friend request.");
+      toast.error("Failed to send friend request.");
     } finally {
       setIsProcessing(false);
     }
@@ -359,7 +361,7 @@ export function useProfile(options: UseProfileOptions = {}) {
       setFriendshipDirection(null);
     } catch (err: any) {
       console.error(err);
-      alert("Failed to cancel request.");
+      toast.error("Failed to cancel request.");
     } finally {
       setIsProcessing(false);
     }
@@ -383,7 +385,7 @@ export function useProfile(options: UseProfileOptions = {}) {
       setFriendshipDirection(null);
     } catch (err: any) {
       console.error(err);
-      alert("Failed to accept request.");
+      toast.error("Failed to accept request.");
     } finally {
       setIsProcessing(false);
     }
