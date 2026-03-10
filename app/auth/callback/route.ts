@@ -73,7 +73,8 @@ async function generateUniqueUsername(
       return existingUsername;
     }
 
-    return `user_${userId.slice(0, 12)}`;
+    // Username still empty; allow additional retry attempts.
+    continue;
   }
 
   // Guaranteed unique fallback.
@@ -157,7 +158,7 @@ export async function GET(request: Request) {
             }
 
             if (!inserted) {
-              const fallbackUsername = `user_${user.id.slice(0, 12)}`;
+              const fallbackUsername = `user_${user.id}`;
               const { error: fallbackInsertError } = await supabase
                 .from("profiles")
                 .insert({
@@ -170,7 +171,31 @@ export async function GET(request: Request) {
                 });
 
               if (fallbackInsertError) {
-                console.error("Profile fallback insert error:", fallbackInsertError);
+                if (isUniqueViolation(fallbackInsertError)) {
+                  const secondFallbackUsername = `user_${user.id}_${Math.random()
+                    .toString(36)
+                    .slice(2, 8)}`;
+                  const { error: secondFallbackInsertError } = await supabase
+                    .from("profiles")
+                    .insert({
+                      id: user.id,
+                      email: user.email,
+                      full_name,
+                      display_name,
+                      avatar_url,
+                      username: secondFallbackUsername,
+                    });
+
+                  if (secondFallbackInsertError) {
+                    throw new Error(
+                      `Profile fallback insert failed after retry: ${secondFallbackInsertError.message}`
+                    );
+                  }
+                } else {
+                  throw new Error(
+                    `Profile fallback insert failed: ${fallbackInsertError.message}`
+                  );
+                }
               }
             }
           } else {
