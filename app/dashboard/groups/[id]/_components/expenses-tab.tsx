@@ -5,6 +5,7 @@
 // ==========================================
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
+import { ExpensesEmptyState } from "@/components/ui/empty-states";
 import { formatCurrency } from "@/lib/utils";
 import type { Expense } from "@/types/group";
 
@@ -68,6 +69,7 @@ function SplitBadge({ type }: { type?: string }) {
 // ==========================================
 interface ExpensesTabProps {
   expenses: Expense[];
+  onAddExpense: () => void;
   currency: string;
   currentUser: string | null;
   isOwner: boolean;
@@ -81,6 +83,7 @@ interface ExpensesTabProps {
 // ==========================================
 export function ExpensesTab({
   expenses,
+  onAddExpense,
   currency,
   currentUser,
   isOwner,
@@ -89,11 +92,7 @@ export function ExpensesTab({
   onViewAll,
 }: ExpensesTabProps) {
   if (expenses.length === 0) {
-    return (
-      <div className="rounded-xl border border-dashed border-gray-300 py-12 text-center">
-        <p className="text-gray-500">No expenses yet. Start adding!</p>
-      </div>
-    );
+    return <ExpensesEmptyState onAddExpense={onAddExpense} />;
   }
 
   const displayedExpenses = expenses.slice(0, 5);
