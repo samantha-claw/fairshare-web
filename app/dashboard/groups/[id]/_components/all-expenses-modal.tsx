@@ -10,6 +10,7 @@ import type { Expense } from "@/types/group";
 
 // ── Constants ───────────────────────────────────────────
 const PAGE_SIZE = 20;
+const CURSOR_SEPARATOR = "|";
 
 // ── Avatar helpers ──────────────────────────────────────
 const AVATAR_GRADIENTS = [
@@ -91,11 +92,43 @@ interface AllExpensesModalProps {
   onDeleteExpense: (id: string, name: string) => void;
 }
 
+type ExpenseWithAvatar = Omit<Expense, "profiles" | "expense_splits"> & {
+  profiles: Expense["profiles"] & { avatar_url?: string | null };
+  expense_splits?: Array<{
+    id?: string;
+    user_id: string;
+    amount?: number;
+    profiles?: {
+      id?: string;
+      display_name?: string | null;
+      full_name?: string | null;
+      avatar_url?: string | null;
+    } | null;
+  }>;
+  split_type?: string | null;
+};
+
+function encodeCursor(lastItem: ExpenseWithAvatar): string {
+  return `${lastItem.created_at}${CURSOR_SEPARATOR}${lastItem.id}`;
+}
+
+function decodeCursor(cursor: string): { createdAt: string; id: string } | null {
+  const separatorIndex = cursor.lastIndexOf(CURSOR_SEPARATOR);
+  if (separatorIndex <= 0 || separatorIndex === cursor.length - 1) {
+    return null;
+  }
+
+  return {
+    createdAt: cursor.slice(0, separatorIndex),
+    id: cursor.slice(separatorIndex + 1),
+  };
+}
+
 // ── Fetch helper ────────────────────────────────────────
 async function fetchExpensesPage(
   groupId: string,
   lastCursor: string | null
-): Promise<{ data: Expense[]; hasMore: boolean }> {
+): Promise<{ data: ExpenseWithAvatar[]; hasMore: boolean; error: string | null }> {
   const supabase = createClient();
 
   let query = supabase
@@ -103,7 +136,7 @@ async function fetchExpensesPage(
     .select(
       `
       *,
-      profiles:paid_by (id, display_name, full_name, avatar_url),
+      profiles:paid_by (id, display_name, full_name, username, avatar_url),
       expense_splits (
         id,
         user_id,
@@ -114,20 +147,32 @@ async function fetchExpensesPage(
     )
     .eq("group_id", groupId)
     .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
     .limit(PAGE_SIZE + 1); // Fetch one extra to determine hasMore
 
   if (lastCursor) {
-    query = query.lt("created_at", lastCursor);
+    const parsedCursor = decodeCursor(lastCursor);
+    if (parsedCursor) {
+      query = query.or(
+        `created_at.lt.${parsedCursor.createdAt},and(created_at.eq.${parsedCursor.createdAt},id.lt.${parsedCursor.id})`
+      );
+    } else {
+      query = query.lt("created_at", lastCursor);
+    }
   }
 
   const { data, error } = await query;
 
   if (error) {
     console.error("Failed to fetch expenses page:", error);
-    return { data: [], hasMore: false };
+    return {
+      data: [],
+      hasMore: false,
+      error: "Failed to load expenses. Please try again.",
+    };
   }
 
-  const rows = (data ?? []) as Expense[];
+  const rows = (data ?? []) as ExpenseWithAvatar[];
   const hasMore = rows.length > PAGE_SIZE;
 
   // Trim the extra probe row so we only return PAGE_SIZE items
@@ -135,7 +180,7 @@ async function fetchExpensesPage(
     rows.pop();
   }
 
-  return { data: rows, hasMore };
+  return { data: rows, hasMore, error: null };
 }
 
 // ── Component ───────────────────────────────────────────
@@ -150,7 +195,7 @@ export function AllExpensesModal({
   onDeleteExpense,
 }: AllExpensesModalProps) {
   // ── Pagination state ──────────────────────────────────
-  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [expenses, setExpenses] = useState<ExpenseWithAvatar[]>([]);
   const [hasMore, setHasMore] = useState(false);
   const [isLoadingInitial, setIsLoadingInitial] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -169,10 +214,14 @@ export function AllExpensesModal({
     setFetchError(null);
     setIsLoadingInitial(true);
 
-    fetchExpensesPage(groupId, null).then(({ data, hasMore: more }) => {
+    fetchExpensesPage(groupId, null).then(({ data, hasMore: more, error }) => {
       if (abortRef.current) return;
-      setExpenses(data);
-      setHasMore(more);
+      if (error) {
+        setFetchError(error);
+      } else {
+        setExpenses(data);
+        setHasMore(more);
+      }
       setIsLoadingInitial(false);
     });
 
@@ -186,18 +235,28 @@ export function AllExpensesModal({
     if (isLoadingMore || !hasMore || expenses.length === 0) return;
 
     const lastItem = expenses[expenses.length - 1];
-    const cursor = lastItem.created_at;
+    const cursor = encodeCursor(lastItem);
 
     setIsLoadingMore(true);
     setFetchError(null);
 
     try {
-      const { data: newRows, hasMore: more } = await fetchExpensesPage(
+      const {
+        data: newRows,
+        hasMore: more,
+        error,
+      } = await fetchExpensesPage(
         groupId,
         cursor
       );
 
       if (abortRef.current) return;
+
+      if (error) {
+        setHasMore(false);
+        setFetchError(error);
+        return;
+      }
 
       // Deduplicate — in case a new expense was inserted between pages
       setExpenses((prev) => {
@@ -216,7 +275,8 @@ export function AllExpensesModal({
   }, [isLoadingMore, hasMore, expenses, groupId]);
 
   // ── Helpers ───────────────────────────────────────────
-  const canModify = (exp: Expense) => currentUser === exp.paid_by || isOwner;
+  const canModify = (exp: ExpenseWithAvatar) =>
+    currentUser === exp.paid_by || isOwner;
 
   const totalLoaded = expenses.length;
 
@@ -277,6 +337,13 @@ export function AllExpensesModal({
                 </div>
               ))}
             </div>
+          ) : fetchError && expenses.length === 0 ? (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-5 text-center">
+              <p className="text-sm text-red-600">{fetchError}</p>
+              <p className="mt-1 text-xs text-red-500">
+                Close and reopen this modal to retry.
+              </p>
+            </div>
           ) : expenses.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-300 py-12 text-center">
               <p className="text-gray-500">No expenses yet.</p>
@@ -288,8 +355,7 @@ export function AllExpensesModal({
                   exp.profiles.display_name ||
                   exp.profiles.full_name ||
                   "Unknown";
-                const payerAvatar =
-                  (exp.profiles as any)?.avatar_url || null;
+                const payerAvatar = exp.profiles.avatar_url || undefined;
                 const splits = (exp.expense_splits || []) as any[];
                 const visibleSplits = splits.slice(0, 3);
                 const remainingCount = Math.max(0, splits.length - 3);

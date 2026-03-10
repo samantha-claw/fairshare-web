@@ -20,7 +20,7 @@ export function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   const cancelRef = useRef<HTMLButtonElement>(null);
-  const confirmBtnRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     cancelRef.current?.focus();
@@ -46,10 +46,13 @@ export function ConfirmDialog({
     >
       <FocusTrap
         focusTrapOptions={{
-          initialFocus: () => cancelRef.current as HTMLElement,
+          initialFocus: () => cancelRef.current ?? dialogRef.current,
+          fallbackFocus: () => dialogRef.current ?? document.body,
         }}
       >
         <div
+          ref={dialogRef}
+          tabIndex={-1}
           className="mx-4 w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-200"
           onClick={(e) => e.stopPropagation()}
         >
@@ -82,7 +85,6 @@ export function ConfirmDialog({
               {cancelLabel}
             </button>
             <button
-              ref={confirmBtnRef}
               onClick={onConfirm}
               className="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
             >

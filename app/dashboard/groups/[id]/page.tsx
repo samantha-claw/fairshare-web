@@ -285,7 +285,11 @@ export default function GroupDetailsPage() {
               onOpenAddModal={memberCtl.openMemberModal}
               onRemoveMember={memberCtl.handleRemoveMember}
             />
-            <BalancesCard balances={data.balances} currency={currency} />
+            <BalancesCard
+              balances={data.balances}
+              currency={currency}
+              currentUserId={data.currentUser}
+            />
           </div>
         </div>
       </main>
@@ -370,7 +374,7 @@ export default function GroupDetailsPage() {
       <AllExpensesModal
         isOpen={isAllExpensesModalOpen}
         onClose={() => setIsAllExpensesModalOpen(false)}
-        expenses={data.expenses}
+        groupId={groupId}
         currency={currency}
         currentUser={data.currentUser}
         isOwner={data.isOwner}

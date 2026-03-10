@@ -54,11 +54,11 @@ export function Modal({
 
   if (!isOpen) return null;
 
-  // تحديد كلاس التمركز بناءً على الخاصية الممررة
+  // Choose position classes based on the `position` prop.
   const positionClass =
     position === "center"
-      ? "items-center" // في المنتصف دائماً
-      : "items-end sm:items-center"; // في الأسفل للجوال والمنتصف للشاشات الكبيرة
+      ? "items-center" // Centered modals
+      : "items-end sm:items-center"; // Bottom on mobile, centered on sm+ screens
 
   return (
     <div

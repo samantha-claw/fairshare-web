@@ -26,16 +26,6 @@ const float = (delay = 0) => ({
   },
 });
 
-const spin = (delay = 0) => ({
-  rotate: [0, 360],
-  transition: {
-    duration: 4,
-    repeat: Infinity,
-    ease: "linear" as const,
-    delay,
-  },
-});
-
 // ─── Color Palette ──────────────────────────────────────
 const C = {
   hoodie: "#312E81",      // indigo-900

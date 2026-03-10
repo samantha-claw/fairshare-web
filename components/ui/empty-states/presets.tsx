@@ -4,10 +4,13 @@ import { useRouter } from "next/navigation";
 import { Users, UserPlus, PlusCircle, ArrowLeft, Eye } from "lucide-react";
 import { EmptyState } from "./empty-state";
 import { AgentSplitIllustration } from "./agent-split-illustration";
-import { EMPTY_STATE_CONTENT } from "@/lib/constants/empty-state-content";
+import {
+  EMPTY_STATE_CONTENT,
+  type EmptyStateKey,
+} from "@/lib/constants/empty-state-content";
 
 // ─── Helper: tries Lottie URL, falls back to SVG ────────
-function useIllustration(key: string) {
+function getIllustration(key: EmptyStateKey) {
   const content = EMPTY_STATE_CONTENT[key];
   // In production, check if .lottie file exists.
   // For now, always use SVG illustration as the reliable fallback.
@@ -29,7 +32,7 @@ export function GroupsEmptyState({
   const c = EMPTY_STATE_CONTENT.groups;
   return (
     <EmptyState
-      illustration={useIllustration("groups")}
+      illustration={getIllustration("groups")}
       title={c.title}
       description={c.description}
       action={{
@@ -61,7 +64,7 @@ export function FriendsEmptyState({
   const c = EMPTY_STATE_CONTENT.friends;
   return (
     <EmptyState
-      illustration={useIllustration("friends")}
+      illustration={getIllustration("friends")}
       title={c.title}
       description={c.description}
       action={{
@@ -89,7 +92,7 @@ export function ExpensesEmptyState({ onAddExpense }: ExpensesEmptyStateProps) {
   const c = EMPTY_STATE_CONTENT.expenses;
   return (
     <EmptyState
-      illustration={useIllustration("expenses")}
+      illustration={getIllustration("expenses")}
       title={c.title}
       description={c.description}
       action={{
@@ -115,7 +118,7 @@ export function NotificationsEmptyState({
   const c = EMPTY_STATE_CONTENT.notifications;
   return (
     <EmptyState
-      illustration={useIllustration("notifications")}
+      illustration={getIllustration("notifications")}
       title={c.title}
       description={c.description}
       secondaryAction={{
@@ -140,7 +143,7 @@ export function SettlementsEmptyState({
   const c = EMPTY_STATE_CONTENT.settlements;
   return (
     <EmptyState
-      illustration={useIllustration("settlements")}
+      illustration={getIllustration("settlements")}
       title={c.title}
       description={c.description}
       secondaryAction={{
