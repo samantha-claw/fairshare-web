@@ -10,11 +10,11 @@ import { Spinner } from "@/components/ui/spinner";
 import { AddFriendSearch } from "./_components/add-friend-search";
 import { PendingRequests } from "./_components/pending-requests";
 import { FriendsList } from "./_components/friends-list";
+import { FriendsEmptyState } from "@/components/ui/empty-states";
 import {
   ArrowLeft,
   HeartHandshake,
   UserCheck,
-  
 } from "lucide-react";
 
 // ==========================================
@@ -47,6 +47,9 @@ export default function FriendsPage() {
   const f = useFriends();
 
   if (f.loading) return <PageSkeleton />;
+
+  const hasFriends = f.friends.length > 0;
+  const friendsLoaded = !f.loadingFriends;
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20 md:pb-10">
@@ -107,7 +110,7 @@ export default function FriendsPage() {
             />
           </div>
 
-          {/* Right Content — Friends Grid */}
+          {/* Right Content — Friends Grid or Empty State */}
           <div className="lg:col-span-3">
             <div className="mb-5 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -117,7 +120,7 @@ export default function FriendsPage() {
                 <h2 className="text-sm font-bold text-gray-900">
                   Your Friends
                 </h2>
-                {f.friends.length > 0 && (
+                {hasFriends && (
                   <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-600 ring-1 ring-inset ring-emerald-200">
                     {f.friends.length}
                   </span>
@@ -125,11 +128,19 @@ export default function FriendsPage() {
               </div>
             </div>
 
-            <FriendsList
-              friends={f.friends}
-              loading={f.loadingFriends}
-              onRemoveFriend={f.handleRemoveFriend}
-            />
+            {friendsLoaded && !hasFriends ? (
+              <div className="flex min-h-[60vh] items-center justify-center">
+                <FriendsEmptyState
+                  onFindFriends={() => f.setSearchTerm("")}
+                />
+              </div>
+            ) : (
+              <FriendsList
+                friends={f.friends}
+                loading={f.loadingFriends}
+                onRemoveFriend={f.handleRemoveFriend}
+              />
+            )}
           </div>
         </div>
       </div>
