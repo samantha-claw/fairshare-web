@@ -17,12 +17,17 @@ import { ArrowDown, TrendingDown, TrendingUp } from "lucide-react";
 interface BalancesCardProps {
   balances: Balance[];
   currency: string;
+  currentUserId: string | null;
 }
 
 // ==========================================
 // 🎨 UI RENDER
 // ==========================================
-export function BalancesCard({ balances, currency }: BalancesCardProps) {
+export function BalancesCard({
+  balances,
+  currency,
+  currentUserId,
+}: BalancesCardProps) {
   const [view, setView] = useState<"settlements" | "net">("settlements");
 
   const simplifiedDebts = useMemo(() => {
@@ -170,6 +175,7 @@ export function BalancesCard({ balances, currency }: BalancesCardProps) {
                   const isPositive = bal.net_balance > 0;
                   const isNegative = bal.net_balance < 0;
                   const isSettled = bal.net_balance === 0;
+                  const isCurrentUser = currentUserId === bal.user_id;
 
                   return (
                     <li
@@ -220,7 +226,13 @@ export function BalancesCard({ balances, currency }: BalancesCardProps) {
                                   : "text-red-400"
                               }`}
                             >
-                              {isPositive ? "You are owed" : "You owe"}
+                              {isPositive
+                                ? isCurrentUser
+                                  ? "You are owed"
+                                  : "Is owed"
+                                : isCurrentUser
+                                  ? "You owe"
+                                  : "Owes"}
                             </span>
                           </div>
                         )}

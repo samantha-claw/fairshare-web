@@ -1,6 +1,12 @@
 "use client";
 
-import { type ReactNode } from "react";
+import {
+  useEffect,
+  useState,
+  type CSSProperties,
+  type ComponentType,
+  type ReactNode,
+} from "react";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 
@@ -57,22 +63,46 @@ const illustrationVariant = {
 
 // ─── Lottie Player (lazy) ───────────────────────────────
 function LottiePlayer({ src }: { src: string }) {
-  // Dynamic import keeps bundle small when not used
-  // Install: npm i @lottiefiles/dotlottie-react
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { DotLottieReact } = require("@lottiefiles/dotlottie-react");
-    return (
-      <DotLottieReact
-        src={src}
-        loop
-        autoplay
-        style={{ width: "100%", maxWidth: 260, height: "auto" }}
-      />
-    );
-  } catch {
+  const [Player, setPlayer] = useState<ComponentType<{
+    src: string;
+    loop?: boolean;
+    autoplay?: boolean;
+    style?: CSSProperties;
+  }> | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    import("@lottiefiles/dotlottie-react")
+      .then((mod) => {
+        if (isMounted) {
+          setPlayer(() => mod.DotLottieReact);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setLoadFailed(true);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (loadFailed || !Player) {
     return null;
   }
+
+  return (
+    <Player
+      src={src}
+      loop
+      autoplay
+      style={{ width: "100%", maxWidth: 260, height: "auto" }}
+    />
+  );
 }
 
 // ─── Component ──────────────────────────────────────────
@@ -138,6 +168,7 @@ export function EmptyState({
           >
             {action && (
               <button
+                type="button"
                 onClick={action.onClick}
                 className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-indigo-700 active:scale-[0.97]"
               >
@@ -147,6 +178,7 @@ export function EmptyState({
             )}
             {secondaryAction && (
               <button
+                type="button"
                 onClick={secondaryAction.onClick}
                 className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
               >

@@ -61,7 +61,7 @@ function InputField({
 }: InputFieldProps) {
   return (
     <div>
-      <label className="mb-2 flex items-center justify-between">
+      <label htmlFor={fieldName} className="mb-2 flex items-center justify-between">
         <span className="flex items-center gap-1.5 text-sm font-semibold text-gray-700">
           {label}
           {required && <span className="text-rose-400">*</span>}
@@ -142,7 +142,7 @@ function TextAreaField({
 }) {
   return (
     <div>
-      <label className="mb-2 flex items-center justify-between">
+      <label htmlFor={fieldName} className="mb-2 flex items-center justify-between">
         <span className="flex items-center gap-1.5 text-sm font-semibold text-gray-700">
           {label}
         </span>

@@ -3,11 +3,15 @@
 // ==========================================
 // 📦 IMPORTS
 // ==========================================
+import { useRef } from "react";
 import Link from "next/link";
 import { useFriends } from "@/hooks/use-friends";
 import { Avatar } from "@/components/ui/avatar";
 import { Spinner } from "@/components/ui/spinner";
-import { AddFriendSearch } from "./_components/add-friend-search";
+import {
+  AddFriendSearch,
+  type AddFriendSearchHandle,
+} from "./_components/add-friend-search";
 import { PendingRequests } from "./_components/pending-requests";
 import { FriendsList } from "./_components/friends-list";
 import { FriendsEmptyState } from "@/components/ui/empty-states";
@@ -45,6 +49,7 @@ function PageSkeleton() {
 // ==========================================
 export default function FriendsPage() {
   const f = useFriends();
+  const addFriendSearchRef = useRef<AddFriendSearchHandle>(null);
 
   if (f.loading) return <PageSkeleton />;
 
@@ -84,6 +89,7 @@ export default function FriendsPage() {
           {/* Left Sidebar — Search + Pending */}
           <div className="space-y-6 lg:col-span-2">
             <AddFriendSearch
+              ref={addFriendSearchRef}
               searchTerm={f.searchTerm}
               onSearchTermChange={f.setSearchTerm}
               searchResults={f.searchResults}
@@ -131,7 +137,7 @@ export default function FriendsPage() {
             {friendsLoaded && !hasFriends ? (
               <div className="flex min-h-[60vh] items-center justify-center">
                 <FriendsEmptyState
-                  onFindFriends={() => f.setSearchTerm("")}
+                  onFindFriends={() => addFriendSearchRef.current?.focusSearch()}
                 />
               </div>
             ) : (

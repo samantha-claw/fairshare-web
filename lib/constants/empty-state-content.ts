@@ -11,8 +11,15 @@ export interface EmptyStateContent {
   lottiePrompt: string; // For designer/AI reference
 }
 
+export type EmptyStateKey =
+  | "groups"
+  | "friends"
+  | "expenses"
+  | "notifications"
+  | "settlements";
+
 // ─── Content Map ────────────────────────────────────────
-export const EMPTY_STATE_CONTENT: Record<string, EmptyStateContent> = {
+export const EMPTY_STATE_CONTENT: Record<EmptyStateKey, EmptyStateContent> = {
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // 1️⃣  GROUPS LIST
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
