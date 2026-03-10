@@ -27,6 +27,7 @@ import {
 // ==========================================
 
 interface InputFieldProps {
+  fieldName: string;
   label: string;
   icon: React.ElementType;
   value: string;
@@ -45,6 +46,7 @@ interface InputFieldProps {
 // ==========================================
 
 function InputField({
+  fieldName,
   label,
   icon: Icon,
   value,
@@ -84,11 +86,14 @@ function InputField({
           />
         </div>
         <input
+          id={fieldName}
           type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           disabled={disabled}
+          aria-invalid={error ? "true" : undefined}
+          aria-describedby={error ? `${fieldName}-error` : undefined}
           className={`block w-full rounded-2xl border bg-gray-50/50 py-3 pl-11 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
             error
               ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
@@ -98,7 +103,11 @@ function InputField({
       </div>
 
       {error && (
-        <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-rose-600">
+        <p
+          id={`${fieldName}-error`}
+          role="alert"
+          className="mt-1.5 flex items-center gap-1 text-xs font-medium text-rose-600"
+        >
           <AlertCircle className="h-3 w-3" />
           {error}
         </p>
@@ -111,6 +120,7 @@ function InputField({
 }
 
 function TextAreaField({
+  fieldName,
   label,
   icon: Icon,
   value,
@@ -120,6 +130,7 @@ function TextAreaField({
   hint,
   maxLength,
 }: {
+  fieldName: string;
   label: string;
   icon: React.ElementType;
   value: string;
@@ -155,10 +166,13 @@ function TextAreaField({
           />
         </div>
         <textarea
+          id={fieldName}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           rows={3}
+          aria-invalid={error ? "true" : undefined}
+          aria-describedby={error ? `${fieldName}-error` : undefined}
           className={`block w-full resize-none rounded-2xl border bg-gray-50/50 py-3 pl-11 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 ${
             error
               ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
@@ -168,7 +182,11 @@ function TextAreaField({
       </div>
 
       {error && (
-        <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-rose-600">
+        <p
+          id={`${fieldName}-error`}
+          role="alert"
+          className="mt-1.5 flex items-center gap-1 text-xs font-medium text-rose-600"
+        >
           <AlertCircle className="h-3 w-3" />
           {error}
         </p>
@@ -365,6 +383,7 @@ export default function EditProfilePage() {
           <div className="space-y-5">
             {/* Display Name */}
             <InputField
+              fieldName="display_name"
               label="Display Name"
               icon={Type}
               value={e.formData.display_name}
@@ -378,6 +397,7 @@ export default function EditProfilePage() {
 
             {/* Username */}
             <InputField
+              fieldName="username"
               label="Username"
               icon={AtSign}
               value={e.formData.username}
@@ -391,6 +411,7 @@ export default function EditProfilePage() {
 
             {/* Full Name */}
             <InputField
+              fieldName="full_name"
               label="Full Name"
               icon={User}
               value={e.formData.full_name}
@@ -402,6 +423,7 @@ export default function EditProfilePage() {
 
             {/* Bio */}
             <TextAreaField
+              fieldName="bio"
               label="Bio"
               icon={FileText}
               value={e.formData.bio}
