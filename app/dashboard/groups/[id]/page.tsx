@@ -9,6 +9,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { createClient } from "@/lib/supabase/client";
 import { QrCode } from "lucide-react";
 
+
 // ── Decomposed hooks ───────────────────────────────────
 import {
   useGroupData,
@@ -255,6 +256,7 @@ export default function GroupDetailsPage() {
                 {activeTab === "expenses" && (
                   <ExpensesTab
                     expenses={data.expenses}
+                    onAddExpense={expenseCtl.openAddExpenseModal}
                     currency={currency}
                     currentUser={data.currentUser}
                     isOwner={data.isOwner}
