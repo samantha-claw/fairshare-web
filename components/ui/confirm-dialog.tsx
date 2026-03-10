@@ -81,6 +81,7 @@ export function ConfirmDialog({
 
           <div className="mt-6 flex justify-end gap-3">
             <button
+              type="button"
               ref={cancelRef}
               onClick={onCancel}
               className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300"
@@ -88,6 +89,7 @@ export function ConfirmDialog({
               {cancelLabel}
             </button>
             <button
+              type="button"
               onClick={onConfirm}
               className="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
             >

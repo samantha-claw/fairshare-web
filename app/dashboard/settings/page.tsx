@@ -132,7 +132,7 @@ export default function SettingsPage() {
 
       if (cancelled) return;
 
-      setUsername(profile?.username ?? user.email ?? "user");
+      setUsername(profile?.username ?? user.email ?? "confirm-delete");
       setLoading(false);
     }
 
@@ -423,7 +423,6 @@ export default function SettingsPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <div
-                      id="password-match-hint"
                       className={`flex h-4 w-4 items-center justify-center rounded-full transition-colors ${
                         passwordsMatch
                           ? "bg-emerald-100 text-emerald-600"
@@ -433,6 +432,7 @@ export default function SettingsPage() {
                       <Check className="h-2.5 w-2.5" />
                     </div>
                     <span
+                      id="password-match-hint"
                       className={`text-xs ${passwordsMatch ? "text-emerald-700" : "text-gray-500"}`}
                     >
                       Passwords match

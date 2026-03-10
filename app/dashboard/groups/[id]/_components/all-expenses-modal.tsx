@@ -359,7 +359,7 @@ export function AllExpensesModal({
                   exp.profiles.full_name ||
                   "Unknown";
                 const payerAvatar = exp.profiles.avatar_url || undefined;
-                const splits = (exp.expense_splits || []) as any[];
+                const splits = exp.expense_splits ?? [];
                 const visibleSplits = splits.slice(0, 3);
                 const remainingCount = Math.max(0, splits.length - 3);
                 const showActions = canModify(exp);
@@ -388,7 +388,7 @@ export function AllExpensesModal({
                           <h3 className="truncate text-sm font-semibold text-gray-900 sm:text-base">
                             {exp.name}
                           </h3>
-                          <SplitBadge type={(exp as any).split_type} />
+                          <SplitBadge type={exp.split_type ?? undefined} />
                         </div>
 
                         <p className="truncate text-xs text-gray-500">
