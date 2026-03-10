@@ -145,7 +145,11 @@ export const AddFriendSearch = forwardRef<
           />
           {hasQuery && (
             <button
-              onClick={onClearSearch}
+              type="button"
+              onClick={() => {
+                onClearSearch();
+                inputRef.current?.focus({ preventScroll: true });
+              }}
               className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
             >
               <X className="h-4 w-4" />

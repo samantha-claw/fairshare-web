@@ -201,21 +201,22 @@ export function AllExpensesModal({
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
-  // Guard against stale responses after close / unmount
-  const abortRef = useRef(false);
+  // Session token prevents stale async responses from previous open cycles.
+  const sessionRef = useRef<string>("");
 
   // ── Initial fetch when modal opens ────────────────────
   useEffect(() => {
     if (!isOpen || !groupId) return;
 
-    abortRef.current = false;
+    const sessionToken = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    sessionRef.current = sessionToken;
     setExpenses([]);
     setHasMore(false);
     setFetchError(null);
     setIsLoadingInitial(true);
 
     fetchExpensesPage(groupId, null).then(({ data, hasMore: more, error }) => {
-      if (abortRef.current) return;
+      if (sessionRef.current !== sessionToken) return;
       if (error) {
         setFetchError(error);
       } else {
@@ -226,13 +227,16 @@ export function AllExpensesModal({
     });
 
     return () => {
-      abortRef.current = true;
+      if (sessionRef.current === sessionToken) {
+        sessionRef.current = "";
+      }
     };
   }, [isOpen, groupId]);
 
   // ── Load more handler ────────────────────────────────
   const handleLoadMore = useCallback(async () => {
     if (isLoadingMore || !hasMore || expenses.length === 0) return;
+    const sessionToken = sessionRef.current;
 
     const lastItem = expenses[expenses.length - 1];
     const cursor = encodeCursor(lastItem);
@@ -250,10 +254,9 @@ export function AllExpensesModal({
         cursor
       );
 
-      if (abortRef.current) return;
+      if (sessionRef.current !== sessionToken) return;
 
       if (error) {
-        setHasMore(false);
         setFetchError(error);
         return;
       }
@@ -266,11 +269,11 @@ export function AllExpensesModal({
       });
       setHasMore(more);
     } catch (err) {
-      if (abortRef.current) return;
+      if (sessionRef.current !== sessionToken) return;
       console.error("Load more failed:", err);
       setFetchError("Failed to load more expenses. Try again.");
     } finally {
-      if (!abortRef.current) setIsLoadingMore(false);
+      if (sessionRef.current === sessionToken) setIsLoadingMore(false);
     }
   }, [isLoadingMore, hasMore, expenses, groupId]);
 

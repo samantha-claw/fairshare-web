@@ -74,7 +74,7 @@ function PasswordInput({
       <button
         type="button"
         onClick={() => setShow((s) => !s)}
-        tabIndex={-1}
+        aria-pressed={show}
         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
         aria-label={show ? "Hide password" : "Show password"}
       >
@@ -141,7 +141,7 @@ export default function SettingsPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [supabase, router]);
 
   // ── Email update handler ────────────────────────
   const handleEmailUpdate = useCallback(
@@ -273,7 +273,11 @@ export default function SettingsPage() {
             <div className="border-b border-gray-100 px-6 py-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50">
+<<<<<<< Updated upstream
                   <Mail className="h-4.5 w-4.5 text-blue-600" />
+=======
+                  <Mail className="h-5 w-5 text-blue-600" />
+>>>>>>> Stashed changes
                 </div>
                 <div>
                   <h2 className="text-base font-bold text-gray-900">
@@ -348,7 +352,11 @@ export default function SettingsPage() {
             <div className="border-b border-gray-100 px-6 py-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50">
+<<<<<<< Updated upstream
                   <Lock className="h-4.5 w-4.5 text-indigo-600" />
+=======
+                  <Lock className="h-5 w-5 text-indigo-600" />
+>>>>>>> Stashed changes
                 </div>
                 <div>
                   <h2 className="text-base font-bold text-gray-900">
@@ -474,7 +482,11 @@ export default function SettingsPage() {
             <div className="border-b border-red-100 bg-red-50/50 px-6 py-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-100">
+<<<<<<< Updated upstream
                   <AlertTriangle className="h-4.5 w-4.5 text-red-600" />
+=======
+                  <AlertTriangle className="h-5 w-5 text-red-600" />
+>>>>>>> Stashed changes
                 </div>
                 <div>
                   <h2 className="text-base font-bold text-red-900">
