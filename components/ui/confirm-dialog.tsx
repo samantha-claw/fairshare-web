@@ -23,8 +23,6 @@ export function ConfirmDialog({
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    cancelRef.current?.focus();
-
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         onCancel();
@@ -47,7 +45,12 @@ export function ConfirmDialog({
       <FocusTrap
         focusTrapOptions={{
           initialFocus: () => cancelRef.current ?? dialogRef.current,
-          fallbackFocus: () => dialogRef.current ?? document.body,
+          fallbackFocus: () => {
+            if (!dialogRef.current) {
+              throw new Error("ConfirmDialog fallback target is missing");
+            }
+            return dialogRef.current;
+          },
         }}
       >
         <div

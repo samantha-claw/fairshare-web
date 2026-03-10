@@ -21,7 +21,7 @@ yarn-debug.log*
 yarn-error.log*
 .vercel
 
-# 🚨 env files (أهم حاجة) 🚨
+# env files
 .env
 .env*.local
 .env.local
@@ -32,6 +32,8 @@ yarn-error.log*
 # PWA files
 **/public/sw.js
 **/public/workbox-*.js
+**/public/swe-worker-*.js
+**/public/fallback-*.js
 **/public/worker-*.js
 **/public/sw.js.map
 **/public/workbox-*.js.map

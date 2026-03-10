@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 
 function isUniqueViolation(error: unknown): boolean {
@@ -21,7 +22,7 @@ function asStringOrNull(value: unknown): string | null {
 async function generateUniqueUsername(
   base: string,
   userId: string,
-  supabase: any
+  supabase: SupabaseClient
 ): Promise<string> {
   const sanitized = base
     .toLowerCase()
@@ -51,6 +52,28 @@ async function generateUniqueUsername(
       console.error("Username assignment retry error:", error);
       continue;
     }
+
+    const { data: currentProfile, error: currentProfileError } = await supabase
+      .from("profiles")
+      .select("username")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (currentProfileError) {
+      console.error("Username lookup after update attempt failed:", currentProfileError);
+      continue;
+    }
+
+    const existingUsername =
+      typeof currentProfile?.username === "string"
+        ? currentProfile.username.trim()
+        : "";
+
+    if (existingUsername.length > 0) {
+      return existingUsername;
+    }
+
+    return `user_${userId.slice(0, 12)}`;
   }
 
   // Guaranteed unique fallback.
