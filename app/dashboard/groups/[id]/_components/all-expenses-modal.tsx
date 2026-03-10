@@ -1,10 +1,19 @@
 "use client";
 
+// ==========================================
+// 📦 IMPORTS
+// ==========================================
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { Modal } from "@/components/ui/modal";
 import { Avatar } from "@/components/ui/avatar";
 import { formatCurrency } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
+import { Loader2 } from "lucide-react";
 import type { Expense } from "@/types/group";
+
+// ── Constants ───────────────────────────────────────────
+const PAGE_SIZE = 20;
 
 // ── Avatar helpers ──────────────────────────────────────
 const AVATAR_GRADIENTS = [
@@ -40,10 +49,10 @@ function SplitBadge({ type }: { type?: string }) {
   const normalizedType = (type || "equal").toLowerCase();
 
   const config: Record<string, { label: string; style: string; icon: string }> = {
-    equal:      { label: "Equal",      style: "bg-blue-50 text-blue-700 ring-blue-200",       icon: "⚖️" },
-    exact:      { label: "Exact",      style: "bg-emerald-50 text-emerald-700 ring-emerald-200", icon: "💰" },
-    percentage: { label: "Percent", style: "bg-purple-50 text-purple-700 ring-purple-200",  icon: "📊" },
-    shares:     { label: "Shares",     style: "bg-orange-50 text-orange-700 ring-orange-200",  icon: "🎯" },
+    equal:      { label: "Equal",   style: "bg-blue-50 text-blue-700 ring-blue-200",          icon: "⚖️" },
+    exact:      { label: "Exact",   style: "bg-emerald-50 text-emerald-700 ring-emerald-200", icon: "💰" },
+    percentage: { label: "Percent", style: "bg-purple-50 text-purple-700 ring-purple-200",    icon: "📊" },
+    shares:     { label: "Shares",  style: "bg-orange-50 text-orange-700 ring-orange-200",    icon: "🎯" },
   };
 
   const { label, style, icon } = config[normalizedType] || config.equal;
@@ -57,11 +66,35 @@ function SplitBadge({ type }: { type?: string }) {
   );
 }
 
+// ── Loading skeleton for initial fetch ──────────────────
+function ExpensesSkeleton() {
+  return (
+    <div className="space-y-3">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div
+          key={i}
+          className="animate-pulse rounded-xl border border-gray-100 bg-gray-50/50 p-4"
+        >
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 shrink-0 rounded-full bg-gray-200" />
+            <div className="min-w-0 flex-1 space-y-2">
+              <div className="h-4 w-3/4 rounded bg-gray-200" />
+              <div className="h-3 w-1/2 rounded bg-gray-200" />
+            </div>
+            <div className="h-5 w-20 shrink-0 rounded bg-gray-200" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── Types ───────────────────────────────────────────────
 interface AllExpensesModalProps {
   isOpen: boolean;
   onClose: () => void;
-  expenses: Expense[];
+  /** The group whose expenses to paginate through. */
+  groupId: string;
   currency: string;
   currentUser: string | null;
   isOwner: boolean;
@@ -73,15 +106,88 @@ interface AllExpensesModalProps {
 export function AllExpensesModal({
   isOpen,
   onClose,
-  expenses,
+  groupId,
   currency,
   currentUser,
   isOwner,
   onEditExpense,
   onDeleteExpense,
 }: AllExpensesModalProps) {
+  // ── Pagination state ──────────────────────────────────
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  // Guard against double-fires while an async load is in flight
+  const loadingMoreRef = useRef(false);
+
+  // ── Fetch a page of expenses, optionally after a cursor ──
+  const fetchExpenses = useCallback(
+    async (lastCursor?: string) => {
+      const supabase = createClient();
+
+      let query = supabase
+        .from("expenses")
+        .select("*, profiles(*), expense_splits(*, profiles(*))")
+        .eq("group_id", groupId)
+        .order("created_at", { ascending: false })
+        .limit(PAGE_SIZE);
+
+      if (lastCursor) {
+        query = query.lt("created_at", lastCursor);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Failed to fetch expenses:", error);
+        return;
+      }
+
+      const fetched = (data ?? []) as Expense[];
+
+      // If we got fewer than PAGE_SIZE rows, there's nothing left
+      setHasMore(fetched.length === PAGE_SIZE);
+
+      // Append when paginating, replace on initial fetch
+      setExpenses((prev) => (lastCursor ? [...prev, ...fetched] : fetched));
+    },
+    [groupId],
+  );
+
+  // ── (Re-)fetch the first page every time the modal opens ──
+  useEffect(() => {
+    if (isOpen && groupId) {
+      // Reset everything for a fresh session
+      setExpenses([]);
+      setHasMore(true);
+      setIsLoading(true);
+      fetchExpenses().finally(() => setIsLoading(false));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, groupId, fetchExpenses]);
+
+  // ── "Load More" handler ───────────────────────────────
+  const handleLoadMore = async () => {
+    if (loadingMoreRef.current || !hasMore || expenses.length === 0) return;
+
+    const lastItem = expenses[expenses.length - 1];
+    loadingMoreRef.current = true;
+    setIsLoadingMore(true);
+
+    try {
+      await fetchExpenses(lastItem.created_at);
+    } finally {
+      loadingMoreRef.current = false;
+      setIsLoadingMore(false);
+    }
+  };
+
+  // ── Helpers ───────────────────────────────────────────
   const canModify = (exp: Expense) => currentUser === exp.paid_by || isOwner;
 
+  // ── Render ────────────────────────────────────────────
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="All Expenses" maxWidth="lg">
       {/* Constrain height so the body scrolls, not the whole modal */}
@@ -91,10 +197,13 @@ export function AllExpensesModal({
           <div>
             <h2 className="text-lg font-bold text-gray-900">All Expenses</h2>
             <p className="mt-0.5 text-xs text-gray-500">
-              {expenses.length} expense{expenses.length !== 1 && "s"} · {currency}
+              {isLoading
+                ? "Loading…"
+                : `${expenses.length} expense${expenses.length !== 1 ? "s" : ""} loaded${hasMore ? " so far" : ""} · ${currency}`}
             </p>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="flex h-9 w-9 items-center justify-center rounded-full text-gray-400 transition-all duration-200 hover:bg-gray-100 hover:text-gray-600 active:scale-95"
             title="Close"
@@ -107,7 +216,9 @@ export function AllExpensesModal({
 
         {/* ── Scrollable Body ── */}
         <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4">
-          {expenses.length === 0 ? (
+          {isLoading ? (
+            <ExpensesSkeleton />
+          ) : expenses.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-300 py-12 text-center">
               <p className="text-gray-500">No expenses yet.</p>
             </div>
@@ -129,7 +240,10 @@ export function AllExpensesModal({
                   >
                     {/* Top Row */}
                     <div className="flex items-center gap-3">
-                      <Link href={`/dashboard/profile/${exp.paid_by}`} className="flex-shrink-0">
+                      <Link
+                        href={`/dashboard/profile/${exp.paid_by}`}
+                        className="flex-shrink-0"
+                      >
                         <Avatar src={payerAvatar} name={payerName} size="md" />
                       </Link>
 
@@ -164,7 +278,8 @@ export function AllExpensesModal({
                               split?.profiles?.display_name ||
                               split?.profiles?.full_name ||
                               `M${i + 1}`;
-                            const splitAvatar = split?.profiles?.avatar_url || null;
+                            const splitAvatar =
+                              split?.profiles?.avatar_url || null;
                             return (
                               <div
                                 key={split?.id || i}
@@ -203,6 +318,7 @@ export function AllExpensesModal({
                     {showActions && (
                       <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
                         <button
+                          type="button"
                           onClick={() => {
                             onEditExpense(exp);
                             onClose();
@@ -210,12 +326,23 @@ export function AllExpensesModal({
                           className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 shadow-sm transition-all duration-200 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 active:scale-95"
                           title={`Edit "${exp.name}"`}
                         >
-                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                          <svg
+                            className="h-3.5 w-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+                            />
                           </svg>
                           Edit
                         </button>
                         <button
+                          type="button"
                           onClick={() => {
                             onDeleteExpense(exp.id, exp.name);
                             onClose();
@@ -223,8 +350,18 @@ export function AllExpensesModal({
                           className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 shadow-sm transition-all duration-200 hover:border-red-300 hover:bg-red-50 hover:text-red-600 active:scale-95"
                           title={`Delete "${exp.name}"`}
                         >
-                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          <svg
+                            className="h-3.5 w-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
                           </svg>
                           Delete
                         </button>
@@ -233,6 +370,27 @@ export function AllExpensesModal({
                   </div>
                 );
               })}
+
+              {/* ── Load More Button ── */}
+              {hasMore && (
+                <div className="pt-2 pb-1">
+                  <button
+                    type="button"
+                    onClick={handleLoadMore}
+                    disabled={isLoadingMore}
+                    className="w-full rounded-xl border border-gray-200 bg-white py-3 text-sm font-semibold text-gray-600 shadow-sm transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isLoadingMore ? (
+                      <span className="inline-flex items-center justify-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Loading more…
+                      </span>
+                    ) : (
+                      "Load More Expenses"
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -240,6 +398,7 @@ export function AllExpensesModal({
         {/* ── Footer ── */}
         <div className="shrink-0 border-t border-gray-200 px-5 py-3">
           <button
+            type="button"
             onClick={onClose}
             className="w-full rounded-xl bg-gray-100 py-2.5 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-200 active:scale-[0.98]"
           >
