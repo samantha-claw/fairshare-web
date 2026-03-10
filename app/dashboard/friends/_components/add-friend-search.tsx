@@ -3,6 +3,7 @@
 // ==========================================
 // 📦 IMPORTS
 // ==========================================
+import { forwardRef, useImperativeHandle, useRef } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Spinner } from "@/components/ui/spinner";
 import Link from "next/link";
@@ -31,6 +32,10 @@ interface AddFriendSearchProps {
   isOutgoingPending: (userId: string) => boolean;
   getOutgoingRequestId: (userId: string) => string | null;
   onClearSearch: () => void;
+}
+
+export interface AddFriendSearchHandle {
+  focusSearch: () => void;
 }
 
 // ==========================================
@@ -79,7 +84,10 @@ function getCardAccent(index: number): string {
 // ==========================================
 // 🎨 UI RENDER
 // ==========================================
-export function AddFriendSearch({
+export const AddFriendSearch = forwardRef<
+  AddFriendSearchHandle,
+  AddFriendSearchProps
+>(function AddFriendSearch({
   searchTerm,
   onSearchTermChange,
   searchResults,
@@ -91,7 +99,16 @@ export function AddFriendSearch({
   isOutgoingPending,
   getOutgoingRequestId,
   onClearSearch,
-}: AddFriendSearchProps) {
+}, ref) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    focusSearch: () => {
+      inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      inputRef.current?.focus();
+    },
+  }));
+
   const hasQuery = searchTerm.trim().length > 0;
 
   return (
@@ -119,6 +136,7 @@ export function AddFriendSearch({
         <div className="relative">
           <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <input
+            ref={inputRef}
             type="text"
             value={searchTerm}
             onChange={(e) => onSearchTermChange(e.target.value)}
@@ -127,7 +145,11 @@ export function AddFriendSearch({
           />
           {hasQuery && (
             <button
-              onClick={onClearSearch}
+              type="button"
+              onClick={() => {
+                onClearSearch();
+                inputRef.current?.focus({ preventScroll: true });
+              }}
               className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
             >
               <X className="h-4 w-4" />
@@ -270,4 +292,4 @@ export function AddFriendSearch({
       )}
     </section>
   );
-}
+});

@@ -4,7 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Bell, Check, UserPlus, HandCoins, Receipt, Users } from "lucide-react";
-import { formatDistanceToNow } from "date-fns"; // لازم تسطب المكتبة دي: npm install date-fns
+import { formatDistanceToNow } from "date-fns";
+// استيراد مكونات العميل سِبلت
+import { EmptyState, AgentSplitIllustration } from "@/components/ui/empty-states";
 
 export function NotificationBell({ userId }: { userId: string }) {
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -38,7 +40,6 @@ export function NotificationBell({ userId }: { userId: string }) {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
         (payload: { new: any }) => {
-          // لما ييجي إشعار جديد، زوده في القائمة وزود العداد
           setNotifications((prev) => [payload.new, ...prev]);
           setUnreadCount((prev) => prev + 1);
         }
@@ -86,7 +87,7 @@ export function NotificationBell({ userId }: { userId: string }) {
       <button
         onClick={() => {
           setIsOpen(!isOpen);
-          if (!isOpen) markAllAsRead(); // لما يفتح، خليهم مقروئين
+          if (!isOpen) markAllAsRead();
         }}
         className="relative rounded-full p-2 text-gray-600 transition-colors hover:bg-gray-100"
       >
@@ -112,7 +113,20 @@ export function NotificationBell({ userId }: { userId: string }) {
 
           <div className="max-h-[60vh] overflow-y-auto">
             {notifications.length === 0 ? (
-              <div className="p-8 text-center text-sm text-gray-500">No notifications yet.</div>
+              /* ── الجزء المعدل: العميل سِبلت في وضعية الاسترخاء ── */
+              <div className="p-4">
+                <EmptyState
+                  illustration={
+                    <AgentSplitIllustration 
+                      pose="relaxed" 
+                      className="h-28 w-28" 
+                    />
+                  }
+                  title="Inbox Zero. 🤌"
+                  description="العميل سِبلت بيقولك ارتاح، مفيش أي إشعارات مزعجة حالياً. عيش اللحظة!"
+                  className="border-none bg-transparent py-4 shadow-none" 
+                />
+              </div>
             ) : (
               <div className="divide-y divide-gray-100">
                 {notifications.map((notif) => (

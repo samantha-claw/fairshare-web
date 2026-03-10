@@ -14,6 +14,7 @@ import {
   LogOut,
   ChevronRight,
   Sparkles,
+  Settings,
 } from "lucide-react";
 
 // ==========================================
@@ -39,6 +40,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Friends", href: "/dashboard/friends", icon: Users },
   { label: "Profile", href: "/dashboard/profile", icon: UserCircle },
+  { label: "Settings", href: "/dashboard/settings", icon: Settings, }
 ];
 
 function isActive(pathname: string, href: string): boolean {
