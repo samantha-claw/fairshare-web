@@ -9,7 +9,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { formatCurrency } from "@/lib/utils";
 import type { Balance } from "@/types/group";
 import { simplifyDebts } from "@/lib/debt-simplifier";
-import { ArrowDown, ChevronRight } from "lucide-react";
+import { ArrowDown, TrendingDown, TrendingUp } from "lucide-react";
 
 // ==========================================
 // 🧩 TYPES
@@ -198,10 +198,15 @@ export function BalancesCard({ balances, currency }: BalancesCardProps) {
                         ) : (
                           <div className="flex flex-col items-end">
                             <span
-                              className={`text-sm font-bold tabular-nums ${
+                              className={`inline-flex items-center gap-1 text-sm font-bold tabular-nums ${
                                 isPositive ? "text-emerald-600" : "text-red-600"
                               }`}
                             >
+                              {isPositive ? (
+                                <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" />
+                              ) : (
+                                <TrendingDown className="h-3.5 w-3.5" aria-hidden="true" />
+                              )}
                               {isPositive ? "+" : "-"}
                               {formatCurrency(
                                 Math.abs(bal.net_balance),
@@ -215,7 +220,7 @@ export function BalancesCard({ balances, currency }: BalancesCardProps) {
                                   : "text-red-400"
                               }`}
                             >
-                              {isPositive ? "is owed" : "owes"}
+                              {isPositive ? "You are owed" : "You owe"}
                             </span>
                           </div>
                         )}

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useCallback, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
+import FocusTrap from "focus-trap-react";
 
 interface ModalProps {
   isOpen: boolean;
@@ -35,11 +36,6 @@ export function Modal({
     previousFocusRef.current = document.activeElement as HTMLElement;
     document.body.style.overflow = "hidden";
 
-    // Focus the dialog
-    requestAnimationFrame(() => {
-      dialogRef.current?.focus();
-    });
-
     return () => {
       document.body.style.overflow = "";
       previousFocusRef.current?.focus();
@@ -55,28 +51,6 @@ export function Modal({
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [isOpen, onClose]);
-
-  // Focus trap
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key !== "Tab" || !dialogRef.current) return;
-
-      const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last?.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first?.focus();
-      }
-    },
-    []
-  );
 
   if (!isOpen) return null;
 
@@ -98,18 +72,25 @@ export function Modal({
         onClick={onClose}
       />
 
-      {/* Dialog */}
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        tabIndex={-1}
-        onKeyDown={handleKeyDown}
-        className={`relative w-full ${MAX_WIDTH_MAP[maxWidth]} transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl outline-none sm:my-8`}
+      <FocusTrap
+        focusTrapOptions={{
+          // Let inner controls keep their own autofocus behavior when present.
+          initialFocus: false,
+          fallbackFocus: () => dialogRef.current as HTMLElement,
+        }}
       >
-        {children}
-      </div>
+        {/* Dialog */}
+        <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label={title}
+          tabIndex={-1}
+          className={`relative w-full ${MAX_WIDTH_MAP[maxWidth]} transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl outline-none sm:my-8`}
+        >
+          {children}
+        </div>
+      </FocusTrap>
     </div>
   );
 }
