@@ -6,6 +6,8 @@
 import { useEffect, useState, useCallback, useRef, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { validate as zodValidate } from "@/lib/validate";
+import { profileEditSchema } from "@/lib/validations";
 
 // ==========================================
 // 🧩 TYPES
@@ -237,43 +239,21 @@ setUserId(user.id);
   /* ── Validation ──────────────────────────────────── */
 
   function validate(): boolean {
-    const newErrors: FormErrors = {};
+    const result = zodValidate(profileEditSchema, {
+      display_name: formData.display_name,
+      username: formData.username,
+      full_name: formData.full_name,
+      bio: formData.bio,
+      avatar_url: formData.avatar_url,
+    });
 
-    // Display name
-    const trimmedDisplay = formData.display_name.trim();
-    if (!trimmedDisplay) {
-      newErrors.display_name = "Display name is required.";
-    } else if (trimmedDisplay.length < 2) {
-      newErrors.display_name = "Display name must be at least 2 characters.";
-    } else if (trimmedDisplay.length > 50) {
-      newErrors.display_name = "Display name must be under 50 characters.";
+    if (!result.success) {
+      setErrors(result.errors as FormErrors);
+      return false;
     }
 
-    // Username
-    const trimmedUsername = formData.username.trim().toLowerCase();
-    if (!trimmedUsername) {
-      newErrors.username = "Username is required.";
-    } else if (trimmedUsername.length < 3) {
-      newErrors.username = "Username must be at least 3 characters.";
-    } else if (trimmedUsername.length > 30) {
-      newErrors.username = "Username must be under 30 characters.";
-    } else if (!/^[a-z0-9_]+$/.test(trimmedUsername)) {
-      newErrors.username =
-        "Username can only contain lowercase letters, numbers, and underscores.";
-    }
-
-    // Full name (optional but validate length)
-    if (formData.full_name.trim().length > 100) {
-      newErrors.full_name = "Full name must be under 100 characters.";
-    }
-
-    // Bio
-    if (formData.bio.trim().length > 250) {
-      newErrors.bio = "Bio must be under 250 characters.";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors({});
+    return true;
   }
 
   /* ── Upload Avatar to Supabase Storage ───────────── */

@@ -6,6 +6,8 @@
 import { useEffect, useState, useCallback, useRef, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { validate as zodValidate } from "@/lib/validate";
+import { createGroupSchema } from "@/lib/validations";
 
 // ==========================================
 // 🧩 TYPES
@@ -212,27 +214,15 @@ export function useCreateGroup() {
   /* ── Validation ──────────────────────────────────── */
 
   function validate(): boolean {
-    const newErrors: FormErrors = {};
+    const result = zodValidate(createGroupSchema, { name, description, currency });
 
-    const trimmedName = name.trim();
-    if (!trimmedName) {
-      newErrors.name = "Group name is required.";
-    } else if (trimmedName.length < 2) {
-      newErrors.name = "Group name must be at least 2 characters.";
-    } else if (trimmedName.length > 100) {
-      newErrors.name = "Group name must be under 100 characters.";
+    if (!result.success) {
+      setErrors(result.errors as FormErrors);
+      return false;
     }
 
-    if (description.trim().length > 500) {
-      newErrors.description = "Description must be under 500 characters.";
-    }
-
-    if (!currency) {
-      newErrors.currency = "Please select a currency.";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors({});
+    return true;
   }
 
   /* ── Submit ──────────────────────────────────────── */

@@ -5,6 +5,8 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { Mail, ArrowRight, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { validate } from "@/lib/validate";
+import { forgotPasswordSchema } from "@/lib/validations";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -16,6 +18,13 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    const validation = validate(forgotPasswordSchema, { email });
+    if (!validation.success) {
+      setError(validation.errors.email ?? "Please enter a valid email address.");
+      setLoading(false);
+      return;
+    }
 
     const supabase = createClient();
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(
