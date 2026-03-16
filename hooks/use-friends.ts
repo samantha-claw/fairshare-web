@@ -187,7 +187,7 @@ export function useFriends() {
         const { data, error } = await supabase
           .from("profiles")
           .select("id, username, display_name, full_name, avatar_url")
-          .ilike("username", `%${searchTerm.trim()}%`)
+          .ilike("username", `%${trimmedQuery}%`)
           .limit(8);
 
         if (!error && data) {
