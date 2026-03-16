@@ -3,6 +3,8 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { validate } from "@/lib/validate";
+import { signInSchema, signUpSchema } from "@/lib/validations";
 
 // ─── Types ────────────────────────────────────────────────────
 interface AuthError {
@@ -184,14 +186,11 @@ export function useAuth() {
       setError(null);
 
       try {
-        if (!email.trim()) {
-          setError({ message: "Email is required.", field: "email" });
-          setLoading(false);
-          return;
-        }
-
-        if (!password) {
-          setError({ message: "Password is required.", field: "password" });
+        const signInResult = validate(signInSchema, { email, password });
+        if (!signInResult.success) {
+          const [key, message] = Object.entries(signInResult.errors)[0];
+          const field = (key === "email" || key === "password") ? key as "email" | "password" : "general";
+          setError({ message, field });
           setLoading(false);
           return;
         }
@@ -259,59 +258,18 @@ export function useAuth() {
       setError(null);
 
       try {
-        if (!fullName.trim()) {
-          setError({ message: "Full name is required.", field: "full_name" });
-          setLoading(false);
-          return;
-        }
-
-        if (!username.trim()) {
-          setError({ message: "Username is required.", field: "username" });
-          setLoading(false);
-          return;
-        }
-
-        const usernameRegex = /^[a-z0-9_]{3,30}$/;
-        if (!usernameRegex.test(username.trim())) {
-          setError({
-            message:
-              "Username must be 3-30 characters: lowercase letters, numbers, and underscores only.",
-            field: "username",
-          });
-          setLoading(false);
-          return;
-        }
-
-        if (!email.trim()) {
-          setError({ message: "Email is required.", field: "email" });
-          setLoading(false);
-          return;
-        }
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email.trim())) {
-          setError({
-            message: "Please enter a valid email address.",
-            field: "email",
-          });
-          setLoading(false);
-          return;
-        }
-
-        if (password.length < 6) {
-          setError({
-            message: "Password must be at least 6 characters.",
-            field: "password",
-          });
-          setLoading(false);
-          return;
-        }
-
-        if (password !== confirmPassword) {
-          setError({
-            message: "Passwords do not match.",
-            field: "confirm_password",
-          });
+        const signUpResult = validate(signUpSchema, { email, password, confirmPassword, username, fullName });
+        if (!signUpResult.success) {
+          const fieldNameMap: Record<string, AuthError["field"]> = {
+            username: "username",
+            fullName: "full_name",
+            email: "email",
+            password: "password",
+            confirmPassword: "confirm_password",
+          };
+          const [key, message] = Object.entries(signUpResult.errors)[0];
+          const field = fieldNameMap[key] ?? "general";
+          setError({ message, field });
           setLoading(false);
           return;
         }

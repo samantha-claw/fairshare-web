@@ -3,6 +3,8 @@
 import { useState, useCallback, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { validate } from "@/lib/validate";
+import { expenseSchema } from "@/lib/validations";
 import type { Member, Expense } from "@/types/group";
 
 /**
@@ -83,11 +85,22 @@ export function useGroupExpenses(
   const handleSaveExpense = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
-      if (!expenseName || !expenseAmount) return;
 
-      // حماية إضافية: التأكد من أن التقسيم سليم قبل الإرسال
-      if (!isValidSplit || computedSplits.length === 0) {
-        toast.error("Please ensure the split is valid and amounts match the total.");
+      const amount = parseFloat(expenseAmount);
+      const splitsPayload = computedSplits.map((split) => ({
+        user_id: split.userId,
+        amount: split.amount,
+      }));
+
+      const validation = validate(expenseSchema, {
+        name: expenseName,
+        amount,
+        paid_by: paidBy,
+        split_type: splitType as "equal" | "custom" | "percentage",
+        splits: splitsPayload,
+      });
+      if (!validation.success) {
+        toast.error(Object.values(validation.errors)[0]);
         return;
       }
 
@@ -97,17 +110,11 @@ export function useGroupExpenses(
         ? "edit_expense_custom_split"
         : "add_expense_custom_split";
 
-      // 🎯 تجهيز البيانات لترسل المبالغ المحددة لكل شخص
-      const splitsPayload = computedSplits.map((split) => ({
-        user_id: split.userId,
-        amount: split.amount,
-      }));
-
       const rpcParams = editingExpenseId
         ? {
             _expense_id: editingExpenseId,
             _name: expenseName,
-            _amount: parseFloat(expenseAmount),
+            _amount: amount,
             _paid_by: paidBy,
             _splits: splitsPayload,
             _split_type: splitType,
@@ -115,7 +122,7 @@ export function useGroupExpenses(
         : {
             _group_id: groupId,
             _name: expenseName,
-            _amount: parseFloat(expenseAmount),
+            _amount: amount,
             _paid_by: paidBy,
             _splits: splitsPayload,
             _split_type: splitType,
