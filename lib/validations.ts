@@ -109,6 +109,18 @@ export const expenseSplitSchema = z.object({
   amount: z.number().positive("Each split amount must be positive."),
   percentage: z.number().positive("Each split percentage must be positive.").optional(),
   percent: z.number().positive("Each split percentage must be positive.").optional(),
+}).superRefine((split, ctx) => {
+  if (
+    typeof split.percentage === "number" &&
+    typeof split.percent === "number" &&
+    Math.abs(split.percentage - split.percent) > 0.000001
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Use either percentage or percent, or provide matching values.",
+      path: ["percentage"],
+    });
+  }
 });
 
 export const expenseSchema = z.object({
@@ -129,43 +141,71 @@ export const expenseSchema = z.object({
     .max(500, "Notes must be under 500 characters.")
     .optional(),
   splits: z.array(expenseSplitSchema).min(1, "At least one split is required."),
-}).refine(
-  (data) => {
-    if (data.split_type === "custom") {
-      const total = data.splits.reduce((sum, s) => sum + s.amount, 0);
-      return Math.abs(total - data.amount) <= 0.02;
+}).superRefine((data, ctx) => {
+  const amountTolerance = 0.02;
+
+  if (data.split_type === "custom") {
+    const total = data.splits.reduce((sum, s) => sum + s.amount, 0);
+    if (Math.abs(total - data.amount) > amountTolerance) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Split values must match the expense total.",
+        path: ["splits"],
+      });
     }
-
-    if (data.split_type === "percentage") {
-      const percentages = data.splits.map((s) =>
-        typeof s.percentage === "number"
-          ? s.percentage
-          : typeof s.percent === "number"
-            ? s.percent
-            : null
-      );
-
-      const hasAllPercentages = percentages.every((p) => typeof p === "number");
-      if (!hasAllPercentages) return false;
-
-      const totalPercent = (percentages as number[]).reduce((sum, p) => sum + p, 0);
-      if (Math.abs(totalPercent - 100) > 0.5) return false;
-
-      const derivedTotal = (percentages as number[]).reduce(
-        (sum, p) => sum + (p / 100) * data.amount,
-        0
-      );
-      return Math.abs(derivedTotal - data.amount) <= 0.02;
-    }
-
-    return true;
-  },
-  {
-    message:
-      "Split values must match the expense total (for percentage splits, percentages must total 100%).",
-    path: ["splits"],
   }
-);
+
+  const hasAnyPercentage = data.splits.some(
+    (s) => typeof s.percentage === "number" || typeof s.percent === "number"
+  );
+  const shouldValidatePercentages = data.split_type === "percentage" || hasAnyPercentage;
+
+  if (!shouldValidatePercentages) return;
+
+  const percentages = data.splits.map((s, index) => {
+    const value = typeof s.percentage === "number"
+      ? s.percentage
+      : typeof s.percent === "number"
+        ? s.percent
+        : null;
+
+    if (value === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Each split must include a percentage in percentage mode.",
+        path: ["splits", index, "percentage"],
+      });
+    }
+
+    return value;
+  });
+
+  if (percentages.some((p) => p === null)) return;
+
+  const resolvedPercentages = percentages as number[];
+  const totalPercent = resolvedPercentages.reduce((sum, p) => sum + p, 0);
+  if (Math.abs(totalPercent - 100) > 0.5) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "For percentage splits, percentages must total 100%.",
+      path: ["splits"],
+    });
+    return;
+  }
+
+  data.splits.forEach((split, index) => {
+    const percentage = resolvedPercentages[index];
+    const expectedAmount = data.amount * (percentage / 100);
+
+    if (Math.abs(split.amount - expectedAmount) > amountTolerance) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Split amount must match the amount implied by its percentage.",
+        path: ["splits", index, "amount"],
+      });
+    }
+  });
+});
 
 // ── Settlements ───────────────────────────────────────────────
 export const settlementSchema = z.object({
