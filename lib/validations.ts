@@ -146,19 +146,16 @@ export const expenseSchema = z.object({
       );
 
       const hasAllPercentages = percentages.every((p) => typeof p === "number");
-      if (hasAllPercentages) {
-        const totalPercent = (percentages as number[]).reduce((sum, p) => sum + p, 0);
-        if (Math.abs(totalPercent - 100) > 0.5) return false;
+      if (!hasAllPercentages) return false;
 
-        const derivedTotal = (percentages as number[]).reduce(
-          (sum, p) => sum + (p / 100) * data.amount,
-          0
-        );
-        return Math.abs(derivedTotal - data.amount) <= 0.02;
-      }
+      const totalPercent = (percentages as number[]).reduce((sum, p) => sum + p, 0);
+      if (Math.abs(totalPercent - 100) > 0.5) return false;
 
-      const totalAmount = data.splits.reduce((sum, s) => sum + s.amount, 0);
-      return Math.abs(totalAmount - data.amount) <= 0.02;
+      const derivedTotal = (percentages as number[]).reduce(
+        (sum, p) => sum + (p / 100) * data.amount,
+        0
+      );
+      return Math.abs(derivedTotal - data.amount) <= 0.02;
     }
 
     return true;
