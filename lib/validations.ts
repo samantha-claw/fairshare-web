@@ -20,8 +20,7 @@ export const signUpSchema = z.object({
   fullName: z
     .string()
     .max(100, "Full name must be under 100 characters.")
-    .optional()
-    .or(z.literal("")),
+    .optional(),
   email: z
     .string()
     .min(1, "Email is required.")
@@ -46,38 +45,39 @@ export const forgotPasswordSchema = z.object({
 export const profileEditSchema = z.object({
   display_name: z
     .string()
+    .trim()
     .min(2, "Display name must be at least 2 characters.")
     .max(50, "Display name must be under 50 characters."),
-  username: z
-    .string()
-    .min(3, "Username must be at least 3 characters.")
-    .max(30, "Username must be under 30 characters.")
-    .regex(/^[a-z0-9_]+$/, "Username can only contain lowercase letters, numbers, and underscores.")
-    .transform((val) => val.toLowerCase().trim()),
+  username: z.preprocess(
+    (val) => (typeof val === "string" ? val.toLowerCase().trim() : val),
+    z
+      .string()
+      .min(3, "Username must be at least 3 characters.")
+      .max(30, "Username must be under 30 characters.")
+      .regex(/^[a-z0-9_]+$/, "Username can only contain lowercase letters, numbers, and underscores.")
+  ),
   full_name: z
     .string()
     .max(100, "Full name must be under 100 characters.")
-    .optional()
-    .or(z.literal("")),
+    .optional(),
   bio: z
     .string()
     .max(250, "Bio must be under 250 characters.")
-    .optional()
-    .or(z.literal("")),
-  avatar_url: z.string().optional().or(z.literal("")),
+    .optional(),
+  avatar_url: z.string().optional(),
 });
 
 // ── Groups ────────────────────────────────────────────────────
 export const createGroupSchema = z.object({
   name: z
     .string()
+    .trim()
     .min(1, "Group name is required.")
     .max(100, "Group name must be under 100 characters."),
   description: z
     .string()
     .max(500, "Description must be under 500 characters.")
-    .optional()
-    .or(z.literal("")),
+    .optional(),
   currency: z
     .string()
     .trim()
@@ -89,13 +89,13 @@ export const createGroupSchema = z.object({
 export const groupSettingsSchema = z.object({
   name: z
     .string()
+    .trim()
     .min(1, "Group name is required.")
     .max(100, "Group name must be under 100 characters."),
   description: z
     .string()
     .max(500, "Description must be under 500 characters.")
-    .optional()
-    .or(z.literal("")),
+    .optional(),
   currency: z
     .string()
     .trim()
@@ -107,15 +107,18 @@ export const groupSettingsSchema = z.object({
 export const expenseSplitSchema = z.object({
   user_id: z.string().uuid("Invalid user ID."),
   amount: z.number().positive("Each split amount must be positive."),
+  percentage: z.number().positive("Each split percentage must be positive.").optional(),
+  percent: z.number().positive("Each split percentage must be positive.").optional(),
 });
 
 export const expenseSchema = z.object({
   name: z
     .string()
+    .trim()
     .min(1, "Expense name is required.")
     .max(200, "Expense name must be under 200 characters."),
   amount: z
-    .number({ message: "Amount must be a number." })
+    .number("Amount must be a number.")
     .positive("Amount must be greater than zero.")
     .max(1_000_000, "Amount seems too large."),
   paid_by: z.string().uuid("Invalid payer."),
@@ -124,8 +127,7 @@ export const expenseSchema = z.object({
   notes: z
     .string()
     .max(500, "Notes must be under 500 characters.")
-    .optional()
-    .or(z.literal("")),
+    .optional(),
   splits: z.array(expenseSplitSchema).min(1, "At least one split is required."),
 }).refine(
   (data) => {
@@ -133,10 +135,37 @@ export const expenseSchema = z.object({
       const total = data.splits.reduce((sum, s) => sum + s.amount, 0);
       return Math.abs(total - data.amount) <= 0.02;
     }
+
+    if (data.split_type === "percentage") {
+      const percentages = data.splits.map((s) =>
+        typeof s.percentage === "number"
+          ? s.percentage
+          : typeof s.percent === "number"
+            ? s.percent
+            : null
+      );
+
+      const hasAllPercentages = percentages.every((p) => typeof p === "number");
+      if (hasAllPercentages) {
+        const totalPercent = (percentages as number[]).reduce((sum, p) => sum + p, 0);
+        if (Math.abs(totalPercent - 100) > 0.5) return false;
+
+        const derivedTotal = (percentages as number[]).reduce(
+          (sum, p) => sum + (p / 100) * data.amount,
+          0
+        );
+        return Math.abs(derivedTotal - data.amount) <= 0.02;
+      }
+
+      const totalAmount = data.splits.reduce((sum, s) => sum + s.amount, 0);
+      return Math.abs(totalAmount - data.amount) <= 0.02;
+    }
+
     return true;
   },
   {
-    message: "Split amounts must add up to the total expense amount.",
+    message:
+      "Split values must match the expense total (for percentage splits, percentages must total 100%).",
     path: ["splits"],
   }
 );
@@ -145,14 +174,13 @@ export const expenseSchema = z.object({
 export const settlementSchema = z.object({
   to_user: z.string().uuid("Please select who you are paying."),
   amount: z
-    .number({ message: "Amount must be a number." })
+    .number("Amount must be a number.")
     .positive("Amount must be greater than zero.")
     .max(1_000_000, "Amount seems too large."),
   notes: z
     .string()
     .max(500, "Notes must be under 500 characters.")
-    .optional()
-    .or(z.literal("")),
+    .optional(),
 });
 
 // ── Friends ───────────────────────────────────────────────────
