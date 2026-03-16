@@ -86,6 +86,7 @@ export function useGroupExpenses(
     async (e: FormEvent) => {
       e.preventDefault();
 
+      const trimmedName = expenseName.trim();
       const amount = parseFloat(expenseAmount);
       const splitsPayload = computedSplits.map((split) => ({
         user_id: split.userId,
@@ -93,7 +94,7 @@ export function useGroupExpenses(
       }));
 
       const validation = validate(expenseSchema, {
-        name: expenseName,
+        name: trimmedName,
         amount,
         paid_by: paidBy,
         split_type: splitType as "equal" | "custom" | "percentage",
@@ -113,7 +114,7 @@ export function useGroupExpenses(
       const rpcParams = editingExpenseId
         ? {
             _expense_id: editingExpenseId,
-            _name: expenseName,
+            _name: trimmedName,
             _amount: amount,
             _paid_by: paidBy,
             _splits: splitsPayload,
@@ -121,7 +122,7 @@ export function useGroupExpenses(
           }
         : {
             _group_id: groupId,
-            _name: expenseName,
+            _name: trimmedName,
             _amount: amount,
             _paid_by: paidBy,
             _splits: splitsPayload,

@@ -139,7 +139,7 @@ export const expenseSchema = z.object({
 
 // ── Settlements ───────────────────────────────────────────────
 export const settlementSchema = z.object({
-  to_user: z.string().uuid("Please select who you are paying.").min(1, "Please select who you are paying."),
+  to_user: z.string().uuid("Please select who you are paying."),
   amount: z
     .number({ message: "Amount must be a number." })
     .positive("Amount must be greater than zero.")

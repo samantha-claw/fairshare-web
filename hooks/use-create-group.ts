@@ -6,7 +6,7 @@
 import { useEffect, useState, useCallback, useRef, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { validate as zodValidate } from "@/lib/validate";
+import { validate } from "@/lib/validate";
 import { createGroupSchema } from "@/lib/validations";
 
 // ==========================================
@@ -213,8 +213,8 @@ export function useCreateGroup() {
 
   /* ── Validation ──────────────────────────────────── */
 
-  function validate(): boolean {
-    const result = zodValidate(createGroupSchema, { name, description, currency });
+  function runValidation(): boolean {
+    const result = validate(createGroupSchema, { name, description, currency });
 
     if (!result.success) {
       setErrors(result.errors as FormErrors);
@@ -236,7 +236,7 @@ export function useCreateGroup() {
     // Also check state as a fallback
     if (saving) return;
 
-    if (!validate()) return;
+    if (!runValidation()) return;
     if (!userId) return;
 
     // Lock immediately — ref updates synchronously

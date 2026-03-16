@@ -238,14 +238,18 @@ setUserId(user.id);
 
   /* ── Validation ──────────────────────────────────── */
 
+  function buildNormalizedPayload() {
+    return {
+      display_name: formData.display_name.trim(),
+      username: formData.username.trim().toLowerCase(),
+      full_name: formData.full_name.trim(),
+      bio: formData.bio.trim(),
+      avatar_url: formData.avatar_url.trim(),
+    };
+  }
+
   function validate(): boolean {
-    const result = zodValidate(profileEditSchema, {
-      display_name: formData.display_name,
-      username: formData.username,
-      full_name: formData.full_name,
-      bio: formData.bio,
-      avatar_url: formData.avatar_url,
-    });
+    const result = zodValidate(profileEditSchema, buildNormalizedPayload());
 
     if (!result.success) {
       setErrors(result.errors as FormErrors);
@@ -323,7 +327,8 @@ setUserId(user.id);
 
     try {
       // Check username uniqueness if changed
-      const trimmedUsername = formData.username.trim().toLowerCase();
+      const normalized = buildNormalizedPayload();
+      const trimmedUsername = normalized.username;
 
       if (trimmedUsername !== originalData.username.toLowerCase()) {
         const { data: existingUser } = await supabase
@@ -341,7 +346,7 @@ setUserId(user.id);
       }
 
       // Handle avatar upload / removal
-      let finalAvatarUrl = formData.avatar_url.trim();
+      let finalAvatarUrl = normalized.avatar_url;
 
       if (avatarFile) {
         // Upload new avatar
@@ -361,11 +366,11 @@ setUserId(user.id);
       const { error: updateError } = await supabase
         .from("profiles")
         .update({
-          display_name: formData.display_name.trim(),
+          display_name: normalized.display_name,
           username: trimmedUsername,
-          full_name: formData.full_name.trim(),
+          full_name: normalized.full_name,
           avatar_url: finalAvatarUrl,
-          bio: formData.bio.trim(),
+          bio: normalized.bio,
           updated_at: new Date().toISOString(),
         })
         .eq("id", userId);
@@ -374,11 +379,11 @@ setUserId(user.id);
 
       // Update original data reference
       const updatedData: ProfileFormData = {
-        display_name: formData.display_name.trim(),
+        display_name: normalized.display_name,
         username: trimmedUsername,
-        full_name: formData.full_name.trim(),
+        full_name: normalized.full_name,
         avatar_url: finalAvatarUrl,
-        bio: formData.bio.trim(),
+        bio: normalized.bio,
       };
       setOriginalData(updatedData);
       setFormData(updatedData);
