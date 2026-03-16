@@ -211,10 +211,18 @@ export function useCreateGroup() {
     setSelectedFriendIds([]);
   }
 
+  function buildNormalizedPayload() {
+    return {
+      name: name.trim(),
+      description: description.trim(),
+      currency: currency.trim().toUpperCase(),
+    };
+  }
+
   /* ── Validation ──────────────────────────────────── */
 
   function runValidation(): boolean {
-    const result = validate(createGroupSchema, { name, description, currency });
+    const result = validate(createGroupSchema, buildNormalizedPayload());
 
     if (!result.success) {
       setErrors(result.errors as FormErrors);
@@ -245,16 +253,15 @@ export function useCreateGroup() {
     setErrors({});
 
     try {
-      const trimmedName = name.trim();
-      const trimmedDescription = description.trim();
+      const normalized = buildNormalizedPayload();
 
       // 1. Create the group
       const { data: groupData, error: groupError } = await supabase
         .from("groups")
         .insert({
-          name: trimmedName,
-          description: trimmedDescription || null,
-          currency,
+          name: normalized.name,
+          description: normalized.description || null,
+          currency: normalized.currency,
           owner_id: userId,
         })
         .select("id")
