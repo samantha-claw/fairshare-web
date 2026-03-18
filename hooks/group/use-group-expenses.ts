@@ -7,6 +7,8 @@ import { validate } from "@/lib/validate";
 import { expenseSchema } from "@/lib/validations";
 import type { Member, Expense } from "@/types/group";
 
+export type SplitType = "equal" | "custom" | "percentage";
+
 /**
  * Manages the expense modal state and all expense CRUD operations.
  */
@@ -32,7 +34,7 @@ export function useGroupExpenses(
   /* ── Custom Splits State ─────────────────────────────── */
   const [computedSplits, setComputedSplits] = useState<any[]>([]);
   const [isValidSplit, setIsValidSplit] = useState(false);
-  const [splitType, setSplitType] = useState<string>("equal");
+  const [splitType, setSplitType] = useState<SplitType>("equal");
 
   const openAddExpenseModal = useCallback(() => {
     setEditingExpenseId(null);
@@ -76,7 +78,11 @@ export function useGroupExpenses(
     setExpenseName(exp.name);
     setExpenseAmount(exp.amount.toString());
     setPaidBy(exp.paid_by);
-    setSplitType(((exp as any).split_type as string) || "equal");
+    const rawDbSplit = ((exp as any).split_type as string)?.toLowerCase();
+    const validSplitType = ["equal", "custom", "percentage"].includes(rawDbSplit)
+      ? (rawDbSplit as SplitType)
+      : "equal";
+    setSplitType(validSplitType);
     setComputedSplits(derivedSplits);
     setIsValidSplit(derivedSplits.length > 0);
     setIsExpenseModalOpen(true);
@@ -97,13 +103,15 @@ export function useGroupExpenses(
         name: trimmedName,
         amount,
         paid_by: paidBy,
-        split_type: splitType as "equal" | "custom" | "percentage",
+        split_type: splitType,
         splits: splitsPayload,
       });
       if (!validation.success) {
         toast.error(Object.values(validation.errors)[0]);
         return;
       }
+
+      const validatedExpense = validation.data;
 
       setSubmittingExpense(true);
 
@@ -114,19 +122,25 @@ export function useGroupExpenses(
       const rpcParams = editingExpenseId
         ? {
             _expense_id: editingExpenseId,
-            _name: trimmedName,
-            _amount: amount,
-            _paid_by: paidBy,
-            _splits: splitsPayload,
-            _split_type: splitType,
+            _name: validatedExpense.name,
+            _amount: validatedExpense.amount,
+            _paid_by: validatedExpense.paid_by,
+            _splits: validatedExpense.splits.map((split) => ({
+              user_id: split.user_id,
+              amount: split.amount,
+            })),
+            _split_type: validatedExpense.split_type,
           }
         : {
             _group_id: groupId,
-            _name: trimmedName,
-            _amount: amount,
-            _paid_by: paidBy,
-            _splits: splitsPayload,
-            _split_type: splitType,
+            _name: validatedExpense.name,
+            _amount: validatedExpense.amount,
+            _paid_by: validatedExpense.paid_by,
+            _splits: validatedExpense.splits.map((split) => ({
+              user_id: split.user_id,
+              amount: split.amount,
+            })),
+            _split_type: validatedExpense.split_type,
           };
 
       try {
