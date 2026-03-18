@@ -5,9 +5,10 @@ import { Modal } from "@/components/ui/modal";
 import type { Member } from "@/types/group";
 import {
   SplitTypeSelector,
-  type SplitType,
+  type SplitType as SelectorSplitType,
   type ComputedSplit,
 } from "./split-selector";
+import type { SplitType } from "@/hooks/group/use-group-expenses";
 
 // ─── Props Interface ───
 interface ExpenseModalProps {
@@ -50,7 +51,7 @@ export function ExpenseModal({
   const title = editingExpenseId ? "Edit Expense" : "Add Expense";
 
   // ─── Split-related internal state ───
-  const [splitType, setSplitType] = useState<SplitType>("equal");
+  const [splitType, setSplitType] = useState<SelectorSplitType>("equal");
   const [allocations, setAllocations] = useState<Map<string, number>>(
     new Map()
   );
@@ -78,7 +79,14 @@ export function ExpenseModal({
 
   // ─── Notify parent whenever split data changes ───
   useEffect(() => {
-    onSplitDataChange?.(computedSplits, splitType, isValidSplit);
+    const normalizedSplitType: SplitType =
+      splitType === "percentage"
+        ? "percentage"
+        : splitType === "equal"
+          ? "equal"
+          : "custom";
+
+    onSplitDataChange?.(computedSplits, normalizedSplitType, isValidSplit);
   }, [computedSplits, splitType, isValidSplit, onSplitDataChange]);
 
   // ─── Update scroll shadows ───
