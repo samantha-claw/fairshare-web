@@ -31,6 +31,7 @@ interface ExpenseModalProps {
   onPaidByChange: (val: string) => void;
   currentUserId: string;
   initialSplitType?: SelectorSplitType;
+  initialSplits?: ComputedSplit[];
 }
 
 export function ExpenseModal({
@@ -49,6 +50,7 @@ export function ExpenseModal({
   onPaidByChange,
   currentUserId,
   initialSplitType = "equal",
+  initialSplits = [],
 }: ExpenseModalProps) {
   const title = editingExpenseId ? "Edit Expense" : "Add Expense";
 
@@ -71,13 +73,39 @@ export function ExpenseModal({
   // ─── Initialize / reset when modal opens ───
   useEffect(() => {
     if (isOpen && members.length > 0) {
-      setSelectedMembers(new Set(members.map((m) => m.id)));
       setSplitType(initialSplitType);
-      setAllocations(new Map());
-      setComputedSplits([]);
-      setIsValidSplit(false);
+
+      if (initialSplits.length > 0) {
+        // Editing — seed from existing split data
+        const newAllocations = new Map<string, number>();
+        const newSelected = new Set<string>();
+
+        initialSplits.forEach((split) => {
+          newSelected.add(split.userId);
+
+          if (initialSplitType === "percentage") {
+            newAllocations.set(split.userId, split.percentage);
+          } else if (initialSplitType === "shares") {
+            newAllocations.set(split.userId, split.shares);
+          } else {
+            // "exact" or "equal" (equal doesn't use allocations, but setting it is harmless)
+            newAllocations.set(split.userId, split.amount);
+          }
+        });
+
+        setSelectedMembers(newSelected);
+        setAllocations(newAllocations);
+        setComputedSplits(initialSplits);
+        setIsValidSplit(true);
+      } else {
+        // Adding new expense — reset to defaults
+        setSelectedMembers(new Set(members.map((m) => m.id)));
+        setAllocations(new Map());
+        setComputedSplits([]);
+        setIsValidSplit(false);
+      }
     }
-  }, [isOpen, members, initialSplitType]);
+  }, [isOpen, members]);
 
   // ─── Notify parent whenever split data changes ───
   useEffect(() => {
