@@ -336,6 +336,7 @@ export default function GroupDetailsPage() {
                 ? "shares"
                 : "exact"
         }
+        initialSplits={expenseCtl.computedSplits}
       />
 
       <SettleModal

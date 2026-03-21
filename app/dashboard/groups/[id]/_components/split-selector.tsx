@@ -1,7 +1,7 @@
 // components/split-type-selector.tsx
 "use client";
 
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useEffect } from "react";
 import { Avatar } from "@/components/ui/avatar";
 
 // ─── Types ───
@@ -210,7 +210,7 @@ export function SplitTypeSelector({
   }, [computed, allocations, splitType, totalAmount, selectedMembers, currency]);
 
   // ─── 3) Send computed results to parent ───
-  useMemo(() => {
+  useEffect(() => {
     if (!onComputedSplitsChange) return;
 
     const splits: ComputedSplit[] = members
