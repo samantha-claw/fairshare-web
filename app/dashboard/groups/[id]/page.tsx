@@ -332,7 +332,9 @@ export default function GroupDetailsPage() {
             ? "equal"
             : expenseCtl.splitType === "percentage"
               ? "percentage"
-              : "exact"
+              : expenseCtl.splitType === "shares"
+                ? "shares"
+                : "exact"
         }
       />
 

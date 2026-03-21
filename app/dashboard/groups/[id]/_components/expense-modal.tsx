@@ -81,14 +81,7 @@ export function ExpenseModal({
 
   // ─── Notify parent whenever split data changes ───
   useEffect(() => {
-    const normalizedSplitType: SplitType =
-      splitType === "percentage"
-        ? "percentage"
-        : splitType === "equal"
-          ? "equal"
-          : "custom";
-
-    onSplitDataChange?.(computedSplits, normalizedSplitType, isValidSplit);
+    onSplitDataChange?.(computedSplits, splitType as SplitType, isValidSplit);
   }, [computedSplits, splitType, isValidSplit, onSplitDataChange]);
 
   // ─── Update scroll shadows ───
