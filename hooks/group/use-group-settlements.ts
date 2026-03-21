@@ -46,6 +46,8 @@ export function useGroupSettlements(
         return;
       }
 
+      const { to_user, amount: validatedAmount } = validation.data;
+
       if (!currentUser) {
         toast.error("Session expired. Please refresh.");
         return;
@@ -59,8 +61,8 @@ export function useGroupSettlements(
           .insert({
             group_id: groupId,
             from_user: currentUser,
-            to_user: settleReceiver,
-            amount: parseFloat(settleAmount),
+            to_user: to_user,
+            amount: validatedAmount,
             status: "pending",
             notes: "Settle up",
             created_by: currentUser,
@@ -76,8 +78,8 @@ export function useGroupSettlements(
           user_id: currentUser,
           action: "settlement_initiated",
           metadata: {
-            amount: parseFloat(settleAmount),
-            to_user: settleReceiver,
+            amount: validatedAmount,
+            to_user: to_user,
             type: "settlement",
           },
         });

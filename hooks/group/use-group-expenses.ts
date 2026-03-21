@@ -94,9 +94,18 @@ export function useGroupExpenses(
 
       const trimmedName = expenseName.trim();
       const amount = parseFloat(expenseAmount);
+
+      // For RPC — lean payload, no percentage
       const splitsPayload = computedSplits.map((split) => ({
         user_id: split.userId,
         amount: split.amount,
+      }));
+
+      // For Zod — include percentage when relevant
+      const splitsForValidation = computedSplits.map((split) => ({
+        user_id: split.userId,
+        amount: split.amount,
+        ...(splitType === "percentage" ? { percentage: split.percentage } : {}),
       }));
 
       const validation = validate(expenseSchema, {
@@ -104,7 +113,7 @@ export function useGroupExpenses(
         amount,
         paid_by: paidBy,
         split_type: splitType,
-        splits: splitsPayload,
+        splits: splitsForValidation,
       });
       if (!validation.success) {
         toast.error(Object.values(validation.errors)[0]);
@@ -125,10 +134,7 @@ export function useGroupExpenses(
             _name: validatedExpense.name,
             _amount: validatedExpense.amount,
             _paid_by: validatedExpense.paid_by,
-            _splits: validatedExpense.splits.map((split) => ({
-              user_id: split.user_id,
-              amount: split.amount,
-            })),
+            _splits: splitsPayload,
             _split_type: validatedExpense.split_type,
           }
         : {
@@ -136,10 +142,7 @@ export function useGroupExpenses(
             _name: validatedExpense.name,
             _amount: validatedExpense.amount,
             _paid_by: validatedExpense.paid_by,
-            _splits: validatedExpense.splits.map((split) => ({
-              user_id: split.user_id,
-              amount: split.amount,
-            })),
+            _splits: splitsPayload,
             _split_type: validatedExpense.split_type,
           };
 
@@ -180,7 +183,6 @@ export function useGroupExpenses(
       paidBy,
       computedSplits,
       splitType,
-      isValidSplit,
       editingExpenseId,
       supabase,
       refetch,

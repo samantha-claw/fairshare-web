@@ -30,6 +30,7 @@ interface ExpenseModalProps {
   paidBy: string;
   onPaidByChange: (val: string) => void;
   currentUserId: string;
+  initialSplitType?: SelectorSplitType;
 }
 
 export function ExpenseModal({
@@ -47,6 +48,7 @@ export function ExpenseModal({
   paidBy,
   onPaidByChange,
   currentUserId,
+  initialSplitType = "equal",
 }: ExpenseModalProps) {
   const title = editingExpenseId ? "Edit Expense" : "Add Expense";
 
@@ -70,12 +72,12 @@ export function ExpenseModal({
   useEffect(() => {
     if (isOpen && members.length > 0) {
       setSelectedMembers(new Set(members.map((m) => m.id)));
-      setSplitType("equal");
+      setSplitType(initialSplitType);
       setAllocations(new Map());
       setComputedSplits([]);
       setIsValidSplit(false);
     }
-  }, [isOpen, members]);
+  }, [isOpen, members, initialSplitType]);
 
   // ─── Notify parent whenever split data changes ───
   useEffect(() => {
