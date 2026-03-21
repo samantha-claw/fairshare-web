@@ -79,7 +79,7 @@ export function useGroupExpenses(
     setExpenseAmount(exp.amount.toString());
     setPaidBy(exp.paid_by);
     const rawDbSplit = ((exp as any).split_type as string)?.toLowerCase();
-    const validSplitType = ["equal", "custom", "percentage"].includes(rawDbSplit)
+    const validSplitType = ["equal", "exact", "custom", "percentage", "shares"].includes(rawDbSplit)
       ? (rawDbSplit as SplitType)
       : "equal";
     setSplitType(validSplitType);
