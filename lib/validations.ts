@@ -134,7 +134,7 @@ export const expenseSchema = z.object({
     .positive("Amount must be greater than zero.")
     .max(1_000_000, "Amount seems too large."),
   paid_by: z.string().uuid("Invalid payer."),
-  split_type: z.enum(["equal", "custom", "percentage"]),
+  split_type: z.enum(["equal", "exact", "custom", "percentage", "shares"]),
   category: z.string().optional(),
   notes: z
     .string()
@@ -144,7 +144,7 @@ export const expenseSchema = z.object({
 }).superRefine((data, ctx) => {
   const amountTolerance = 0.02;
 
-  if (data.split_type === "custom") {
+  if (data.split_type === "custom" || data.split_type === "exact" || data.split_type === "shares") {
     const total = data.splits.reduce((sum, s) => sum + s.amount, 0);
     if (Math.abs(total - data.amount) > amountTolerance) {
       ctx.addIssue({

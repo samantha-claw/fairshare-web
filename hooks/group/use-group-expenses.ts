@@ -7,7 +7,7 @@ import { validate } from "@/lib/validate";
 import { expenseSchema } from "@/lib/validations";
 import type { Member, Expense } from "@/types/group";
 
-export type SplitType = "equal" | "custom" | "percentage";
+export type SplitType = "equal" | "exact" | "custom" | "percentage" | "shares";
 
 /**
  * Manages the expense modal state and all expense CRUD operations.
