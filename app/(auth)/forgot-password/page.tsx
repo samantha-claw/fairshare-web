@@ -93,10 +93,15 @@ export default function ForgotPasswordPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
+                aria-describedby="email-error"
+                aria-invalid={Boolean(error)}
                 required
                 className="w-full rounded-2xl border border-white/10 bg-white/[0.05] py-3.5 pl-12 pr-4 text-sm text-white placeholder-white/25 outline-none transition-all focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20"
               />
             </div>
+            <p id="email-error" className="mt-2 text-red-500 text-sm" role="alert">
+              {error ?? ""}
+            </p>
           </div>
 
           <button
