@@ -390,7 +390,7 @@ export default function RegisterPage() {
                 </p>
               </div>
             )}
-            <p id="username-error" className="mt-2 text-red-500 text-sm" role="alert">
+            <p id="username-error" className="sr-only" role="alert">
               {error?.field === "username"
                 ? error.message
                 : usernameFormatValid === false

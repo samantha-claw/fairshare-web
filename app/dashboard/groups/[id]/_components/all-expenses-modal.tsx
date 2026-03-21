@@ -10,6 +10,7 @@ import type { Expense } from "@/types/group";
 
 // ── Constants ───────────────────────────────────────────
 const PAGE_SIZE = 20;
+const CURSOR_SEPARATOR = "|";
 
 // ── Avatar helpers ──────────────────────────────────────
 const AVATAR_GRADIENTS = [
@@ -107,16 +108,35 @@ type ExpenseWithAvatar = Omit<Expense, "profiles" | "expense_splits"> & {
   split_type?: string | null;
 };
 
+function encodeCursor(lastItem: ExpenseWithAvatar): string {
+  return `${lastItem.created_at}${CURSOR_SEPARATOR}${lastItem.id}`;
+}
+
+function decodeCursor(cursor: string): { createdAt: string; id: string } | null {
+  const separatorIndex = cursor.lastIndexOf(CURSOR_SEPARATOR);
+  if (separatorIndex <= 0 || separatorIndex === cursor.length - 1) {
+    return null;
+  }
+
+  return {
+    createdAt: cursor.slice(0, separatorIndex),
+    id: cursor.slice(separatorIndex + 1),
+  };
+}
+
 // ── Fetch helper ────────────────────────────────────────
 async function fetchExpensesPage(
   groupId: string,
-  page: number
-): Promise<{ data: ExpenseWithAvatar[]; totalCount: number; error: string | null }> {
+  cursor: string | null,
+  pageSize: number
+): Promise<{
+  data: ExpenseWithAvatar[];
+  totalCount: number;
+  nextCursor: string | null;
+  error: string | null;
+}> {
   const supabase = createClient();
-  const from = page * PAGE_SIZE;
-  const to = from + PAGE_SIZE - 1;
-
-  const { data, error, count } = await supabase
+  let query = supabase
     .from("expenses")
     .select(
       `
@@ -134,20 +154,36 @@ async function fetchExpensesPage(
     .eq("group_id", groupId)
     .order("created_at", { ascending: false })
     .order("id", { ascending: false })
-    .range(from, to);
+    .limit(pageSize);
+
+  if (cursor) {
+    const parsedCursor = decodeCursor(cursor);
+    if (parsedCursor) {
+      query = query.or(
+        `created_at.lt.${parsedCursor.createdAt},and(created_at.eq.${parsedCursor.createdAt},id.lt.${parsedCursor.id})`
+      );
+    }
+  }
+
+  const { data, error, count } = await query;
 
   if (error) {
     console.error("Failed to fetch expenses page:", error);
     return {
       data: [],
       totalCount: 0,
+      nextCursor: null,
       error: "Failed to load expenses. Please try again.",
     };
   }
 
+  const rows = (data ?? []) as ExpenseWithAvatar[];
+  const nextCursor = rows.length === pageSize ? encodeCursor(rows[rows.length - 1]) : null;
+
   return {
-    data: (data ?? []) as ExpenseWithAvatar[],
+    data: rows,
     totalCount: count ?? 0,
+    nextCursor,
     error: null,
   };
 }
@@ -166,30 +202,42 @@ export function AllExpensesModal({
   // ── Pagination state ──────────────────────────────────
   const [expenses, setExpenses] = useState<ExpenseWithAvatar[]>([]);
   const [page, setPage] = useState(0);
+  const [pageCursors, setPageCursors] = useState<Array<string | null>>([null]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoadingInitial, setIsLoadingInitial] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     setPage(0);
+    setPageCursors([null]);
   }, [isOpen, groupId]);
 
   // ── Fetch page when modal opens or page changes ───────
   useEffect(() => {
     if (!isOpen || !groupId) return;
 
+    const cursor = pageCursors[page] ?? null;
+
+    setExpenses([]);
+    setTotalCount(0);
     setFetchError(null);
     setIsLoadingInitial(true);
 
     let cancelled = false;
 
-    fetchExpensesPage(groupId, page).then(({ data, totalCount, error }) => {
+    fetchExpensesPage(groupId, cursor, PAGE_SIZE).then(({ data, totalCount, nextCursor, error }) => {
       if (cancelled) return;
       if (error) {
         setFetchError(error);
       } else {
         setExpenses(data);
         setTotalCount(totalCount);
+        setPageCursors((prev) => {
+          const next = [...prev];
+          next[page] = cursor;
+          next[page + 1] = nextCursor;
+          return next;
+        });
       }
       setIsLoadingInitial(false);
     });
