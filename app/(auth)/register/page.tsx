@@ -163,6 +163,18 @@ export default function RegisterPage() {
     usernameStatus === "checking" ||
     confirmPasswordMatch === false;
 
+  const fullNameHasError = error?.field === "full_name";
+  const usernameHasError =
+    error?.field === "username" ||
+    usernameFormatValid === false ||
+    usernameStatus === "taken" ||
+    usernameStatus === "error";
+  const emailHasError = error?.field === "email";
+  const passwordHasError = error?.field === "password";
+  const confirmPasswordHasError =
+    error?.field === "confirm_password" ||
+    confirmPasswordMatch === false;
+
   // ── Form submit ──
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -254,10 +266,15 @@ export default function RegisterPage() {
                 }}
                 placeholder="John Doe"
                 autoComplete="name"
+                aria-describedby="fullName-error"
+                aria-invalid={fullNameHasError}
                 required
                 className="w-full rounded-2xl border border-white/10 bg-white/[0.05] py-3.5 pl-12 pr-4 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:border-purple-500/50 focus:bg-white/[0.08] focus:ring-2 focus:ring-purple-500/20"
               />
             </div>
+            <p id="fullName-error" className="mt-2 text-red-500 text-sm" role="alert">
+              {error?.field === "full_name" ? error.message : ""}
+            </p>
           </div>
 
           {/* ── Username (with real-time availability) ── */}
@@ -277,6 +294,8 @@ export default function RegisterPage() {
                 onChange={handleUsernameChange}
                 placeholder="johndoe"
                 autoComplete="username"
+                aria-describedby="username-error"
+                aria-invalid={usernameHasError}
                 required
                 className={`w-full rounded-2xl border bg-white/[0.05] py-3.5 pl-12 pr-12 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:bg-white/[0.08] focus:ring-2 ${getUsernameBorderClass()}`}
               />
@@ -371,6 +390,17 @@ export default function RegisterPage() {
                 </p>
               </div>
             )}
+            <p id="username-error" className="mt-2 text-red-500 text-sm" role="alert">
+              {error?.field === "username"
+                ? error.message
+                : usernameFormatValid === false
+                  ? "Lowercase letters, numbers, and underscores only (3-30 chars)"
+                  : usernameStatus === "taken"
+                    ? "Username is taken."
+                    : usernameStatus === "error"
+                      ? "Could not check availability. Try again."
+                      : ""}
+            </p>
           </div>
 
           {/* ── Email ── */}
@@ -393,10 +423,15 @@ export default function RegisterPage() {
                 }}
                 placeholder="you@example.com"
                 autoComplete="email"
+                aria-describedby="email-error"
+                aria-invalid={emailHasError}
                 required
                 className="w-full rounded-2xl border border-white/10 bg-white/[0.05] py-3.5 pl-12 pr-4 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:border-purple-500/50 focus:bg-white/[0.08] focus:ring-2 focus:ring-purple-500/20"
               />
             </div>
+            <p id="email-error" className="mt-2 text-red-500 text-sm" role="alert">
+              {error?.field === "email" ? error.message : ""}
+            </p>
           </div>
 
           {/* ── Password ── */}
@@ -419,6 +454,8 @@ export default function RegisterPage() {
                 }}
                 placeholder="••••••••"
                 autoComplete="new-password"
+                aria-describedby="password-error"
+                aria-invalid={passwordHasError}
                 required
                 minLength={6}
                 className="w-full rounded-2xl border border-white/10 bg-white/[0.05] py-3.5 pl-12 pr-12 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:border-purple-500/50 focus:bg-white/[0.08] focus:ring-2 focus:ring-purple-500/20"
@@ -451,6 +488,9 @@ export default function RegisterPage() {
                 </p>
               </div>
             )}
+            <p id="password-error" className="mt-2 text-red-500 text-sm" role="alert">
+              {error?.field === "password" ? error.message : ""}
+            </p>
           </div>
 
           {/* ── Confirm Password ── */}
@@ -473,6 +513,8 @@ export default function RegisterPage() {
                 }}
                 placeholder="••••••••"
                 autoComplete="new-password"
+                aria-describedby="confirmPassword-error"
+                aria-invalid={confirmPasswordHasError}
                 required
                 minLength={6}
                 className={`w-full rounded-2xl border bg-white/[0.05] py-3.5 pl-12 pr-20 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:bg-white/[0.08] focus:ring-2 ${
@@ -506,11 +548,13 @@ export default function RegisterPage() {
             </div>
 
             {/* Mismatch hint */}
-            {confirmPasswordMatch === false && (
-              <p className="mt-2 text-xs text-red-400/80">
-                Passwords do not match
-              </p>
-            )}
+            <p id="confirmPassword-error" className="mt-2 text-red-500 text-sm" role="alert">
+              {confirmPasswordMatch === false
+                ? "Passwords do not match"
+                : error?.field === "confirm_password"
+                  ? error.message
+                  : ""}
+            </p>
           </div>
 
           {/* ── Submit Button ── */}
