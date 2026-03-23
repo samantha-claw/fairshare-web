@@ -123,8 +123,7 @@ export default function ForgotPasswordPage() {
           </div>
           <h2 className="text-2xl font-bold text-white">Check your email</h2>
           <p className="mt-3 text-sm leading-relaxed text-white/50">
-            We&apos;ve sent a password reset link to{" "}
-            <span className="font-medium text-white/70">{email}</span>.
+            We&apos;ve sent a password reset link to{" "}<span className="font-medium text-white/70">{email}</span>.
           </p>
           <Link
             href="/login"
@@ -147,7 +146,7 @@ export default function ForgotPasswordPage() {
         <p className="mt-2 text-sm text-white/50">
           {isRecoveryMode
             ? "Enter and confirm your new password"
-            : "Enter your email and we&apos;ll send you a reset link"}
+            : "Enter your email and we'll send you a reset link"}
         </p>
       </div>
 
