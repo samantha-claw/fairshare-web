@@ -42,7 +42,8 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setError(null);
 
-    const validation = validate(forgotPasswordSchema, { email });
+    const normalizedEmail = email.trim().toLowerCase();
+    const validation = validate(forgotPasswordSchema, { email: normalizedEmail });
     if (!validation.success) {
       setError(validation.errors.email ?? "Please enter a valid email address.");
       setLoading(false);
@@ -51,7 +52,7 @@ export default function ForgotPasswordPage() {
 
     const supabase = createClient();
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-      email.trim().toLowerCase(),
+      normalizedEmail,
       { redirectTo: `${window.location.origin}/forgot-password` }
     );
 
@@ -152,7 +153,11 @@ export default function ForgotPasswordPage() {
 
       <div className="rounded-3xl border border-white/10 bg-white/[0.07] p-8 shadow-2xl backdrop-blur-xl">
         {error && (
-          <div className="mb-6 flex items-start gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3">
+          <div
+            id={isRecoveryMode ? "recovery-error" : "forgot-error"}
+            className="mb-6 flex items-start gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3"
+            role="alert"
+          >
             <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
             <p className="text-sm text-red-300">{error}</p>
           </div>
@@ -176,6 +181,8 @@ export default function ForgotPasswordPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   autoComplete="new-password"
+                  aria-invalid={Boolean(error)}
+                  aria-describedby={error ? "recovery-error" : undefined}
                   required
                   minLength={6}
                   className="w-full rounded-2xl border border-white/10 bg-white/[0.05] py-3.5 pl-12 pr-12 text-sm text-white placeholder-white/25 outline-none transition-all focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20"
@@ -212,6 +219,8 @@ export default function ForgotPasswordPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
                   autoComplete="new-password"
+                  aria-invalid={Boolean(error)}
+                  aria-describedby={error ? "recovery-error" : undefined}
                   required
                   minLength={6}
                   className="w-full rounded-2xl border border-white/10 bg-white/[0.05] py-3.5 pl-12 pr-12 text-sm text-white placeholder-white/25 outline-none transition-all focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20"
