@@ -183,8 +183,9 @@ export default function ForgotPasswordPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-pressed={showPassword}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 transition-colors hover:text-white/60"
-                  tabIndex={-1}
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -218,8 +219,9 @@ export default function ForgotPasswordPage() {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  aria-pressed={showConfirmPassword}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 transition-colors hover:text-white/60"
-                  tabIndex={-1}
                 >
                   {showConfirmPassword ? (
                     <EyeOff className="h-5 w-5" />
