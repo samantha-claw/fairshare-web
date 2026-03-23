@@ -3,6 +3,8 @@
 import { useState, useCallback, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { validate } from "@/lib/validate";
+import { settlementSchema } from "@/lib/validations";
 
 /**
  * Manages the settle-up modal and all settlement actions
@@ -35,14 +37,17 @@ export function useGroupSettlements(
     async (e: FormEvent) => {
       e.preventDefault();
 
-      if (!settleReceiver) {
-        toast.error("Please select who you are paying.");
+      const validation = validate(settlementSchema, {
+        to_user: settleReceiver,
+        amount: parseFloat(settleAmount),
+      });
+      if (!validation.success) {
+        toast.error(Object.values(validation.errors)[0]);
         return;
       }
-      if (!settleAmount || parseFloat(settleAmount) <= 0) {
-        toast.error("Please enter a valid amount.");
-        return;
-      }
+
+      const { to_user, amount: validatedAmount } = validation.data;
+
       if (!currentUser) {
         toast.error("Session expired. Please refresh.");
         return;
@@ -56,8 +61,8 @@ export function useGroupSettlements(
           .insert({
             group_id: groupId,
             from_user: currentUser,
-            to_user: settleReceiver,
-            amount: parseFloat(settleAmount),
+            to_user: to_user,
+            amount: validatedAmount,
             status: "pending",
             notes: "Settle up",
             created_by: currentUser,
@@ -73,8 +78,8 @@ export function useGroupSettlements(
           user_id: currentUser,
           action: "settlement_initiated",
           metadata: {
-            amount: parseFloat(settleAmount),
-            to_user: settleReceiver,
+            amount: validatedAmount,
+            to_user: to_user,
             type: "settlement",
           },
         });

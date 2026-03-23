@@ -3,7 +3,11 @@
 import { useState, useCallback, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { validate } from "@/lib/validate";
+import { expenseSchema } from "@/lib/validations";
 import type { Member, Expense } from "@/types/group";
+
+export type SplitType = "equal" | "exact" | "custom" | "percentage" | "shares";
 
 /**
  * Manages the expense modal state and all expense CRUD operations.
@@ -30,7 +34,7 @@ export function useGroupExpenses(
   /* ── Custom Splits State ─────────────────────────────── */
   const [computedSplits, setComputedSplits] = useState<any[]>([]);
   const [isValidSplit, setIsValidSplit] = useState(false);
-  const [splitType, setSplitType] = useState<string>("equal");
+  const [splitType, setSplitType] = useState<SplitType>("equal");
 
   const openAddExpenseModal = useCallback(() => {
     setEditingExpenseId(null);
@@ -74,7 +78,11 @@ export function useGroupExpenses(
     setExpenseName(exp.name);
     setExpenseAmount(exp.amount.toString());
     setPaidBy(exp.paid_by);
-    setSplitType(((exp as any).split_type as string) || "equal");
+    const rawDbSplit = ((exp as any).split_type as string)?.toLowerCase();
+    const validSplitType = ["equal", "exact", "custom", "percentage", "shares"].includes(rawDbSplit)
+      ? (rawDbSplit as SplitType)
+      : "equal";
+    setSplitType(validSplitType);
     setComputedSplits(derivedSplits);
     setIsValidSplit(derivedSplits.length > 0);
     setIsExpenseModalOpen(true);
@@ -83,13 +91,36 @@ export function useGroupExpenses(
   const handleSaveExpense = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
-      if (!expenseName || !expenseAmount) return;
 
-      // حماية إضافية: التأكد من أن التقسيم سليم قبل الإرسال
-      if (!isValidSplit || computedSplits.length === 0) {
-        toast.error("Please ensure the split is valid and amounts match the total.");
+      const trimmedName = expenseName.trim();
+      const amount = parseFloat(expenseAmount);
+
+      // For RPC — lean payload, no percentage
+      const splitsPayload = computedSplits.map((split) => ({
+        user_id: split.userId,
+        amount: split.amount,
+      }));
+
+      // For Zod — include percentage when relevant
+      const splitsForValidation = computedSplits.map((split) => ({
+        user_id: split.userId,
+        amount: split.amount,
+        ...(splitType === "percentage" ? { percentage: split.percentage } : {}),
+      }));
+
+      const validation = validate(expenseSchema, {
+        name: trimmedName,
+        amount,
+        paid_by: paidBy,
+        split_type: splitType,
+        splits: splitsForValidation,
+      });
+      if (!validation.success) {
+        toast.error(Object.values(validation.errors)[0]);
         return;
       }
+
+      const validatedExpense = validation.data;
 
       setSubmittingExpense(true);
 
@@ -97,28 +128,22 @@ export function useGroupExpenses(
         ? "edit_expense_custom_split"
         : "add_expense_custom_split";
 
-      // 🎯 تجهيز البيانات لترسل المبالغ المحددة لكل شخص
-      const splitsPayload = computedSplits.map((split) => ({
-        user_id: split.userId,
-        amount: split.amount,
-      }));
-
       const rpcParams = editingExpenseId
         ? {
             _expense_id: editingExpenseId,
-            _name: expenseName,
-            _amount: parseFloat(expenseAmount),
-            _paid_by: paidBy,
+            _name: validatedExpense.name,
+            _amount: validatedExpense.amount,
+            _paid_by: validatedExpense.paid_by,
             _splits: splitsPayload,
-            _split_type: splitType,
+            _split_type: validatedExpense.split_type,
           }
         : {
             _group_id: groupId,
-            _name: expenseName,
-            _amount: parseFloat(expenseAmount),
-            _paid_by: paidBy,
+            _name: validatedExpense.name,
+            _amount: validatedExpense.amount,
+            _paid_by: validatedExpense.paid_by,
             _splits: splitsPayload,
-            _split_type: splitType,
+            _split_type: validatedExpense.split_type,
           };
 
       try {
@@ -158,7 +183,6 @@ export function useGroupExpenses(
       paidBy,
       computedSplits,
       splitType,
-      isValidSplit,
       editingExpenseId,
       supabase,
       refetch,

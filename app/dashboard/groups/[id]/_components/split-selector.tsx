@@ -1,7 +1,7 @@
 // components/split-type-selector.tsx
 "use client";
 
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useEffect } from "react";
 import { Avatar } from "@/components/ui/avatar";
 
 // ─── Types ───
@@ -125,9 +125,16 @@ export function SplitTypeSelector({
           0
         );
         if (totalShares === 0) break;
-        members.forEach((m) => {
-          const sh = allocations.get(m.id) ?? 0;
-          results.set(m.id, +((sh / totalShares) * totalAmount).toFixed(2));
+        const memberIds = members.map((m) => m.id);
+        const rounded = memberIds.map((id) => {
+          const sh = allocations.get(id) ?? 0;
+          return Math.floor((sh / totalShares) * totalAmount * 100) / 100;
+        });
+        const roundedSum = rounded.reduce((s, v) => s + v, 0);
+        const remainder = +((totalAmount - roundedSum).toFixed(2));
+
+        memberIds.forEach((id, i) => {
+          results.set(id, i === 0 ? rounded[i] + remainder : rounded[i]);
         });
         break;
       }
@@ -203,7 +210,7 @@ export function SplitTypeSelector({
   }, [computed, allocations, splitType, totalAmount, selectedMembers, currency]);
 
   // ─── 3) Send computed results to parent ───
-  useMemo(() => {
+  useEffect(() => {
     if (!onComputedSplitsChange) return;
 
     const splits: ComputedSplit[] = members

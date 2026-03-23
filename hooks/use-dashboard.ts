@@ -97,17 +97,6 @@ useEffect(() => {
       },
       debouncedFetch
     )
-    .on(
-      "postgres_changes",
-      {
-        event: "INSERT",  // Only new expenses, not all changes
-        schema: "public",
-        table: "expenses",
-        // Note: Supabase filter supports only single-value eq, not IN
-        // So we'd need one subscription per group or use a different approach
-      },
-      debouncedFetch
-    )
     .subscribe();
 
   return () => {

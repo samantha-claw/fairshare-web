@@ -5,9 +5,10 @@ import { Modal } from "@/components/ui/modal";
 import type { Member } from "@/types/group";
 import {
   SplitTypeSelector,
-  type SplitType,
+  type SplitType as SelectorSplitType,
   type ComputedSplit,
 } from "./split-selector";
+import type { SplitType } from "@/hooks/group/use-group-expenses";
 
 // ─── Props Interface ───
 interface ExpenseModalProps {
@@ -29,6 +30,8 @@ interface ExpenseModalProps {
   paidBy: string;
   onPaidByChange: (val: string) => void;
   currentUserId: string;
+  initialSplitType?: SelectorSplitType;
+  initialSplits?: ComputedSplit[];
 }
 
 export function ExpenseModal({
@@ -46,11 +49,13 @@ export function ExpenseModal({
   paidBy,
   onPaidByChange,
   currentUserId,
+  initialSplitType = "equal",
+  initialSplits = [],
 }: ExpenseModalProps) {
   const title = editingExpenseId ? "Edit Expense" : "Add Expense";
 
   // ─── Split-related internal state ───
-  const [splitType, setSplitType] = useState<SplitType>("equal");
+  const [splitType, setSplitType] = useState<SelectorSplitType>("equal");
   const [allocations, setAllocations] = useState<Map<string, number>>(
     new Map()
   );
@@ -68,17 +73,43 @@ export function ExpenseModal({
   // ─── Initialize / reset when modal opens ───
   useEffect(() => {
     if (isOpen && members.length > 0) {
-      setSelectedMembers(new Set(members.map((m) => m.id)));
-      setSplitType("equal");
-      setAllocations(new Map());
-      setComputedSplits([]);
-      setIsValidSplit(false);
+      setSplitType(initialSplitType);
+
+      if (initialSplits.length > 0) {
+        // Editing — seed from existing split data
+        const newAllocations = new Map<string, number>();
+        const newSelected = new Set<string>();
+
+        initialSplits.forEach((split) => {
+          newSelected.add(split.userId);
+
+          if (initialSplitType === "percentage") {
+            newAllocations.set(split.userId, split.percentage);
+          } else if (initialSplitType === "shares") {
+            newAllocations.set(split.userId, split.shares);
+          } else {
+            // "exact" or "equal" (equal doesn't use allocations, but setting it is harmless)
+            newAllocations.set(split.userId, split.amount);
+          }
+        });
+
+        setSelectedMembers(newSelected);
+        setAllocations(newAllocations);
+        setComputedSplits(initialSplits);
+        setIsValidSplit(true);
+      } else {
+        // Adding new expense — reset to defaults
+        setSelectedMembers(new Set(members.map((m) => m.id)));
+        setAllocations(new Map());
+        setComputedSplits([]);
+        setIsValidSplit(false);
+      }
     }
   }, [isOpen, members]);
 
   // ─── Notify parent whenever split data changes ───
   useEffect(() => {
-    onSplitDataChange?.(computedSplits, splitType, isValidSplit);
+    onSplitDataChange?.(computedSplits, splitType as SplitType, isValidSplit);
   }, [computedSplits, splitType, isValidSplit, onSplitDataChange]);
 
   // ─── Update scroll shadows ───

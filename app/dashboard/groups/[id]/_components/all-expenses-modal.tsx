@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Modal } from "@/components/ui/modal";
@@ -127,10 +127,15 @@ function decodeCursor(cursor: string): { createdAt: string; id: string } | null 
 // ── Fetch helper ────────────────────────────────────────
 async function fetchExpensesPage(
   groupId: string,
-  lastCursor: string | null
-): Promise<{ data: ExpenseWithAvatar[]; hasMore: boolean; error: string | null }> {
+  cursor: string | null,
+  pageSize: number
+): Promise<{
+  data: ExpenseWithAvatar[];
+  totalCount: number;
+  nextCursor: string | null;
+  error: string | null;
+}> {
   const supabase = createClient();
-
   let query = supabase
     .from("expenses")
     .select(
@@ -143,44 +148,44 @@ async function fetchExpensesPage(
         amount,
         profiles:user_id (id, display_name, full_name, avatar_url)
       )
-    `
+    `,
+      { count: "exact" }
     )
     .eq("group_id", groupId)
     .order("created_at", { ascending: false })
     .order("id", { ascending: false })
-    .limit(PAGE_SIZE + 1); // Fetch one extra to determine hasMore
+    .limit(pageSize);
 
-  if (lastCursor) {
-    const parsedCursor = decodeCursor(lastCursor);
+  if (cursor) {
+    const parsedCursor = decodeCursor(cursor);
     if (parsedCursor) {
       query = query.or(
         `created_at.lt.${parsedCursor.createdAt},and(created_at.eq.${parsedCursor.createdAt},id.lt.${parsedCursor.id})`
       );
-    } else {
-      query = query.lt("created_at", lastCursor);
     }
   }
 
-  const { data, error } = await query;
+  const { data, error, count } = await query;
 
   if (error) {
     console.error("Failed to fetch expenses page:", error);
     return {
       data: [],
-      hasMore: false,
+      totalCount: 0,
+      nextCursor: null,
       error: "Failed to load expenses. Please try again.",
     };
   }
 
   const rows = (data ?? []) as ExpenseWithAvatar[];
-  const hasMore = rows.length > PAGE_SIZE;
+  const nextCursor = rows.length === pageSize ? encodeCursor(rows[rows.length - 1]) : null;
 
-  // Trim the extra probe row so we only return PAGE_SIZE items
-  if (hasMore) {
-    rows.pop();
-  }
-
-  return { data: rows, hasMore, error: null };
+  return {
+    data: rows,
+    totalCount: count ?? 0,
+    nextCursor,
+    error: null,
+  };
 }
 
 // ── Component ───────────────────────────────────────────
@@ -196,92 +201,57 @@ export function AllExpensesModal({
 }: AllExpensesModalProps) {
   // ── Pagination state ──────────────────────────────────
   const [expenses, setExpenses] = useState<ExpenseWithAvatar[]>([]);
-  const [hasMore, setHasMore] = useState(false);
+  const [page, setPage] = useState(0);
+  const [pageCursors, setPageCursors] = useState<Array<string | null>>([null]);
+  const [totalCount, setTotalCount] = useState(0);
   const [isLoadingInitial, setIsLoadingInitial] = useState(false);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
-  // Session token prevents stale async responses from previous open cycles.
-  const sessionRef = useRef<string>("");
+  useEffect(() => {
+    setPage(0);
+    setPageCursors([null]);
+  }, [isOpen, groupId]);
 
-  // ── Initial fetch when modal opens ────────────────────
+  // ── Fetch page when modal opens or page changes ───────
   useEffect(() => {
     if (!isOpen || !groupId) return;
 
-    const sessionToken = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    sessionRef.current = sessionToken;
+    const cursor = pageCursors[page] ?? null;
+
     setExpenses([]);
-    setHasMore(false);
+    setTotalCount(0);
     setFetchError(null);
     setIsLoadingInitial(true);
 
-    fetchExpensesPage(groupId, null).then(({ data, hasMore: more, error }) => {
-      if (sessionRef.current !== sessionToken) return;
+    let cancelled = false;
+
+    fetchExpensesPage(groupId, cursor, PAGE_SIZE).then(({ data, totalCount, nextCursor, error }) => {
+      if (cancelled) return;
       if (error) {
         setFetchError(error);
       } else {
         setExpenses(data);
-        setHasMore(more);
+        setTotalCount(totalCount);
+        setPageCursors((prev) => {
+          const next = [...prev];
+          next[page] = cursor;
+          next[page + 1] = nextCursor;
+          return next;
+        });
       }
       setIsLoadingInitial(false);
     });
 
     return () => {
-      if (sessionRef.current === sessionToken) {
-        sessionRef.current = "";
-      }
+      cancelled = true;
     };
-  }, [isOpen, groupId]);
-
-  // ── Load more handler ────────────────────────────────
-  const handleLoadMore = useCallback(async () => {
-    if (isLoadingMore || !hasMore || expenses.length === 0) return;
-    const sessionToken = sessionRef.current;
-
-    const lastItem = expenses[expenses.length - 1];
-    const cursor = encodeCursor(lastItem);
-
-    setIsLoadingMore(true);
-    setFetchError(null);
-
-    try {
-      const {
-        data: newRows,
-        hasMore: more,
-        error,
-      } = await fetchExpensesPage(
-        groupId,
-        cursor
-      );
-
-      if (sessionRef.current !== sessionToken) return;
-
-      if (error) {
-        setFetchError(error);
-        return;
-      }
-
-      // Deduplicate — in case a new expense was inserted between pages
-      setExpenses((prev) => {
-        const existingIds = new Set(prev.map((e) => e.id));
-        const unique = newRows.filter((e) => !existingIds.has(e.id));
-        return [...prev, ...unique];
-      });
-      setHasMore(more);
-    } catch (err) {
-      if (sessionRef.current !== sessionToken) return;
-      console.error("Load more failed:", err);
-      setFetchError("Failed to load more expenses. Try again.");
-    } finally {
-      if (sessionRef.current === sessionToken) setIsLoadingMore(false);
-    }
-  }, [isLoadingMore, hasMore, expenses, groupId]);
+  }, [isOpen, groupId, page]);
 
   // ── Helpers ───────────────────────────────────────────
   const canModify = (exp: ExpenseWithAvatar) =>
     currentUser === exp.paid_by || isOwner;
 
-  const totalLoaded = expenses.length;
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="All Expenses" maxWidth="lg">
@@ -294,7 +264,7 @@ export function AllExpensesModal({
             <p className="mt-0.5 text-xs text-gray-500">
               {isLoadingInitial
                 ? "Loading…"
-                : `${totalLoaded} expense${totalLoaded !== 1 ? "s" : ""} loaded · ${currency}`}
+                : `${totalCount} expense${totalCount !== 1 ? "s" : ""} · ${currency}`}
             </p>
           </div>
           <button
@@ -507,78 +477,10 @@ export function AllExpensesModal({
                 );
               })}
 
-              {/* ── Load More / End-of-list ── */}
-              {hasMore && (
-                <div className="pt-2">
-                  <button
-                    type="button"
-                    onClick={handleLoadMore}
-                    disabled={isLoadingMore}
-                    className="group/btn w-full rounded-xl border border-gray-200 bg-white py-3 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 hover:shadow active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60"
-                  >
-                    {isLoadingMore ? (
-                      <span className="inline-flex items-center gap-2">
-                        <svg
-                          className="h-4 w-4 animate-spin text-gray-400"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          />
-                        </svg>
-                        Loading…
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5">
-                        Load more expenses
-                        <svg
-                          className="h-4 w-4 transition-transform group-hover/btn:translate-y-0.5"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={2}
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
-                      </span>
-                    )}
-                  </button>
-                </div>
-              )}
-
-              {/* End-of-list indicator when all pages loaded */}
-              {!hasMore && expenses.length > PAGE_SIZE && (
-                <p className="pt-2 text-center text-xs text-gray-400">
-                  All {expenses.length} expenses loaded
-                </p>
-              )}
-
               {/* Error banner for load-more failures */}
               {fetchError && (
                 <div className="mt-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-center">
                   <p className="text-sm text-red-600">{fetchError}</p>
-                  <button
-                    type="button"
-                    onClick={handleLoadMore}
-                    className="mt-1.5 text-xs font-semibold text-red-700 underline hover:text-red-800"
-                  >
-                    Retry
-                  </button>
                 </div>
               )}
             </div>
@@ -587,6 +489,29 @@ export function AllExpensesModal({
 
         {/* ── Footer ── */}
         <div className="shrink-0 border-t border-gray-200 px-5 py-3">
+          {totalPages > 1 && (
+            <div className="mb-3 flex items-center justify-between border-b border-gray-100 pb-3">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={page === 0 || isLoadingInitial}
+                className="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Previous
+              </button>
+              <span className="text-xs text-gray-400">
+                Page {page + 1} of {totalPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                disabled={page === totalPages - 1 || isLoadingInitial}
+                className="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Next
+              </button>
+            </div>
+          )}
           <button
             type="button"
             onClick={onClose}
