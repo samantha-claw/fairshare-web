@@ -6,6 +6,8 @@
 import { useEffect, useState, useCallback, useRef, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { validate } from "@/lib/validate";
+import { createGroupSchema } from "@/lib/validations";
 
 // ==========================================
 // 🧩 TYPES
@@ -209,30 +211,26 @@ export function useCreateGroup() {
     setSelectedFriendIds([]);
   }
 
+  function buildNormalizedPayload() {
+    return {
+      name: name.trim(),
+      description: description.trim(),
+      currency: currency.trim().toUpperCase(),
+    };
+  }
+
   /* ── Validation ──────────────────────────────────── */
 
-  function validate(): boolean {
-    const newErrors: FormErrors = {};
+  function runValidation(): boolean {
+    const result = validate(createGroupSchema, buildNormalizedPayload());
 
-    const trimmedName = name.trim();
-    if (!trimmedName) {
-      newErrors.name = "Group name is required.";
-    } else if (trimmedName.length < 2) {
-      newErrors.name = "Group name must be at least 2 characters.";
-    } else if (trimmedName.length > 100) {
-      newErrors.name = "Group name must be under 100 characters.";
+    if (!result.success) {
+      setErrors(result.errors as FormErrors);
+      return false;
     }
 
-    if (description.trim().length > 500) {
-      newErrors.description = "Description must be under 500 characters.";
-    }
-
-    if (!currency) {
-      newErrors.currency = "Please select a currency.";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors({});
+    return true;
   }
 
   /* ── Submit ──────────────────────────────────────── */
@@ -246,7 +244,7 @@ export function useCreateGroup() {
     // Also check state as a fallback
     if (saving) return;
 
-    if (!validate()) return;
+    if (!runValidation()) return;
     if (!userId) return;
 
     // Lock immediately — ref updates synchronously
@@ -255,16 +253,15 @@ export function useCreateGroup() {
     setErrors({});
 
     try {
-      const trimmedName = name.trim();
-      const trimmedDescription = description.trim();
+      const normalized = buildNormalizedPayload();
 
       // 1. Create the group
       const { data: groupData, error: groupError } = await supabase
         .from("groups")
         .insert({
-          name: trimmedName,
-          description: trimmedDescription || null,
-          currency,
+          name: normalized.name,
+          description: normalized.description || null,
+          currency: normalized.currency,
           owner_id: userId,
         })
         .select("id")

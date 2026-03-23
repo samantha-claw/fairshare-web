@@ -327,6 +327,16 @@ export default function GroupDetailsPage() {
         paidBy={expenseCtl.paidBy}
         onPaidByChange={expenseCtl.setPaidBy}
         currentUserId={data.currentUser || ""}
+        initialSplitType={
+          expenseCtl.splitType === "equal"
+            ? "equal"
+            : expenseCtl.splitType === "percentage"
+              ? "percentage"
+              : expenseCtl.splitType === "shares"
+                ? "shares"
+                : "exact"
+        }
+        initialSplits={expenseCtl.computedSplits}
       />
 
       <SettleModal

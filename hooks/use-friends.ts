@@ -7,6 +7,8 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { validate } from "@/lib/validate";
+import { friendSearchSchema } from "@/lib/validations";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import type {
   Friend,
@@ -172,13 +174,20 @@ export function useFriends() {
       return;
     }
 
+    const trimmedQuery = searchTerm.trim().toLowerCase();
+    const queryValidation = validate(friendSearchSchema, { query: trimmedQuery });
+    if (!queryValidation.success) {
+      setSearchResults([]);
+      return;
+    }
+
     const delay = setTimeout(async () => {
       setSearching(true);
       try {
         const { data, error } = await supabase
           .from("profiles")
           .select("id, username, display_name, full_name, avatar_url")
-          .ilike("username", `%${searchTerm.trim()}%`)
+          .ilike("username", `%${trimmedQuery}%`)
           .limit(8);
 
         if (!error && data) {

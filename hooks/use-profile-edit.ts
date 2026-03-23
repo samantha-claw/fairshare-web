@@ -6,6 +6,8 @@
 import { useEffect, useState, useCallback, useRef, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { validate as zodValidate } from "@/lib/validate";
+import { profileEditSchema } from "@/lib/validations";
 
 // ==========================================
 // 🧩 TYPES
@@ -236,44 +238,26 @@ setUserId(user.id);
 
   /* ── Validation ──────────────────────────────────── */
 
+  function buildNormalizedPayload() {
+    return {
+      display_name: formData.display_name.trim(),
+      username: formData.username.trim().toLowerCase(),
+      full_name: formData.full_name.trim(),
+      bio: formData.bio.trim(),
+      avatar_url: formData.avatar_url.trim(),
+    };
+  }
+
   function validate(): boolean {
-    const newErrors: FormErrors = {};
+    const result = zodValidate(profileEditSchema, buildNormalizedPayload());
 
-    // Display name
-    const trimmedDisplay = formData.display_name.trim();
-    if (!trimmedDisplay) {
-      newErrors.display_name = "Display name is required.";
-    } else if (trimmedDisplay.length < 2) {
-      newErrors.display_name = "Display name must be at least 2 characters.";
-    } else if (trimmedDisplay.length > 50) {
-      newErrors.display_name = "Display name must be under 50 characters.";
+    if (!result.success) {
+      setErrors(result.errors as FormErrors);
+      return false;
     }
 
-    // Username
-    const trimmedUsername = formData.username.trim().toLowerCase();
-    if (!trimmedUsername) {
-      newErrors.username = "Username is required.";
-    } else if (trimmedUsername.length < 3) {
-      newErrors.username = "Username must be at least 3 characters.";
-    } else if (trimmedUsername.length > 30) {
-      newErrors.username = "Username must be under 30 characters.";
-    } else if (!/^[a-z0-9_]+$/.test(trimmedUsername)) {
-      newErrors.username =
-        "Username can only contain lowercase letters, numbers, and underscores.";
-    }
-
-    // Full name (optional but validate length)
-    if (formData.full_name.trim().length > 100) {
-      newErrors.full_name = "Full name must be under 100 characters.";
-    }
-
-    // Bio
-    if (formData.bio.trim().length > 250) {
-      newErrors.bio = "Bio must be under 250 characters.";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors({});
+    return true;
   }
 
   /* ── Upload Avatar to Supabase Storage ───────────── */
@@ -343,7 +327,8 @@ setUserId(user.id);
 
     try {
       // Check username uniqueness if changed
-      const trimmedUsername = formData.username.trim().toLowerCase();
+      const normalized = buildNormalizedPayload();
+      const trimmedUsername = normalized.username;
 
       if (trimmedUsername !== originalData.username.toLowerCase()) {
         const { data: existingUser } = await supabase
@@ -361,7 +346,7 @@ setUserId(user.id);
       }
 
       // Handle avatar upload / removal
-      let finalAvatarUrl = formData.avatar_url.trim();
+      let finalAvatarUrl = normalized.avatar_url;
 
       if (avatarFile) {
         // Upload new avatar
@@ -381,11 +366,11 @@ setUserId(user.id);
       const { error: updateError } = await supabase
         .from("profiles")
         .update({
-          display_name: formData.display_name.trim(),
+          display_name: normalized.display_name,
           username: trimmedUsername,
-          full_name: formData.full_name.trim(),
+          full_name: normalized.full_name,
           avatar_url: finalAvatarUrl,
-          bio: formData.bio.trim(),
+          bio: normalized.bio,
           updated_at: new Date().toISOString(),
         })
         .eq("id", userId);
@@ -394,11 +379,11 @@ setUserId(user.id);
 
       // Update original data reference
       const updatedData: ProfileFormData = {
-        display_name: formData.display_name.trim(),
+        display_name: normalized.display_name,
         username: trimmedUsername,
-        full_name: formData.full_name.trim(),
+        full_name: normalized.full_name,
         avatar_url: finalAvatarUrl,
-        bio: formData.bio.trim(),
+        bio: normalized.bio,
       };
       setOriginalData(updatedData);
       setFormData(updatedData);

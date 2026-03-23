@@ -128,10 +128,15 @@ export default function LoginPage() {
                 }}
                 placeholder="you@example.com"
                 autoComplete="email"
+                aria-describedby="email-error"
+                aria-invalid={error?.field === "email"}
                 required
                 className="w-full rounded-2xl border border-white/10 bg-white/[0.05] py-3.5 pl-12 pr-4 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:border-indigo-500/50 focus:bg-white/[0.08] focus:ring-2 focus:ring-indigo-500/20"
               />
             </div>
+            <p id="email-error" className="mt-2 text-red-500 text-sm" role="alert">
+              {error?.field === "email" ? error.message : ""}
+            </p>
           </div>
 
           {/* Password */}
@@ -154,6 +159,8 @@ export default function LoginPage() {
                 }}
                 placeholder="••••••••"
                 autoComplete="current-password"
+                aria-describedby="password-error"
+                aria-invalid={error?.field === "password"}
                 required
                 className="w-full rounded-2xl border border-white/10 bg-white/[0.05] py-3.5 pl-12 pr-12 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:border-indigo-500/50 focus:bg-white/[0.08] focus:ring-2 focus:ring-indigo-500/20"
               />
@@ -170,6 +177,9 @@ export default function LoginPage() {
                 )}
               </button>
             </div>
+            <p id="password-error" className="mt-2 text-red-500 text-sm" role="alert">
+              {error?.field === "password" ? error.message : ""}
+            </p>
           </div>
 
           {/* Forgot Password Link */}
