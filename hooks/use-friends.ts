@@ -184,11 +184,9 @@ export function useFriends() {
     const delay = setTimeout(async () => {
       setSearching(true);
       try {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("id, username, display_name, full_name, avatar_url")
-          .ilike("username", `%${trimmedQuery}%`)
-          .limit(8);
+        const { data, error } = await supabase.rpc("search_users_by_username", {
+          search_term: trimmedQuery,
+        });
 
         if (!error && data) {
           const friendIds = friends.map((f) => f.friend_id);
