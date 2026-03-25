@@ -50,9 +50,6 @@ function resolveDisplayName(user: SearchResultUser): string {
   if (user.display_name && user.display_name.trim().length > 0) {
     return user.display_name.trim();
   }
-  if (user.full_name && user.full_name.trim().length > 0) {
-    return user.full_name.trim();
-  }
   if (user.username && user.username.trim().length > 0) {
     return user.username.trim();
   }
