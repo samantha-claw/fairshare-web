@@ -36,7 +36,6 @@ export interface SearchResultUser {
   id: string;
   username: string;
   display_name: string;
-  full_name: string;
   avatar_url: string;
 }
 
