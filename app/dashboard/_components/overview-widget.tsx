@@ -3,20 +3,8 @@
 // ==========================================
 // 📦 IMPORTS
 // ==========================================
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-} from "recharts";
 import { formatCurrency } from "@/lib/utils";
-import { TrendingUp, TrendingDown, Wallet, Activity } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet, Users, ArrowForward } from "lucide-react";
 import type { GroupBalance } from "@/types/dashboard";
 
 // ==========================================
@@ -30,7 +18,7 @@ interface OverviewWidgetProps {
 }
 
 // ==========================================
-// 🎨 UI RENDER
+// 🎨 UI RENDER — NEW DESIGN
 // ==========================================
 export function OverviewWidget({
   totalNet,
@@ -38,200 +26,128 @@ export function OverviewWidget({
   totalIOwe,
   groups,
 }: OverviewWidgetProps) {
-  const hasData = totalOwedToMe > 0 || totalIOwe > 0;
-
-  const pieData = hasData
-    ? [
-        { name: "Owed to you", value: totalOwedToMe },
-        { name: "You owe", value: totalIOwe },
-      ]
-    : [{ name: "No data", value: 1 }];
-
-  const PIE_COLORS = hasData ? ["#34d399", "#fb7185"] : ["#334155"];
-
-  const barData = groups
-    .filter((g) => g.net_balance !== 0)
-    .slice(0, 6)
-    .map((g) => ({
-      name: g.group_name.length > 10 ? g.group_name.slice(0, 10) + "…" : g.group_name,
-      balance: g.net_balance,
-      fill: g.net_balance > 0 ? "#34d399" : "#fb7185",
-    }));
+  // Calculate percentage changes (mock for now, can be real with historical data)
+  const owedChange = totalOwedToMe > 0 ? 36.8 : 0;
+  const oweChange = totalIOwe > 0 ? -15.2 : 0;
 
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-1">
-      {/* Decorative Elements */}
-      <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl" />
-      <div className="absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-purple-500/10 blur-3xl" />
-      <div className="absolute right-1/3 top-1/2 h-40 w-40 rounded-full bg-blue-500/5 blur-2xl" />
-
-      <div className="relative rounded-[22px] bg-gradient-to-br from-white/[0.06] to-white/[0.02] p-6 backdrop-blur-xl sm:p-8">
-        <div className="grid gap-8 lg:grid-cols-5">
-          {/* ── Left: Balance Hero ────────────────────── */}
-          <div className="lg:col-span-3">
-            <div className="mb-1 flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10">
-                <Activity className="h-4 w-4 text-indigo-300" />
-              </div>
-              <span className="text-xs font-semibold uppercase tracking-widest text-indigo-300/80">
-                Financial Overview
-              </span>
-            </div>
-
-            <div className="mb-6 mt-4">
-              <p className="mb-1 text-sm text-slate-400">Total Balance</p>
-              <p
-                className={`font-mono text-5xl font-black tracking-tight sm:text-6xl ${
-                  totalNet > 0
-                    ? "text-emerald-400"
-                    : totalNet < 0
-                    ? "text-rose-400"
-                    : "text-white"
-                }`}
-              >
-                {totalNet > 0 && "+"}
-                {totalNet < 0 && "−"}
-                {formatCurrency(totalNet)}
-              </p>
-            </div>
-
-            {/* Owed / Owe Cards */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="group rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.08] p-4 transition-all hover:border-emerald-500/40 hover:bg-emerald-500/[0.12]">
-                <div className="mb-2 flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/20">
-                    <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
-                  </div>
-                  <span className="text-xs font-medium text-emerald-300/70">You are owed</span>
-                </div>
-                <p className="font-mono text-2xl font-bold text-emerald-400">
-                  +{formatCurrency(totalOwedToMe)}
-                </p>
-              </div>
-
-              <div className="group rounded-2xl border border-rose-500/20 bg-rose-500/[0.08] p-4 transition-all hover:border-rose-500/40 hover:bg-rose-500/[0.12]">
-                <div className="mb-2 flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-500/20">
-                    <TrendingDown className="h-3.5 w-3.5 text-rose-400" />
-                  </div>
-                  <span className="text-xs font-medium text-rose-300/70">You owe</span>
-                </div>
-                <p className="font-mono text-2xl font-bold text-rose-400">
-                  −{formatCurrency(totalIOwe)}
-                </p>
-              </div>
-            </div>
+    <div className="bg-surface-light dark:bg-surface-dark rounded-3xl p-6 shadow-sm dark:shadow-none border border-border-light dark:border-border-dark">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold text-text-light-primary dark:text-text-dark-primary">
+          Overview
+        </h2>
+        <div className="relative">
+          <select className="appearance-none bg-gray-100 dark:bg-[#202020] border-none rounded-xl pl-4 pr-10 py-2 text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary focus:ring-0 cursor-pointer">
+            <option>Last 7 days</option>
+            <option>Last 30 days</option>
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+            <svg className="h-4 w-4 text-text-light-secondary dark:text-text-dark-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
           </div>
+        </div>
+      </div>
 
-          {/* ── Right: Charts ────────────────────────── */}
-          <div className="flex flex-col items-center justify-center lg:col-span-2">
-            {/* Donut Chart */}
-            <div className="relative h-48 w-48">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={55}
-                    outerRadius={78}
-                    paddingAngle={hasData ? 6 : 0}
-                    dataKey="value"
-                    strokeWidth={0}
-                  >
-                    {pieData.map((_entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={PIE_COLORS[index % PIE_COLORS.length]}
-                        className="transition-opacity hover:opacity-80"
-                      />
-                    ))}
-                  </Pie>
-                  {hasData && (
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#1e293b",
-                        border: "1px solid #334155",
-                        borderRadius: "12px",
-                        fontSize: "12px",
-                        color: "#e2e8f0",
-                      }}
-                      formatter={(value: any) => {
-                        const numValue = Number(value) || 0;
-                        const formatted = formatCurrency(numValue);
-                        return `${numValue > 0 ? "+" : ""}${formatted}`;
-                      }}
-                    />
-                  )}
-                </PieChart>
-              </ResponsiveContainer>
-              {/* Center Label */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <Wallet className="mb-1 h-4 w-4 text-slate-500" />
-                <span className="text-[10px] font-medium uppercase tracking-wider text-slate-500">
-                  {hasData ? "Balance" : "No Data"}
+      {/* Financial Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        {/* You Owe Card */}
+        <div className="bg-gray-50 dark:bg-[#1A1A1A] rounded-2xl p-5 border border-border-light dark:border-border-dark">
+          <div className="flex items-center gap-2 text-text-light-secondary dark:text-text-dark-secondary mb-3">
+            <TrendingDown className="h-4 w-4 text-rose-400" />
+            <span className="text-sm font-medium">You owe</span>
+          </div>
+          <div className="flex items-end gap-4">
+            <span className="text-4xl font-bold text-text-light-primary dark:text-text-dark-primary">
+              {totalIOwe.toLocaleString()}
+            </span>
+            {totalIOwe > 0 && (
+              <div className="flex flex-col mb-1">
+                <div className="flex items-center gap-1 text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-lg text-xs font-semibold w-fit mb-1">
+                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  </svg>
+                  {Math.abs(oweChange)}%
+                </div>
+                <span className="text-xs text-text-light-secondary dark:text-text-dark-secondary">
+                  vs last month
                 </span>
-              </div>
-            </div>
-
-            {/* Legend */}
-            {hasData && (
-              <div className="mt-3 flex items-center gap-4">
-                <div className="flex items-center gap-1.5">
-                  <div className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-                  <span className="text-[11px] text-slate-400">Owed</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="h-2.5 w-2.5 rounded-full bg-rose-400" />
-                  <span className="text-[11px] text-slate-400">Owe</span>
-                </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* ── Bottom: Per-Group Bar Chart ───────────── */}
-        {barData.length > 0 && (
-          <div className="mt-6 rounded-2xl border border-white/5 bg-white/[0.03] p-4">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-500">
-              Balance by Group
-            </p>
-            <div className="h-32">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={barData} barCategoryGap="20%">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                  <XAxis
-                    dataKey="name"
-                    tick={{ fill: "#64748b", fontSize: 10 }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis hide />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#1e293b",
-                      border: "1px solid #334155",
-                      borderRadius: "12px",
-                      fontSize: "12px",
-                      color: "#e2e8f0",
-                    }}
-    formatter={(value: any) => {
-      const numValue = Number(value) || 0;
-      const formatted = formatCurrency(numValue);
-      return `${numValue > 0 ? "+" : ""}${formatted}`;
-    }}
-
-                  />
-                  <Bar dataKey="balance" radius={[6, 6, 0, 0]}>
-                    {barData.map((entry, index) => (
-                      <Cell key={`bar-${index}`} fill={entry.fill} fillOpacity={0.85} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+        {/* You Are Owed Card */}
+        <div className="bg-gray-50 dark:bg-[#1A1A1A] rounded-2xl p-5 border border-border-light dark:border-border-dark">
+          <div className="flex items-center gap-2 text-text-light-secondary dark:text-text-dark-secondary mb-3">
+            <Wallet className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium">You are owed</span>
           </div>
-        )}
+          <div className="flex items-end gap-4">
+            <span className="text-4xl font-bold text-text-light-primary dark:text-text-dark-primary">
+              {totalOwedToMe > 1000 
+                ? `${(totalOwedToMe / 1000).toFixed(0)}k` 
+                : totalOwedToMe.toLocaleString()}
+            </span>
+            {totalOwedToMe > 0 && (
+              <div className="flex flex-col mb-1">
+                <div className="flex items-center gap-1 text-primary bg-primary/10 px-2 py-0.5 rounded-lg text-xs font-semibold w-fit mb-1">
+                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                  </svg>
+                  {owedChange}%
+                </div>
+                <span className="text-xs text-text-light-secondary dark:text-text-dark-secondary">
+                  vs last month
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Friends Section */}
+      <div className="mt-4">
+        <h3 className="font-semibold text-base mb-1 text-text-light-primary dark:text-text-dark-primary">
+          {groups.length} active groups
+        </h3>
+        <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary mb-4">
+          View groups you've interacted with recently
+        </p>
+        
+        <div className="flex flex-wrap gap-4 items-center">
+          {groups.slice(0, 5).map((group) => (
+            <div key={group.group_id} className="flex flex-col items-center gap-2">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 border-surface-light dark:border-surface-dark ${
+                group.net_balance > 0 
+                  ? "bg-gradient-to-br from-primary/30 to-emerald-500/30" 
+                  : group.net_balance < 0 
+                    ? "bg-gradient-to-br from-rose-500/30 to-pink-500/30"
+                    : "bg-gray-200 dark:bg-gray-700"
+              }`}>
+                <span className="text-sm font-bold text-text-light-primary dark:text-text-dark-primary">
+                  {group.group_name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <span className="text-xs text-text-light-secondary dark:text-text-dark-secondary max-w-[60px] truncate text-center">
+                {group.group_name}
+              </span>
+            </div>
+          ))}
+          
+          {/* View All Button */}
+          {groups.length > 5 && (
+            <div className="flex flex-col items-center gap-2 ml-2">
+              <button className="w-12 h-12 rounded-full border border-border-light dark:border-border-dark flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                <ArrowForward className="h-4 w-4 text-text-light-secondary dark:text-text-dark-secondary" />
+              </button>
+              <span className="text-xs text-text-light-secondary dark:text-text-dark-secondary">
+                View all
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

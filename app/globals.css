@@ -1,8 +1,42 @@
 @import "tailwindcss";
 
+/* ==========================================
+   🎨 CSS VARIABLES — NEW DESIGN SYSTEM
+   ========================================== */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Light Mode Colors */
+  --background-light: #F3F4F6;
+  --surface-light: #FFFFFF;
+  --border-light: #E5E7EB;
+  --text-light-primary: #111827;
+  --text-light-secondary: #6B7280;
+  
+  /* Dark Mode Colors */
+  --background-dark: #0D0D0D;
+  --surface-dark: #181818;
+  --surface-darker: #121212;
+  --border-dark: #2A2A2A;
+  --text-dark-primary: #FFFFFF;
+  --text-dark-secondary: #A1A1AA;
+  
+  /* Accent Colors */
+  --primary: #00E676;
+  --success: #00E676;
+  --danger: #FF4D4F;
+  
+  /* Backgrounds for badges */
+  --success-bg: rgba(0, 230, 118, 0.1);
+  --danger-bg: rgba(255, 77, 79, 0.1);
+  
+  /* Theme defaults */
+  --background: var(--background-light);
+  --foreground: var(--text-light-primary);
+}
+
+/* Dark mode */
+.dark {
+  --background: var(--background-dark);
+  --foreground: var(--text-dark-primary);
 }
 
 @theme inline {
@@ -10,22 +44,55 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  
+  /* Custom colors */
+  --color-primary: var(--primary);
+  --color-surface-light: var(--surface-light);
+  --color-surface-dark: var(--surface-dark);
+  --color-border-light: var(--border-light);
+  --color-border-dark: var(--border-dark);
+  --color-text-light-primary: var(--text-light-primary);
+  --color-text-light-secondary: var(--text-light-secondary);
+  --color-text-dark-primary: var(--text-dark-primary);
+  --color-text-dark-secondary: var(--text-dark-secondary);
+  --color-success-bg: var(--success-bg);
+  --color-danger-bg: var(--danger-bg);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Base styles */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', Arial, Helvetica, sans-serif;
 }
 
+/* ==========================================
+   🎨 TAILWIND EXTEND CONFIG
+   ========================================== */
+/* 
+   These colors are available via Tailwind classes:
+   - bg-surface-light, bg-surface-dark
+   - bg-background-light, bg-background-dark
+   - text-text-light-primary, text-text-dark-primary
+   - text-text-light-secondary, text-text-dark-secondary
+   - border-border-light, border-border-dark
+   - bg-primary, text-primary
+   - bg-success-bg, bg-danger-bg
+*/
 
+/* Material Icons sizing */
+.material-icons-outlined {
+  font-size: 20px;
+}
+
+/* Donut chart rotation */
+.donut-chart {
+  transform: rotate(-90deg);
+}
+
+/* ==========================================
+   🎨 ANIMATIONS
+   ========================================== */
 @keyframes wave {
   0% { transform: rotate(0deg); }
   10% { transform: rotate(14deg); }
@@ -39,4 +106,65 @@ body {
 @keyframes scanline {
   0%, 100% { top: 0; }
   50% { top: calc(100% - 2px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(0, 230, 118, 0.3);
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(0, 230, 118, 0.5);
+  }
+}
+
+/* ==========================================
+   🎨 SCROLLBAR STYLING
+   ========================================== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ==========================================
+   🎨 SELECTION STYLING
+   ========================================== */
+::selection {
+  background: rgba(0, 230, 118, 0.3);
+  color: inherit;
+}
+
+/* ==========================================
+   🎨 FOCUS STYLES
+   ========================================== */
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ==========================================
+   🎨 TRANSITIONS
+   ========================================== */
+.transition-theme {
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
