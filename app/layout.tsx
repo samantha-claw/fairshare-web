@@ -2,12 +2,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ToastProvider } from "@/providers/toast-provider";
-import { Inter } from "next/font/google";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
 
 // 1. إعدادات الـ Metadata
 export const metadata: Metadata = {
@@ -43,7 +37,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className={`${inter.variable} min-h-screen bg-background-light dark:bg-background-dark text-text-light-primary dark:text-text-dark-primary antialiased font-sans`}>
+      <body className="min-h-screen bg-background-light dark:bg-background-dark text-text-light-primary dark:text-text-dark-primary antialiased font-sans">
         <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
