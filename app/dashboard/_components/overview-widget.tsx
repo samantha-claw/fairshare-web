@@ -4,7 +4,7 @@
 // 📦 IMPORTS
 // ==========================================
 import { formatCurrency } from "@/lib/utils";
-import { TrendingUp, TrendingDown, Wallet, Users, ArrowForward } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet, Users, ArrowRight } from "lucide-react";
 import type { GroupBalance } from "@/types/dashboard";
 
 // ==========================================
@@ -140,7 +140,7 @@ export function OverviewWidget({
           {groups.length > 5 && (
             <div className="flex flex-col items-center gap-2 ml-2">
               <button className="w-12 h-12 rounded-full border border-border-light dark:border-border-dark flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                <ArrowForward className="h-4 w-4 text-text-light-secondary dark:text-text-dark-secondary" />
+                <ArrowRight className="h-4 w-4 text-text-light-secondary dark:text-text-dark-secondary" />
               </button>
               <span className="text-xs text-text-light-secondary dark:text-text-dark-secondary">
                 View all
