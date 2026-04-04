@@ -1,19 +1,22 @@
-import withPWAInit from "@ducanh2912/next-pwa";
-
-const withPWA = withPWAInit({
-  dest: "public",
-  disable: process.env.NODE_ENV === "development",
-  fallbacks: {
-    document: "/offline",
-    image: "/offline-image.png",
-  },
-  cacheOnFrontEndNav: true,
-  reloadOnOnline: true,
-});
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Add your Next.js config options here
+  // Disable SWC for Android/Termux compatibility
+  swcMinify: false,
+  
+  // Use Babel instead of SWC
+  experimental: {
+    // This forces Next.js to use Babel instead of SWC
+    forceSwcTransforms: false,
+  },
+  
+  // Other config
+  reactStrictMode: true,
+  
+  // Image optimization
+  images: {
+    domains: ['lh3.googleusercontent.com'],
+    unoptimized: false,
+  },
 };
 
-export default withPWA(nextConfig);
+export default nextConfig;
