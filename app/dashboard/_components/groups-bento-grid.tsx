@@ -18,31 +18,31 @@ interface GroupsBentoGridProps {
 }
 
 // ==========================================
-// ⚙️ GRADIENTS & COLORS
+// ⚙️ GRADIENTS & COLORS (Premium palette - no purple)
 // ==========================================
 const GRADIENTS = [
-  "from-indigo-500 via-purple-500 to-blue-600",
-  "from-emerald-500 via-teal-500 to-cyan-600",
-  "from-amber-500 via-orange-500 to-red-500",
-  "from-pink-500 via-rose-500 to-fuchsia-600",
-  "from-violet-500 via-purple-500 to-indigo-600",
-  "from-cyan-500 via-blue-500 to-indigo-600",
+  "from-slate-800 via-slate-700 to-slate-600",
+  "from-emerald-700 via-emerald-600 to-teal-600",
+  "from-amber-700 via-orange-600 to-red-600",
+  "from-rose-700 via-pink-600 to-rose-500",
+  "from-cyan-700 via-teal-600 to-cyan-600",
+  "from-stone-700 via-stone-600 to-stone-500",
 ];
 
 const STATUS_COLORS = {
   positive: {
     bg: "bg-emerald-500/10",
-    text: "text-emerald-500",
+    text: "text-emerald-600 dark:text-emerald-400",
     border: "border-emerald-500/30",
   },
   negative: {
     bg: "bg-rose-500/10",
-    text: "text-rose-500",
+    text: "text-rose-600 dark:text-rose-400",
     border: "border-rose-500/30",
   },
   neutral: {
     bg: "bg-gray-100 dark:bg-gray-800",
-    text: "text-gray-500",
+    text: "text-gray-600 dark:text-gray-400",
     border: "border-gray-200 dark:border-gray-700",
   },
 };
@@ -70,48 +70,54 @@ function GlassGroupCard({ group, gradient, status, isFeatured, isOwner }: GlassG
     >
       <Link
         href={`/dashboard/groups/${group.group_id}`}
-        className="group relative h-full overflow-hidden rounded-2xl border border-gray-200/50 dark:border-gray-700/50 bg-white/30 dark:bg-gray-900/30 backdrop-blur-md transition-all duration-300 hover:border-emerald-500/50 hover:shadow-xl hover:shadow-emerald-500/10 block"
+        className="group relative h-full overflow-hidden rounded-2xl border border-border/50 bg-card/30 backdrop-blur-md transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 block"
       >
         {/* Image/Gradient Section */}
         <div className="relative aspect-[16/9] overflow-hidden">
-          <div className={`h-full w-full bg-gradient-to-br ${gradient} transition-transform duration-500 group-hover:scale-110`} />
+          <motion.div
+            className={`h-full w-full bg-gradient-to-br ${gradient} transition-transform duration-500 group-hover:scale-110`}
+          />
           
           {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-60 transition-opacity duration-300 group-hover:opacity-40" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-60 transition-opacity duration-300 group-hover:opacity-40" />
           
           {/* Tags/Badges */}
           <div className="absolute bottom-3 left-3 flex gap-2">
-            <span className="bg-white/50 dark:bg-black/50 backdrop-blur-sm text-xs font-semibold px-3 py-1 rounded-full text-white">
+            <span className="bg-background/50 backdrop-blur-sm text-xs font-semibold px-3 py-1 rounded-full text-foreground">
               {group.currency}
             </span>
             {isOwner && (
-              <span className="bg-amber-500/80 backdrop-blur-sm text-xs font-bold px-3 py-1 rounded-full text-white">
+              <span className="bg-amber-500/90 backdrop-blur-sm text-xs font-bold px-3 py-1 rounded-full text-white">
                 Owner
               </span>
             )}
           </div>
           
           {/* Hover Overlay Action */}
-          <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[2px] opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-            <motion.div
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileHover={{ opacity: 1 }}
+            className="absolute inset-0 flex items-center justify-center bg-background/20 backdrop-blur-[2px] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          >
+            <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-2 rounded-full bg-emerald-500 px-6 py-2.5 text-sm font-medium text-white shadow-lg shadow-emerald-500/25"
+              className="flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/25"
             >
               <Users className="h-4 w-4" />
               View Group
-            </motion.div>
-          </div>
+            </motion.button>
+          </motion.div>
         </div>
         
         {/* Content Section */}
         <div className="flex flex-col gap-4 p-5">
           <div className="space-y-2">
             <div className="flex items-start justify-between">
-              <h3 className="text-xl font-semibold leading-tight tracking-tight text-gray-900 dark:text-white transition-colors group-hover:text-emerald-500">
+              <h3 className="text-xl font-semibold leading-tight tracking-tight text-foreground transition-colors group-hover:text-primary">
                 {group.group_name}
               </h3>
-              <ArrowUpRight className="h-4 w-4 text-gray-300 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-emerald-500" />
+              <ArrowUpRight className="h-4 w-4 text-muted-foreground transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary" />
             </div>
             
             {/* Balance Badge */}
@@ -127,7 +133,7 @@ function GlassGroupCard({ group, gradient, status, isFeatured, isOwner }: GlassG
                   Owes {formatCurrency(Math.abs(group.net_balance), group.currency)}
                 </div>
               ) : (
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 dark:bg-gray-800 px-3 py-1.5 text-xs font-bold text-gray-500 border border-gray-200 dark:border-gray-700">
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-bold text-muted-foreground border border-border">
                   <Wallet className="h-3 w-3" />
                   Settled up
                 </div>
@@ -136,16 +142,16 @@ function GlassGroupCard({ group, gradient, status, isFeatured, isOwner }: GlassG
           </div>
           
           {/* Footer */}
-          <div className="flex items-center justify-between border-t border-gray-200/50 dark:border-gray-700/50 pt-4">
+          <div className="flex items-center justify-between border-t border-border/50 pt-4">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-sm border border-white/50">
+              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center text-primary-foreground font-bold text-sm border border-border/50">
                 {group.group_name.charAt(0).toUpperCase()}
               </div>
               <div className="flex flex-col text-xs">
-                <span className="font-medium text-gray-900 dark:text-white">
+                <span className="font-medium text-foreground">
                   Group
                 </span>
-                <span className="text-gray-500 dark:text-gray-400">
+                <span className="text-muted-foreground">
                   {new Date(group.created_at).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
@@ -153,7 +159,7 @@ function GlassGroupCard({ group, gradient, status, isFeatured, isOwner }: GlassG
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <Users className="h-3 w-3" />
               <span>Members</span>
             </div>
@@ -169,24 +175,24 @@ function GlassGroupCard({ group, gradient, status, isFeatured, isOwner }: GlassG
 // ==========================================
 function EmptyState() {
   return (
-    <div className="rounded-3xl border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 py-20 text-center">
+    <div className="rounded-3xl border-2 border-dashed border-border bg-muted/30 py-20 text-center">
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: "spring", stiffness: 200 }}
-        className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-teal-500/20 flex items-center justify-center"
+        className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center"
       >
-        <Wallet className="h-8 w-8 text-emerald-500" />
+        <Wallet className="h-8 w-8 text-primary" />
       </motion.div>
-      <h4 className="text-lg font-bold text-gray-900 dark:text-white">
+      <h4 className="text-lg font-bold text-foreground">
         No groups yet
       </h4>
-      <p className="mx-auto mt-1 max-w-xs text-sm text-gray-500 dark:text-gray-400">
+      <p className="mx-auto mt-1 max-w-xs text-sm text-muted-foreground">
         Create your first group to start splitting expenses with friends.
       </p>
       <Link
         href="/dashboard/groups/new"
-        className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-black dark:bg-white text-white dark:text-black px-6 py-3 text-sm font-semibold shadow-lg transition-all hover:scale-105"
+        className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-foreground text-background px-6 py-3 text-sm font-semibold shadow-lg transition-all hover:scale-105"
       >
         Create your first group
       </Link>
