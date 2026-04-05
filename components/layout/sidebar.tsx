@@ -3,6 +3,7 @@
 // ==========================================
 // 📦 IMPORTS
 // ==========================================
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Avatar } from "@/components/ui/avatar";
@@ -61,6 +62,28 @@ export function Sidebar({
   isMobile = false,
 }: SidebarProps) {
   const pathname = usePathname();
+  
+  // Theme state
+  const [isDark, setIsDark] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Initialize theme from localStorage
+  useEffect(() => {
+    setMounted(true);
+    const stored = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const initialDark = stored ? stored === "dark" : prefersDark;
+    setIsDark(initialDark);
+    document.documentElement.classList.toggle("dark", initialDark);
+  }, []);
+
+  // Toggle theme
+  const toggleTheme = () => {
+    const newDark = !isDark;
+    setIsDark(newDark);
+    localStorage.setItem("theme", newDark ? "dark" : "light");
+    document.documentElement.classList.toggle("dark", newDark);
+  };
 
   return (
     <aside
@@ -73,7 +96,7 @@ export function Sidebar({
       {/* ── Logo & Navigation ───────────────────── */}
       <div>
         {/* Logo */}
-        <div className="flex items-center gap-3 mb-10">
+        <Link href="/dashboard" className="flex items-center gap-3 mb-10">
           <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center relative overflow-hidden">
             <div className="absolute inset-0 border-[4px] border-white rounded-full" />
             <div className="w-full h-0.5 bg-white absolute top-1/2 -translate-y-1/2" />
@@ -82,7 +105,7 @@ export function Sidebar({
           <span className="font-bold text-xl tracking-tight text-white">
             FairShare
           </span>
-        </div>
+        </Link>
 
         {/* Navigation */}
         <nav className="space-y-1">
@@ -116,13 +139,48 @@ export function Sidebar({
 
         {/* Theme Toggle */}
         <div className="rounded-full p-1 w-10 flex flex-col items-center bg-white/5">
-          <button className="w-8 h-8 rounded-full flex items-center justify-center hover:text-text-light-primary transition-colors text-zinc-400">
+          <button
+            onClick={() => mounted && isDark && toggleTheme()}
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+              mounted && !isDark
+                ? "bg-white/10 text-white"
+                : "text-zinc-400 hover:text-white"
+            }`}
+          >
             <Sun className="h-4 w-4" />
           </button>
-          <button className="w-8 h-8 rounded-full flex items-center justify-center bg-white/10 text-white">
+          <button
+            onClick={() => mounted && !isDark && toggleTheme()}
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+              mounted && isDark
+                ? "bg-white/10 text-white"
+                : "text-zinc-400 hover:text-white"
+            }`}
+          >
             <Moon className="h-4 w-4" />
           </button>
         </div>
+
+        {/* Profile Link */}
+        <Link
+          href="/dashboard/profile"
+          className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-zinc-400 hover:bg-white/5 hover:text-white"
+        >
+          <div className="relative">
+            <Avatar src={avatarUrl} name={displayName} size="sm" />
+            <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-[1.5px] border-[#121212] bg-primary" />
+          </div>
+          <span className="text-sm font-medium truncate">{displayName}</span>
+        </Link>
+
+        {/* Sign Out */}
+        <button
+          onClick={onSignOut}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-zinc-400 hover:bg-red-500/10 hover:text-red-400 w-full"
+        >
+          <LogOut className="h-5 w-5" />
+          <span className="text-sm font-medium">Sign out</span>
+        </button>
       </div>
     </aside>
   );
