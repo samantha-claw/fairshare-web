@@ -4,8 +4,9 @@
 // 📦 IMPORTS
 // ==========================================
 import Link from "next/link";
-import { Avatar } from "@/components/ui/avatar";
-import { UserMinus, MessageCircle, ArrowUpRight } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+import { Check, Users, UserCheck, ArrowUpRight } from "lucide-react";
+import { useState } from "react";
 import type { Friend } from "@/types/friend";
 
 // ==========================================
@@ -17,86 +18,180 @@ interface FriendCardProps {
 }
 
 // ==========================================
-// ⚙️ LOGIC
-// ==========================================
-
-const ACCENT_GRADIENTS = [
-  "from-indigo-500 to-blue-600",
-  "from-emerald-500 to-teal-600",
-  "from-amber-500 to-orange-600",
-  "from-rose-500 to-pink-600",
-  "from-purple-500 to-violet-600",
-  "from-cyan-500 to-blue-500",
-  "from-lime-500 to-green-600",
-  "from-fuchsia-500 to-purple-600",
-];
-
-function getGradient(id: string): string {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = id.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return ACCENT_GRADIENTS[Math.abs(hash) % ACCENT_GRADIENTS.length];
-}
-
-// ==========================================
-// 🎨 UI RENDER
+// 🎨 PROFILE HOVER CARD (Premium Design)
 // ==========================================
 export function FriendCard({ friend, onRemove }: FriendCardProps) {
-  const displayName =
-    friend.friend_display_name || friend.friend_username;
-  const gradient = getGradient(friend.friend_id);
+  const [hovered, setHovered] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
+  const shouldAnimate = !shouldReduceMotion;
+  
+  const displayName = friend.friend_display_name || friend.friend_username;
+  const avatarUrl = friend.friend_avatar_url;
+  const description = friend.friend_bio || "No bio yet";
+  
+  // Stats placeholders (could be enhanced with real data)
+  const followers = 0;
+  const following = 0;
+
+  const containerVariants = {
+    rest: { scale: 1, y: 0, filter: "blur(0px)" },
+    hover: shouldAnimate
+      ? {
+          scale: 1.02,
+          y: -4,
+          filter: "blur(0px)",
+          transition: { type: "spring", stiffness: 400, damping: 28, mass: 0.6 },
+        }
+      : {},
+  };
+
+  const imageVariants = {
+    rest: { scale: 1 },
+    hover: { scale: 1.05 },
+  };
+
+  const contentVariants = {
+    hidden: { opacity: 0, y: 20, filter: "blur(4px)" },
+    visible: {
+      opacity: 1,
+      y: 0,
+      filter: "blur(0px)",
+      transition: {
+        type: "spring",
+        stiffness: 400,
+        damping: 28,
+        mass: 0.6,
+        staggerChildren: 0.08,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15, scale: 0.95, filter: "blur(2px)" },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      filter: "blur(0px)",
+      transition: { type: "spring", stiffness: 400, damping: 25, mass: 0.5 },
+    },
+  };
+
+  const letterVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: { type: "spring", damping: 8, stiffness: 200, mass: 0.8 },
+    },
+  };
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-gray-200 hover:shadow-xl">
-      {/* Accent Top Bar */}
-      <div className={`h-1.5 bg-gradient-to-r ${gradient}`} />
+    <motion.div
+      data-slot="friend-card"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      initial="rest"
+      whileHover="hover"
+      variants={containerVariants}
+      className="relative w-full max-w-[320px] h-[380px] rounded-3xl border border-border/20 text-card-foreground overflow-hidden shadow-xl shadow-black/5 cursor-pointer group backdrop-blur-sm dark:shadow-black/20"
+    >
+      {/* Full Cover Image (Avatar) */}
+      <motion.img
+        src={avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${friend.friend_id}`}
+        alt={displayName}
+        className="absolute inset-0 w-full h-full object-cover"
+        variants={imageVariants}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      />
+
+      {/* Smooth Blur Overlay - Multiple layers for seamless fade */}
+      <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/40 via-background/20 via-background/10 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-background/90 via-background/60 via-background/30 via-background/15 via-background/8 to-transparent backdrop-blur-[1px]" />
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background/85 via-background/40 to-transparent backdrop-blur-sm" />
 
       {/* Content */}
-      <div className="flex flex-1 flex-col items-center p-5 pt-4">
-        {/* Avatar */}
-        <Link
-          href={`/dashboard/profile/${friend.friend_id}`}
-          className="relative mb-3 transition-transform duration-200 group-hover:scale-105"
-        >
-          <Avatar
-            src={friend.friend_avatar_url}
-            name={displayName}
-            size="lg"
-          />
-          {/* Online indicator (decorative) */}
-          <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-400" />
-        </Link>
-
+      <motion.div
+        variants={contentVariants}
+        initial="hidden"
+        animate="visible"
+        className="absolute bottom-0 left-0 right-0 p-6 space-y-4"
+      >
         {/* Name */}
-        <Link
-          href={`/dashboard/profile/${friend.friend_id}`}
-          className="mb-0.5 max-w-full truncate text-sm font-bold text-gray-900 transition-colors hover:text-indigo-600"
-        >
-          {displayName}
-        </Link>
-        <p className="max-w-full truncate text-xs text-gray-400">
-          @{friend.friend_username}
-        </p>
+        <motion.div variants={itemVariants} className="flex items-center gap-2">
+          <motion.h2
+            className="text-2xl font-bold text-foreground"
+            variants={{
+              visible: { transition: { staggerChildren: 0.02 } },
+            }}
+          >
+            {displayName.split("").map((letter, index) => (
+              <motion.span key={index} variants={letterVariants} className="inline-block">
+                {letter === " " ? "\u00A0" : letter}
+              </motion.span>
+            ))}
+          </motion.h2>
+          <motion.div
+            variants={itemVariants}
+            className="flex items-center justify-center w-4 h-4 rounded-full bg-primary text-primary-foreground"
+            whileHover={{
+              scale: 1.1,
+              rotate: 5,
+              transition: { type: "spring", stiffness: 400, damping: 20 },
+            }}
+          >
+            <Check className="w-2.5 h-2.5" />
+          </motion.div>
+        </motion.div>
 
-        {/* Actions */}
-        <div className="mt-4 flex w-full items-center gap-2">
+        {/* Description */}
+        <motion.p variants={itemVariants} className="text-muted-foreground text-sm leading-relaxed line-clamp-2">
+          {description}
+        </motion.p>
+
+        {/* Stats */}
+        <motion.div variants={itemVariants} className="flex items-center gap-6 pt-2">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Users className="w-4 h-4" />
+            <span className="font-semibold text-foreground">{followers}</span>
+            <span className="text-sm">followers</span>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <UserCheck className="w-4 h-4" />
+            <span className="font-semibold text-foreground">{following}</span>
+            <span className="text-sm">following</span>
+          </div>
+        </motion.div>
+
+        {/* Action Buttons */}
+        <motion.div variants={itemVariants} className="flex gap-2">
           <Link
             href={`/dashboard/profile/${friend.friend_id}`}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-gray-50/80 px-3 py-2 text-xs font-semibold text-gray-600 transition-all duration-200 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600"
+            className="flex-1"
           >
-            <ArrowUpRight className="h-3 w-3" />
-            Profile
+            <motion.button
+              whileHover={{ scale: 1.02, transition: { type: "spring", stiffness: 400, damping: 25 } }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full cursor-pointer py-3 px-4 rounded-2xl font-semibold text-sm transition-all duration-200 border border-border/20 shadow-sm bg-foreground text-background hover:bg-foreground/90 transform-gpu flex items-center justify-center gap-2"
+            >
+              <ArrowUpRight className="h-4 w-4" />
+              View Profile
+            </motion.button>
           </Link>
-          <button
-            onClick={() => onRemove(friend.friend_id)}
-            className="flex items-center justify-center rounded-xl border border-gray-200 bg-gray-50/80 p-2 text-gray-400 transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-500"
-            title="Remove friend"
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={(e) => {
+              e.preventDefault();
+              onRemove(friend.friend_id);
+            }}
+            className="cursor-pointer py-3 px-4 rounded-2xl font-semibold text-sm transition-all duration-200 border border-border/20 shadow-sm bg-muted text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transform-gpu"
           >
-            <UserMinus className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      </div>
-    </div>
+            Remove
+          </motion.button>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
 }
