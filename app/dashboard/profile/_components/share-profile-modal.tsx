@@ -136,7 +136,7 @@ export function ShareProfileModal({
             typeof navigator.share === "function" && (
               <button
                 onClick={handleNativeShare}
-                className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-text-text-primary to-text-secondary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:shadow-md hover:shadow-indigo-200"
+                className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-text-primary to-text-secondary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:shadow-md hover:shadow-indigo-200"
               >
                 <Share2 className="h-4 w-4" />
                 Share

@@ -11,7 +11,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const VARIANT_CLASSES = {
   primary:
-    "bg-text-text-primary text-surface hover:opacity-90 shadow-button-primary",
+    "bg-text-primary text-surface hover:opacity-90 shadow-button-primary",
   secondary:
     "border border-border bg-surface text-text-primary shadow-button hover:bg-surface-2",
   danger:

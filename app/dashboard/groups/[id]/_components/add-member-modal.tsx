@@ -220,7 +220,7 @@ export function AddMemberModal({
                 <button
                   onClick={() => onAddMember(friend.friend_id)}
                   disabled={addingMember === friend.friend_id}
-                  className="ml-3 inline-flex shrink-0 items-center gap-1 rounded-md bg-text-text-primary px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-all duration-200 hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="ml-3 inline-flex shrink-0 items-center gap-1 rounded-md bg-text-primary px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-all duration-200 hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {addingMember === friend.friend_id ? (
                     <Spinner className="h-3.5 w-3.5" />

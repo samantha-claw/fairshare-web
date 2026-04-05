@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
-import { Search, Menu, Wallet, QrCode, Sun, Moon, MessageCircle } from "lucide-react";
+import { Search, Menu, Wallet, QrCode, Sun, Moon } from "lucide-react";
 import { NotificationBell } from "@/components/notification-bell";
 import { QRScannerModal } from "@/components/modals/qr/qr-scanner-modal";
 import { JoinGroupConfirmModal } from "@/components/modals/join-group-confirm-modal";
@@ -70,7 +70,7 @@ export function Header({
             href="/dashboard"
             className="inline-flex items-center gap-2 transition-opacity active:opacity-80"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-text-text-primary shadow-md md:hidden">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-text-primary shadow-md md:hidden">
               <Wallet className="h-4 w-4 text-surface" strokeWidth={2.5} />
             </div>
             <h1 className="truncate text-lg font-extrabold tracking-tight sm:text-xl">
@@ -113,14 +113,6 @@ export function Header({
 
           {/* Real-time Notifications */}
           <NotificationBell userId={userId} />
-
-          {/* Messages */}
-          <button className="flex h-8 w-8 items-center justify-center rounded-lg text-text-secondary hover:bg-surface-2 hover:text-text-primary transition-colors">
-            <MessageCircle className="h-[18px] w-[18px]" />
-          </button>
-
-          {/* Divider */}
-          <div className="mx-1 hidden h-6 w-px bg-border sm:block" />
 
           {/* Avatar → Profile Link */}
           <Link

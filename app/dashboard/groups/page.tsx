@@ -68,7 +68,7 @@ export default function GroupsPage() {
         <button
           type="button"
           onClick={() => router.push("/dashboard/groups/new")}
-          className="rounded-xl bg-text-text-primary px-4 py-2 text-sm font-semibold text-surface transition-colors hover:bg-indigo-700"
+          className="rounded-xl bg-text-primary px-4 py-2 text-sm font-semibold text-surface transition-colors hover:bg-indigo-700"
         >
           New Group
         </button>

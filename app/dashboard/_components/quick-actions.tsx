@@ -14,7 +14,7 @@ export function QuickActions() {
     <div className="flex flex-wrap gap-3">
       <Link
         href="/dashboard/groups/new"
-        className="group inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r bg-text-text-primary px-5 py-3 text-sm font-semibold text-surface shadow-lg shadow-indigo-500/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-500/30"
+        className="group inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r bg-text-primary px-5 py-3 text-sm font-semibold text-surface shadow-lg shadow-indigo-500/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-500/30"
       >
         <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-surface/20">
           <Plus className="h-3.5 w-3.5" />

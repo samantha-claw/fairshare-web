@@ -120,11 +120,11 @@ function CurrencyDropdown({
           error
             ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
             : open
-              ? "border-indigo-300 bg-surface ring-2 ring-indigo-100"
-              : "border-border hover:border-gray-300 focus:border-indigo-300 focus:ring-indigo-100"
+              ? "border-border-border-2 bg-surface ring-2 ring-border"
+              : "border-border hover:border-gray-300 focus:border-border-border-2 focus:ring-border"
         }`}
       >
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-50 text-lg">
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-surface-2 text-lg">
           {selectedCurrency.flag}
         </div>
         <div className="flex-1">
@@ -155,7 +155,7 @@ function CurrencyDropdown({
                 value={search}
                 onChange={(ev) => setSearch(ev.target.value)}
                 placeholder="Search currencies…"
-                className="w-full rounded-xl border border-border bg-surface-2 py-2 pl-9 pr-3 text-sm text-text-primary placeholder-gray-400 focus:border-indigo-300 focus:bg-surface focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                className="w-full rounded-xl border border-border bg-surface-2 py-2 pl-9 pr-3 text-sm text-text-primary placeholder-gray-400 focus:border-border-border-2 focus:bg-surface focus:outline-none focus:ring-2 focus:ring-border"
                 autoFocus
               />
             </div>
@@ -181,7 +181,7 @@ function CurrencyDropdown({
                     }}
                     className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-150 ${
                       isSelected
-                        ? "bg-indigo-50 text-indigo-700"
+                        ? "bg-surface-2 text-text-primary"
                         : "text-text-primary hover:bg-surface-2"
                     }`}
                   >
@@ -189,7 +189,7 @@ function CurrencyDropdown({
                     <div className="flex-1">
                       <p
                         className={`text-sm font-medium ${
-                          isSelected ? "text-indigo-700" : "text-text-primary"
+                          isSelected ? "text-text-primary" : "text-text-primary"
                         }`}
                       >
                         {c.code}
@@ -205,7 +205,7 @@ function CurrencyDropdown({
                     <span
                       className={`rounded-md px-1.5 py-0.5 text-xs font-medium ${
                         isSelected
-                          ? "bg-indigo-100 text-text-primary"
+                          ? "bg-border text-text-primary"
                           : "bg-surface-2 text-text-secondary"
                       }`}
                     >
@@ -341,11 +341,11 @@ export default function CreateGroupPage() {
         {/* ── Main Form Card ───────────────────────── */}
         <div className="relative overflow-hidden rounded-3xl border border-border bg-surface shadow-sm">
           {/* Decorative Background */}
-          <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-gradient-to-br from-indigo-100/50 to-purple-100/30 blur-3xl" />
-          <div className="absolute -bottom-16 -left-16 h-40 w-40 rounded-full bg-gradient-to-tr from-blue-100/30 to-cyan-100/20 blur-2xl" />
+          <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-gradient-to-br from-surface-2/50 to-border/30 blur-3xl" />
+          <div className="absolute -bottom-16 -left-16 h-40 w-40 rounded-full bg-gradient-to-tr from-surface-2/30 to-border/20 blur-2xl" />
 
           {/* Header Banner */}
-          <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 px-8 pb-8 pt-8">
+          <div className="relative bg-gradient-to-br from-text-primary via-text-secondary to-border px-8 pb-8 pt-8">
             {/* Decorative */}
             <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-surface/10 blur-xl" />
             <div className="absolute bottom-4 left-1/4 h-16 w-16 rounded-full bg-purple-400/15 blur-lg" />
@@ -358,7 +358,7 @@ export default function CreateGroupPage() {
                 <h1 className="text-xl font-bold text-surface">
                   Create New Group
                 </h1>
-                <p className="text-sm text-indigo-200">
+                <p className="text-sm text-text-secondary">
                   Split expenses with your friends
                 </p>
               </div>
@@ -416,7 +416,7 @@ export default function CreateGroupPage() {
                     className={`block w-full rounded-2xl border bg-surface-2/50 py-3 pl-11 pr-4 text-sm text-text-primary placeholder-gray-400 transition-all duration-200 focus:bg-surface focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
                       g.errors.name
                         ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
-                        : "border-border focus:border-indigo-300 focus:ring-indigo-100"
+                        : "border-border focus:border-border-border-2 focus:ring-border"
                     }`}
                   />
                 </div>
@@ -469,7 +469,7 @@ export default function CreateGroupPage() {
                     className={`block w-full resize-none rounded-2xl border bg-surface-2/50 py-3 pl-11 pr-4 text-sm text-text-primary placeholder-gray-400 transition-all duration-200 focus:bg-surface focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
                       g.errors.description
                         ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
-                        : "border-border focus:border-indigo-300 focus:ring-indigo-100"
+                        : "border-border focus:border-border-border-2 focus:ring-border"
                     }`}
                   />
                 </div>
@@ -502,7 +502,7 @@ export default function CreateGroupPage() {
               <div>
                 <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-surface-2">
                       <UserPlus className="h-3.5 w-3.5 text-text-primary" />
                     </div>
                     <div>
@@ -525,7 +525,7 @@ export default function CreateGroupPage() {
                           type="button"
                           onClick={g.selectAllFriends}
                           disabled={g.saving}
-                          className="rounded-lg px-2 py-1 text-[10px] font-semibold text-text-primary transition-all hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="rounded-lg px-2 py-1 text-[10px] font-semibold text-text-primary transition-all hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           Select All
                         </button>
@@ -588,7 +588,7 @@ export default function CreateGroupPage() {
                       onChange={(ev) => g.setFriendSearch(ev.target.value)}
                       placeholder="Search friends…"
                       disabled={g.saving}
-                      className="w-full rounded-xl border border-border bg-surface-2/50 py-2.5 pl-10 pr-4 text-sm text-text-primary placeholder-gray-400 transition-all focus:border-indigo-300 focus:bg-surface focus:outline-none focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="w-full rounded-xl border border-border bg-surface-2/50 py-2.5 pl-10 pr-4 text-sm text-text-primary placeholder-gray-400 transition-all focus:border-border-border-2 focus:bg-surface focus:outline-none focus:ring-2 focus:ring-border disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
                 )}
@@ -637,9 +637,9 @@ export default function CreateGroupPage() {
             <div className="my-6 border-t border-border" />
 
             {/* ── Summary Note ───────────────────── */}
-            <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-indigo-100 bg-indigo-50/50 px-4 py-3">
+            <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-border bg-surface-2/50 px-4 py-3">
               <Coins className="mt-0.5 h-4 w-4 flex-shrink-0 text-text-primary" />
-              <p className="text-xs leading-relaxed text-indigo-700">
+              <p className="text-xs leading-relaxed text-text-primary">
                 All expenses in this group will be tracked in{" "}
                 <strong>
                   {g.selectedCurrency.code} ({g.selectedCurrency.symbol})
@@ -673,7 +673,7 @@ export default function CreateGroupPage() {
               <button
                 type="submit"
                 disabled={g.saving}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r bg-text-text-primary px-6 py-2.5 text-sm font-semibold text-surface shadow-lg shadow-indigo-500/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-500/30 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r bg-text-primary px-6 py-2.5 text-sm font-semibold text-surface shadow-lg shadow-text-primary/10 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-text-primary/15 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
               >
                 {g.saving ? (
                   <>

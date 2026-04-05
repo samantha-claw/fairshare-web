@@ -1,25 +1,23 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Avatar } from "@/components/ui/avatar";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   Users,
   FolderOpen,
   Plus,
   UserCircle,
+  Settings,
 } from "lucide-react";
-
-interface MobileNavProps {
-  displayName: string;
-  avatarUrl: string;
-}
+import { cn } from "@/lib/utils";
 
 interface MobileNavItem {
   label: string;
   href: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   isSpecial?: boolean;
 }
 
@@ -36,27 +34,60 @@ function isActive(pathname: string, href: string): boolean {
   return pathname.startsWith(href);
 }
 
-export function MobileNav({ displayName, avatarUrl }: MobileNavProps) {
+export function MobileNav() {
   const pathname = usePathname();
+  const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null);
 
   return (
     <nav className="fixed bottom-4 left-4 right-4 z-50 md:hidden">
-      <div className="mx-auto max-w-sm rounded-2xl border border-border bg-surface/90 px-2 py-2 shadow-xl backdrop-blur-xl">
-        <div className="flex items-center justify-around">
-          {MOBILE_NAV_ITEMS.map((item) => {
+      <motion.div
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="mx-auto max-w-sm"
+      >
+        <div
+          className={cn(
+            "flex items-end justify-center gap-2 px-3 py-2.5 rounded-2xl",
+            "border border-border bg-surface/80 backdrop-blur-2xl shadow-lg"
+          )}
+          style={{
+            transform: "perspective(600px) rotateX(5deg)",
+          }}
+        >
+          {MOBILE_NAV_ITEMS.map((item, i) => {
             const active = isActive(pathname, item.href);
             const Icon = item.icon;
+            const isHovered = hoveredIndex === i;
 
             if (item.isSpecial) {
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex flex-col items-center"
+                  className="relative flex flex-col items-center"
                 >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-text-text-primary text-surface shadow-sm transition-all active:scale-95">
+                  <motion.div
+                    onMouseEnter={() => setHoveredIndex(i)}
+                    onMouseLeave={() => setHoveredIndex(null)}
+                    whileHover={{ scale: 1.1, y: -4 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="flex h-12 w-12 items-center justify-center rounded-xl bg-text-primary text-surface shadow-md transition-all"
+                  >
                     <Icon className="h-5 w-5" />
-                  </div>
+                  </motion.div>
+                  <AnimatePresence>
+                    {isHovered && (
+                      <motion.span
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 4 }}
+                        className="absolute -top-7 text-[10px] font-semibold text-text-secondary bg-surface px-2 py-0.5 rounded-md shadow-sm"
+                      >
+                        Create
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
                 </Link>
               );
             }
@@ -65,29 +96,53 @@ export function MobileNav({ displayName, avatarUrl }: MobileNavProps) {
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex flex-col items-center gap-0.5 px-2 py-1"
+                className="relative flex flex-col items-center"
+                onMouseEnter={() => setHoveredIndex(i)}
+                onMouseLeave={() => setHoveredIndex(null)}
               >
-                <div
-                  className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
+                <motion.div
+                  animate={{
+                    scale: isHovered ? 1.15 : 1,
+                    y: isHovered ? -4 : 0,
+                  }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  className={cn(
+                    "flex h-10 w-10 items-center justify-center rounded-xl transition-colors",
                     active
                       ? "bg-surface-2 text-text-primary"
                       : "text-text-tertiary"
-                  }`}
+                  )}
                 >
-                  <Icon className="h-4 w-4" />
-                </div>
-                <span
-                  className={`text-[9px] font-semibold transition-colors ${
-                    active ? "text-text-primary" : "text-text-tertiary"
-                  }`}
-                >
-                  {item.label}
-                </span>
+                  <Icon className="h-5 w-5" />
+                </motion.div>
+                <AnimatePresence>
+                  {active && (
+                    <motion.div
+                      layoutId="activeDot"
+                      className="w-1.5 h-1.5 rounded-full bg-positive mt-1"
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0 }}
+                    />
+                  )}
+                </AnimatePresence>
+                <AnimatePresence>
+                  {isHovered && !active && (
+                    <motion.span
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 4 }}
+                      className="absolute -top-7 text-[10px] font-semibold text-text-secondary bg-surface px-2 py-0.5 rounded-md shadow-sm whitespace-nowrap"
+                    >
+                      {item.label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </Link>
             );
           })}
         </div>
-      </div>
+      </motion.div>
     </nav>
   );
 }
