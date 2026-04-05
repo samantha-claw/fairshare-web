@@ -7,7 +7,8 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
-import { Search, Menu, Wallet, QrCode, Sun, Moon, Bell, MessageCircle } from "lucide-react";
+import { Search, Menu, Wallet, QrCode, Sun, Moon, MessageCircle } from "lucide-react";
+import { NotificationBell } from "@/components/notification-bell";
 import { QRScannerModal } from "@/components/modals/qr/qr-scanner-modal";
 import { JoinGroupConfirmModal } from "@/components/modals/join-group-confirm-modal";
 
@@ -52,7 +53,6 @@ export function Header({
   
   // Modal states
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [joinGroupId, setJoinGroupId] = useState<string | null>(null);
   const [joinToken, setJoinToken] = useState<string | null>(null);
 
@@ -85,7 +85,6 @@ export function Header({
     setJoinToken(null);
   };
 
-  // Don't render theme toggle until mounted (prevents hydration mismatch)
   if (!mounted) {
     return (
       <header className="sticky top-0 z-30 flex h-16 items-center border-b border-border-light dark:border-border-dark bg-surface-light/70 dark:bg-surface-dark/70 px-4 backdrop-blur-xl sm:px-6">
@@ -157,16 +156,8 @@ export function Header({
             <QrCode className="h-[18px] w-[18px]" />
           </button>
 
-          {/* Notifications */}
-          <button
-            onClick={() => setIsNotificationsOpen(true)}
-            className="relative flex h-9 w-9 items-center justify-center rounded-xl text-text-light-secondary dark:text-text-dark-secondary transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-            title="Notifications"
-          >
-            <Bell className="h-[18px] w-[18px]" />
-            {/* Notification dot */}
-            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />
-          </button>
+          {/* Real-time Notifications */}
+          <NotificationBell userId={userId} />
 
           {/* Messages */}
           <button className="flex h-9 w-9 items-center justify-center rounded-xl text-text-light-secondary dark:text-text-dark-secondary transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -200,36 +191,6 @@ export function Header({
         onClose={() => setIsScannerOpen(false)}
         onGroupScanned={handleGroupScanned}
       />
-
-      {/* Notifications Modal - Simple placeholder */}
-      {isNotificationsOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-          onClick={() => setIsNotificationsOpen(false)}
-        >
-          <div
-            className="bg-surface-light dark:bg-surface-dark rounded-3xl p-6 shadow-xl max-w-md w-full mx-4 border border-border-light dark:border-border-dark"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-xl font-bold mb-4 text-text-light-primary dark:text-text-dark-primary">
-              Notifications
-            </h2>
-            <div className="space-y-3">
-              <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50">
-                <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary">
-                  No new notifications
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setIsNotificationsOpen(false)}
-              className="mt-4 w-full py-2.5 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-black font-semibold hover:opacity-90 transition-opacity"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Join Confirm Modal */}
       {joinGroupId && (
