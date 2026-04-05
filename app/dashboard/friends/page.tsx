@@ -19,14 +19,14 @@ import { motion } from "framer-motion";
 // ==========================================
 function PageSkeleton() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-surface">
       <div className="mx-auto max-w-6xl animate-pulse px-4 py-10 sm:px-6">
-        <div className="mb-6 h-5 w-40 rounded bg-muted" />
-        <div className="mb-8 h-10 w-64 rounded-lg bg-muted" />
-        <div className="mb-8 h-40 rounded-3xl bg-muted/50" />
+        <div className="mb-6 h-5 w-40 rounded bg-surface-2" />
+        <div className="mb-8 h-10 w-64 rounded-lg bg-surface-2" />
+        <div className="mb-8 h-40 rounded-3xl bg-surface-2/50" />
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-[380px] rounded-3xl bg-muted/40" />
+            <div key={i} className="h-[380px] rounded-3xl bg-surface-2/40" />
           ))}
         </div>
       </div>
@@ -47,7 +47,7 @@ export default function FriendsPage() {
   const friendsLoaded = !f.loadingFriends;
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-10">
+    <div className="min-h-screen bg-surface pb-20 md:pb-10">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         {/* ── Back Button ────────────────────────────── */}
         <motion.button
@@ -55,7 +55,7 @@ export default function FriendsPage() {
           onClick={f.navigateToDashboard}
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
-          className="mb-6 inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
+          className="mb-6 inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm text-text-secondary transition-all hover:bg-surface-2 hover:text-text-primary"
         >
           <ArrowLeft className="h-4 w-4" />
           Dashboard
@@ -69,13 +69,13 @@ export default function FriendsPage() {
           className="mb-8 flex items-center gap-4"
         >
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/20">
-            <HeartHandshake className="h-7 w-7 text-white" />
+            <HeartHandshake className="h-7 w-7 text-surface" />
           </div>
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
+            <h1 className="text-3xl font-black tracking-tight text-text-primary sm:text-4xl">
               Friends
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-text-secondary">
               Manage your connections and friend requests
             </p>
           </div>
@@ -130,7 +130,7 @@ export default function FriendsPage() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/10">
                   <UserCheck className="h-4 w-4 text-emerald-600" />
                 </div>
-                <h2 className="text-base font-bold text-foreground">
+                <h2 className="text-base font-bold text-text-primary">
                   Your Friends
                 </h2>
                 {hasFriends && (

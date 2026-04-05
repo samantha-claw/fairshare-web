@@ -265,8 +265,8 @@ export function JoinGroupConfirmModal({
       {/* ── Loading ── */}
       {state === "loading" && (
         <div className="flex flex-col items-center justify-center px-6 py-16">
-          <Loader2 className="mb-3 h-8 w-8 animate-spin text-indigo-500" />
-          <p className="text-sm text-gray-500">
+          <Loader2 className="mb-3 h-8 w-8 animate-spin text-text-primary" />
+          <p className="text-sm text-text-secondary">
             {token ? "Verifying invite link…" : "Loading group details…"}
           </p>
         </div>
@@ -277,19 +277,19 @@ export function JoinGroupConfirmModal({
         <div className="px-6 py-8">
           <div className="text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50">
-              <Users className="h-8 w-8 text-indigo-600" />
+              <Users className="h-8 w-8 text-text-primary" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900">Join Group?</h2>
-            <p className="mt-1 text-sm text-gray-500">
+            <h2 className="text-xl font-bold text-text-primary">Join Group?</h2>
+            <p className="mt-1 text-sm text-text-secondary">
               You&apos;ve been invited to join
             </p>
           </div>
 
-          <div className="mt-5 rounded-2xl border border-gray-100 bg-gray-50 p-4">
-            <h3 className="text-lg font-bold text-gray-900">
+          <div className="mt-5 rounded-2xl border border-border bg-surface-2 p-4">
+            <h3 className="text-lg font-bold text-text-primary">
               {groupInfo.name}
             </h3>
-            <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-gray-500">
+            <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-text-secondary">
               <span className="flex items-center gap-1">
                 <Users className="h-4 w-4" />
                 {groupInfo.memberCount} member
@@ -300,7 +300,7 @@ export function JoinGroupConfirmModal({
                 {groupInfo.currency}
               </span>
             </div>
-            <p className="mt-2 text-xs text-gray-400">
+            <p className="mt-2 text-xs text-text-tertiary">
               Created by {groupInfo.ownerName}
             </p>
 
@@ -317,7 +317,7 @@ export function JoinGroupConfirmModal({
           <div className="mt-6 flex gap-3">
             <button
               onClick={handleClose}
-              className="flex-1 rounded-xl border border-gray-200 bg-white py-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+              className="flex-1 rounded-xl border border-border bg-surface py-3 text-sm font-semibold text-text-primary transition-colors hover:bg-surface-2"
             >
               Cancel
             </button>
@@ -335,8 +335,8 @@ export function JoinGroupConfirmModal({
       {/* ── Joining ── */}
       {state === "joining" && (
         <div className="flex flex-col items-center justify-center px-6 py-16">
-          <Loader2 className="mb-3 h-8 w-8 animate-spin text-indigo-500" />
-          <p className="text-sm font-medium text-gray-700">Joining group…</p>
+          <Loader2 className="mb-3 h-8 w-8 animate-spin text-text-primary" />
+          <p className="text-sm font-medium text-text-primary">Joining group…</p>
         </div>
       )}
 
@@ -346,8 +346,8 @@ export function JoinGroupConfirmModal({
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50">
             <CheckCircle2 className="h-8 w-8 text-emerald-600" />
           </div>
-          <h3 className="text-lg font-bold text-gray-900">You&apos;re in!</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <h3 className="text-lg font-bold text-text-primary">You&apos;re in!</h3>
+          <p className="mt-1 text-sm text-text-secondary">
             Redirecting to the group…
           </p>
         </div>
@@ -357,17 +357,17 @@ export function JoinGroupConfirmModal({
       {state === "already_member" && groupInfo && (
         <div className="px-6 py-8 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50">
-            <Users className="h-8 w-8 text-blue-600" />
+            <Users className="h-8 w-8 text-text-primary" />
           </div>
-          <h3 className="text-lg font-bold text-gray-900">
+          <h3 className="text-lg font-bold text-text-primary">
             Already a Member
           </h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-text-secondary">
             You&apos;re already in <strong>{groupInfo.name}</strong>
           </p>
           <button
             onClick={handleGoToGroup}
-            className="mt-5 w-full rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+            className="mt-5 w-full rounded-xl bg-text-text-primary py-3 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
           >
             Go to Group
           </button>
@@ -380,15 +380,15 @@ export function JoinGroupConfirmModal({
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-50">
             <ShieldAlert className="h-8 w-8 text-amber-500" />
           </div>
-          <h3 className="text-lg font-bold text-gray-900">
+          <h3 className="text-lg font-bold text-text-primary">
             Invalid Invite Link
           </h3>
-          <p className="mt-2 max-w-xs text-sm leading-relaxed text-gray-500">
+          <p className="mt-2 max-w-xs text-sm leading-relaxed text-text-secondary">
             {errorMsg}
           </p>
           <button
             onClick={handleClose}
-            className="mt-5 w-full rounded-xl bg-gray-100 py-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-200"
+            className="mt-5 w-full rounded-xl bg-surface-2 py-3 text-sm font-semibold text-text-primary transition-colors hover:bg-gray-200"
           >
             Close
           </button>
@@ -401,11 +401,11 @@ export function JoinGroupConfirmModal({
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
             <AlertCircle className="h-8 w-8 text-red-500" />
           </div>
-          <h3 className="text-lg font-bold text-gray-900">Unable to Join</h3>
-          <p className="mt-2 text-sm text-gray-500">{errorMsg}</p>
+          <h3 className="text-lg font-bold text-text-primary">Unable to Join</h3>
+          <p className="mt-2 text-sm text-text-secondary">{errorMsg}</p>
           <button
             onClick={handleClose}
-            className="mt-5 w-full rounded-xl bg-gray-100 py-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-200"
+            className="mt-5 w-full rounded-xl bg-surface-2 py-3 text-sm font-semibold text-text-primary transition-colors hover:bg-gray-200"
           >
             Close
           </button>

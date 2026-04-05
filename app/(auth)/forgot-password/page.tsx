@@ -95,7 +95,7 @@ export default function ForgotPasswordPage() {
   if (passwordUpdated) {
     return (
       <div className="w-full max-w-md">
-        <div className="rounded-3xl border border-white/10 bg-white/[0.07] p-8 text-center shadow-2xl backdrop-blur-xl">
+        <div className="rounded-3xl border border-white/10 bg-surface/[0.07] p-8 text-center shadow-2xl backdrop-blur-xl">
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20">
             <CheckCircle2 className="h-8 w-8 text-emerald-400" />
           </div>
@@ -105,7 +105,7 @@ export default function ForgotPasswordPage() {
           </p>
           <Link
             href="/login"
-            className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-white/10 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/20"
+            className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-surface/10 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-surface/20"
           >
             Back to Sign In
             <ArrowRight className="h-4 w-4" />
@@ -118,7 +118,7 @@ export default function ForgotPasswordPage() {
   if (sent && !isRecoveryMode) {
     return (
       <div className="w-full max-w-md">
-        <div className="rounded-3xl border border-white/10 bg-white/[0.07] p-8 text-center shadow-2xl backdrop-blur-xl">
+        <div className="rounded-3xl border border-white/10 bg-surface/[0.07] p-8 text-center shadow-2xl backdrop-blur-xl">
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20">
             <CheckCircle2 className="h-8 w-8 text-emerald-400" />
           </div>
@@ -128,7 +128,7 @@ export default function ForgotPasswordPage() {
           </p>
           <Link
             href="/login"
-            className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-white/10 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/20"
+            className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-surface/10 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-surface/20"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Sign In
@@ -151,7 +151,7 @@ export default function ForgotPasswordPage() {
         </p>
       </div>
 
-      <div className="rounded-3xl border border-white/10 bg-white/[0.07] p-8 shadow-2xl backdrop-blur-xl">
+      <div className="rounded-3xl border border-white/10 bg-surface/[0.07] p-8 shadow-2xl backdrop-blur-xl">
         {error && (
           <div
             id={isRecoveryMode ? "recovery-error" : "forgot-error"}
@@ -185,7 +185,7 @@ export default function ForgotPasswordPage() {
                   aria-describedby={error ? "recovery-error" : undefined}
                   required
                   minLength={6}
-                  className="w-full rounded-2xl border border-white/10 bg-white/[0.05] py-3.5 pl-12 pr-12 text-sm text-white placeholder-white/25 outline-none transition-all focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20"
+                  className="w-full rounded-2xl border border-white/10 bg-surface/[0.05] py-3.5 pl-12 pr-12 text-sm text-white placeholder-white/25 outline-none transition-all focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20"
                 />
                 <button
                   type="button"
@@ -223,7 +223,7 @@ export default function ForgotPasswordPage() {
                   aria-describedby={error ? "recovery-error" : undefined}
                   required
                   minLength={6}
-                  className="w-full rounded-2xl border border-white/10 bg-white/[0.05] py-3.5 pl-12 pr-12 text-sm text-white placeholder-white/25 outline-none transition-all focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20"
+                  className="w-full rounded-2xl border border-white/10 bg-surface/[0.05] py-3.5 pl-12 pr-12 text-sm text-white placeholder-white/25 outline-none transition-all focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20"
                 />
                 <button
                   type="button"
@@ -244,7 +244,7 @@ export default function ForgotPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl disabled:opacity-60"
+              className="w-full rounded-2xl bg-gradient-to-r from-text-text-primary to-text-secondary py-3.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl disabled:opacity-60"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -274,7 +274,7 @@ export default function ForgotPasswordPage() {
                   aria-describedby={error ? "forgot-error" : undefined}
                   aria-invalid={Boolean(error)}
                   required
-                  className="w-full rounded-2xl border border-white/10 bg-white/[0.05] py-3.5 pl-12 pr-4 text-sm text-white placeholder-white/25 outline-none transition-all focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20"
+                  className="w-full rounded-2xl border border-white/10 bg-surface/[0.05] py-3.5 pl-12 pr-4 text-sm text-white placeholder-white/25 outline-none transition-all focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20"
                 />
               </div>
             
@@ -283,7 +283,7 @@ export default function ForgotPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl disabled:opacity-60"
+              className="w-full rounded-2xl bg-gradient-to-r from-text-text-primary to-text-secondary py-3.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl disabled:opacity-60"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">

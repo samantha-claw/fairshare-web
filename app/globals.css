@@ -1,268 +1,183 @@
 @import "tailwindcss";
 
 /* ==========================================
-   🎨 CSS VARIABLES — NEW DESIGN SYSTEM
+   🎨 DESIGN TOKENS
    ========================================== */
 :root {
-  /* Light Mode Colors */
-  --background-light: #F3F4F6;
-  --surface-light: #FFFFFF;
-  --border-light: #E5E7EB;
-  --text-light-primary: #111827;
-  --text-light-secondary: #6B7280;
-  
-  /* Dark Mode Colors */
-  --background-dark: #0D0D0D;
-  --surface-dark: #181818;
-  --surface-darker: #121212;
-  --border-dark: #2A2A2A;
-  --text-dark-primary: #FFFFFF;
-  --text-dark-secondary: #A1A1AA;
-  
-  /* Accent Colors */
-  --primary: #00E676;
-  --success: #00E676;
-  --danger: #FF4D4F;
-  
-  /* Backgrounds for badges */
-  --success-bg: rgba(0, 230, 118, 0.1);
-  --danger-bg: rgba(255, 77, 79, 0.1);
-  
-  /* Default to light mode */
-  --background: var(--background-light);
-  --foreground: var(--text-light-primary);
+  /* Surfaces */
+  --background: #F2F2F2;
+  --surface: #FFFFFF;
+  --surface-2: #F7F7F7;
+
+  /* Borders */
+  --border: #E4E4E4;
+  --border-2: #D1D1D1;
+
+  /* Text */
+  --text-primary: #111111;
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+
+  /* Accent — used only for financial positive/negative */
+  --positive: #16A34A;
+  --positive-bg: rgba(22, 163, 74, 0.08);
+  --negative: #DC2626;
+  --negative-bg: rgba(220, 38, 38, 0.08);
+
+  /* Sidebar (always dark) */
+  --sidebar-bg: #111111;
+  --sidebar-border: #222222;
+  --sidebar-text: #AAAAAA;
+  --sidebar-active: #FFFFFF;
+  --sidebar-hover: rgba(255,255,255,0.06);
 }
 
-/* Dark mode class - applies to <html> */
 html.dark {
-  --background: var(--background-dark);
-  --foreground: var(--text-dark-primary);
-}
+  --background: #141414;
+  --surface: #1C1C1C;
+  --surface-2: #222222;
+  --border: #2A2A2A;
+  --border-2: #333333;
+  --text-primary: #F0F0F0;
+  --text-secondary: #888888;
+  --text-tertiary: #555555;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  
-  /* Custom colors */
-  --color-primary: var(--primary);
-  --color-surface-light: var(--surface-light);
-  --color-surface-dark: var(--surface-dark);
-  --color-border-light: var(--border-light);
-  --color-border-dark: var(--border-dark);
-  --color-text-light-primary: var(--text-light-primary);
-  --color-text-light-secondary: var(--text-light-secondary);
-  --color-text-dark-primary: var(--text-dark-primary);
-  --color-text-dark-secondary: var(--text-dark-secondary);
-  --color-success-bg: var(--success-bg);
-  --color-danger-bg: var(--danger-bg);
+  /* Sidebar stays identical in both modes */
 }
 
 /* ==========================================
-   🎨 BASE STYLES - CRITICAL FOR DARK MODE
+   🎨 TAILWIND THEME BRIDGE
    ========================================== */
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-2: var(--border-2);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-positive: var(--positive);
+  --color-positive-bg: var(--positive-bg);
+  --color-negative: var(--negative);
+  --color-negative-bg: var(--negative-bg);
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-border: var(--sidebar-border);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
 
-/* Light mode (default) */
+/* ==========================================
+   🎨 BASE
+   ========================================== */
 html {
   color-scheme: light;
 }
 
-html.light {
-  color-scheme: light;
-}
-
-html.light body {
-  background-color: var(--background-light);
-  color: var(--text-light-primary);
-}
-
-/* Dark mode */
 html.dark {
   color-scheme: dark;
 }
 
-html.dark body {
-  background-color: var(--background-dark);
-  color: var(--text-dark-primary);
-}
-
-/* Base body styles */
 body {
+  background-color: var(--background);
+  color: var(--text-primary);
   font-family: 'Inter', Arial, Helvetica, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ==========================================
-   🎨 TAILWIND DARK MODE OVERRIDES
-   These ensure dark: classes work properly
+   🎨 FOCUS — neutral outline, NO green glow
    ========================================== */
-
-/* Background colors */
-.dark .bg-surface-light {
-  background-color: var(--surface-dark) !important;
-}
-
-.dark .bg-background-light {
-  background-color: var(--background-dark) !important;
-}
-
-.dark .bg-gray-50 {
-  background-color: rgb(26 26 26) !important;
-}
-
-.dark .bg-gray-100 {
-  background-color: rgb(31 31 31) !important;
-}
-
-.dark .bg-white {
-  background-color: var(--surface-dark) !important;
-}
-
-/* Text colors */
-.dark .text-text-light-primary {
-  color: var(--text-dark-primary) !important;
-}
-
-.dark .text-text-light-secondary {
-  color: var(--text-dark-secondary) !important;
-}
-
-.dark .text-gray-900,
-.dark .text-gray-800,
-.dark .text-gray-700 {
-  color: var(--text-dark-primary) !important;
-}
-
-.dark .text-gray-600,
-.dark .text-gray-500 {
-  color: var(--text-dark-secondary) !important;
-}
-
-/* Border colors */
-.dark .border-border-light {
-  border-color: var(--border-dark) !important;
-}
-
-.dark .border-gray-200,
-.dark .border-gray-100 {
-  border-color: var(--border-dark) !important;
+*:focus-visible {
+  outline: 2px solid var(--border-2);
+  outline-offset: 2px;
 }
 
 /* ==========================================
-   🎨 COMPONENT SPECIFIC DARK MODE
+   🎨 SELECTION
    ========================================== */
-
-/* Cards and surfaces */
-.dark .rounded-3xl.bg-surface-light,
-.dark .rounded-2xl.bg-surface-light {
-  background-color: var(--surface-dark);
-  border-color: var(--border-dark);
+::selection {
+  background: rgba(0, 0, 0, 0.12);
+  color: inherit;
 }
 
-/* Sidebar dark mode */
-.dark aside,
-aside.dark {
-  background-color: var(--surface-darker) !important;
-  border-color: var(--border-dark) !important;
-}
-
-/* Headers */
-.dark header,
-header.dark {
-  background-color: rgba(24 24 24, 0.7) !important;
-  border-color: var(--border-dark) !important;
+html.dark ::selection {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 /* ==========================================
-   🎨 UTILITY CLASSES
+   🎨 SCROLLBAR
    ========================================== */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-2);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
 
-/* Material Icons sizing */
+/* ==========================================
+   🎨 MATERIAL ICONS
+   ========================================== */
 .material-icons-outlined {
   font-size: 20px;
-}
-
-/* Donut chart rotation */
-.donut-chart {
-  transform: rotate(-90deg);
 }
 
 /* ==========================================
    🎨 ANIMATIONS
    ========================================== */
-@keyframes wave {
-  0% { transform: rotate(0deg); }
-  10% { transform: rotate(14deg); }
-  20% { transform: rotate(-8deg); }
-  30% { transform: rotate(14deg); }
-  40% { transform: rotate(-4deg); }
-  50% { transform: rotate(10deg); }
-  60%, 100% { transform: rotate(0deg); }
-}
-
-@keyframes scanline {
-  0%, 100% { top: 0; }
-  50% { top: calc(100% - 2px); }
-}
-
-@keyframes pulse-glow {
-  0%, 100% { 
-    box-shadow: 0 0 20px rgba(0, 230, 118, 0.3);
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
   }
-  50% { 
-    box-shadow: 0 0 30px rgba(0, 230, 118, 0.5);
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* ==========================================
-   🎨 SCROLLBAR STYLING
-   ========================================== */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
+@keyframes shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 3px;
+.animate-fade-up {
+  animation: fadeUp 0.35s ease both;
 }
 
-.dark ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+.animate-fade-in {
+  animation: fadeIn 0.25s ease both;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-/* ==========================================
-   🎨 SELECTION STYLING
-   ========================================== */
-::selection {
-  background: rgba(0, 230, 118, 0.3);
-  color: inherit;
-}
-
-/* ==========================================
-   🎨 FOCUS STYLES
-   ========================================== */
-*:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-
-/* ==========================================
-   🎨 TRANSITIONS
-   ========================================== */
-.transition-theme {
-  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 25%,
+    var(--border) 50%,
+    var(--surface-2) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
 }

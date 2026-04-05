@@ -77,7 +77,7 @@ export function NotificationBell({ userId }: { userId: string }) {
       case "group":
         return <Users className="h-4 w-4 text-purple-500" />;
       default:
-        return <Bell className="h-4 w-4 text-gray-500" />;
+        return <Bell className="h-4 w-4 text-text-secondary" />;
     }
   };
 
@@ -89,11 +89,11 @@ export function NotificationBell({ userId }: { userId: string }) {
           setIsOpen(!isOpen);
           if (!isOpen) markAllAsRead();
         }}
-        className="relative flex h-9 w-9 items-center justify-center rounded-xl text-text-light-secondary dark:text-text-dark-secondary transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+        className="relative flex h-9 w-9 items-center justify-center rounded-xl text-text-secondary transition-all duration-200 hover:bg-surface-2 dark:hover:bg-gray-800"
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
-          <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white shadow-sm ring-2 ring-surface-light dark:ring-surface-dark">
+          <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-text-primary text-[10px] font-bold text-white shadow-sm ring-2 ring-surface-light dark:ring-surface-dark">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -101,23 +101,23 @@ export function NotificationBell({ userId }: { userId: string }) {
 
       {/* ── Dropdown Modal ── */}
       {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark shadow-xl sm:w-96">
-          <div className="flex items-center justify-between border-b border-border-light dark:border-border-dark bg-gray-50/50 dark:bg-gray-800/50 px-4 py-3">
-            <h3 className="font-semibold text-text-light-primary dark:text-text-dark-primary">
+        <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-border bg-surface shadow-xl sm:w-96">
+          <div className="flex items-center justify-between border-b border-border bg-surface-2/50 dark:bg-gray-800/50 px-4 py-3">
+            <h3 className="font-semibold text-text-primary">
               Notifications
             </h3>
             <div className="flex items-center gap-2">
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="text-xs font-medium text-primary hover:text-primary/80"
+                  className="text-xs font-medium text-text-primary hover:text-text-primary/80"
                 >
                   Mark all read
                 </button>
               )}
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-text-light-secondary dark:text-text-dark-secondary hover:text-text-light-primary dark:hover:text-text-dark-primary"
+                className="text-text-secondary hover:text-text-light-primary dark:hover:text-text-dark-primary"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -139,21 +139,21 @@ export function NotificationBell({ userId }: { userId: string }) {
                   <div
                     key={notif.id}
                     onClick={() => setIsOpen(false)}
-                    className={`flex items-start gap-3 p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer ${
-                      !notif.is_read ? "bg-primary/5 dark:bg-primary/10" : ""
+                    className={`flex items-start gap-3 p-4 transition-colors hover:bg-surface-2 dark:hover:bg-gray-800 cursor-pointer ${
+                      !notif.is_read ? "bg-text-primary/5 dark:bg-text-primary/10" : ""
                     }`}
                   >
-                    <div className="mt-1 shrink-0 rounded-full bg-gray-100 dark:bg-gray-800 p-2">
+                    <div className="mt-1 shrink-0 rounded-full bg-surface-2 dark:bg-gray-800 p-2">
                       {getIcon(notif.type)}
                     </div>
                     <div className="flex-1 space-y-1">
-                      <p className="text-sm font-medium text-text-light-primary dark:text-text-dark-primary">
+                      <p className="text-sm font-medium text-text-primary">
                         {notif.title}
                       </p>
-                      <p className="text-xs text-text-light-secondary dark:text-text-dark-secondary line-clamp-2">
+                      <p className="text-xs text-text-secondary line-clamp-2">
                         {notif.message}
                       </p>
-                      <p className="text-[10px] text-text-light-secondary dark:text-text-dark-secondary">
+                      <p className="text-[10px] text-text-secondary">
                         {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true })}
                       </p>
                     </div>

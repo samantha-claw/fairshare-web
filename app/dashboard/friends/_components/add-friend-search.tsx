@@ -87,12 +87,12 @@ export const AddFriendSearch = forwardRef<AddFriendSearchHandle, AddFriendSearch
         {/* Header */}
         <div className="relative border-b border-border/50 px-5 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
-              <UserPlus className="h-4 w-4 text-primary" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-text-primary/10">
+              <UserPlus className="h-4 w-4 text-text-primary" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-foreground">Find Friends</h2>
-              <p className="text-xs text-muted-foreground">Search by username to connect</p>
+              <h2 className="text-sm font-bold text-text-primary">Find Friends</h2>
+              <p className="text-xs text-text-secondary">Search by username to connect</p>
             </div>
           </div>
         </div>
@@ -100,14 +100,14 @@ export const AddFriendSearch = forwardRef<AddFriendSearchHandle, AddFriendSearch
         {/* Search Input */}
         <div className="relative px-5 py-4">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary" />
             <input
               ref={inputRef}
               type="text"
               value={searchTerm}
               onChange={(e) => onSearchTermChange(e.target.value)}
               placeholder="Search username…"
-              className="block w-full rounded-xl border border-border bg-background py-3 pl-11 pr-11 text-sm text-foreground placeholder-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="block w-full rounded-xl border border-border bg-surface py-3 pl-11 pr-11 text-sm text-text-primary placeholder-muted-foreground transition-all duration-200 focus:border-border-2 focus:outline-none focus:ring-2 focus:ring-border/30"
             />
             {hasQuery && (
               <button
@@ -116,7 +116,7 @@ export const AddFriendSearch = forwardRef<AddFriendSearchHandle, AddFriendSearch
                   onClearSearch();
                   inputRef.current?.focus({ preventScroll: true });
                 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-text-secondary transition-colors hover:bg-surface-2 hover:text-text-primary"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -125,7 +125,7 @@ export const AddFriendSearch = forwardRef<AddFriendSearchHandle, AddFriendSearch
 
           {/* Searching Indicator */}
           {searching && (
-            <div className="mt-3 flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground">
+            <div className="mt-3 flex items-center justify-center gap-2 py-2 text-xs text-text-secondary">
               <Spinner className="h-3.5 w-3.5" />
               Searching…
             </div>
@@ -137,16 +137,16 @@ export const AddFriendSearch = forwardRef<AddFriendSearchHandle, AddFriendSearch
           <div className="border-t border-border/50 px-5 pb-5">
             {searchResults.length === 0 ? (
               <div className="flex flex-col items-center py-8 text-center">
-                <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                  <Search className="h-5 w-5 text-muted-foreground" />
+                <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-surface-2">
+                  <Search className="h-5 w-5 text-text-secondary" />
                 </div>
-                <p className="text-sm font-medium text-foreground">No users found</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">Try a different username</p>
+                <p className="text-sm font-medium text-text-primary">No users found</p>
+                <p className="mt-0.5 text-xs text-text-secondary">Try a different username</p>
               </div>
             ) : (
               <div className="space-y-2 pt-3">
                 {/* Results Count */}
-                <p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                <p className="mb-3 text-xs font-bold uppercase tracking-widest text-text-secondary">
                   {searchResults.length} result{searchResults.length !== 1 && "s"}
                 </p>
 
@@ -161,7 +161,7 @@ export const AddFriendSearch = forwardRef<AddFriendSearchHandle, AddFriendSearch
                   return (
                     <div
                       key={user.id}
-                      className="group relative flex items-center gap-3.5 rounded-xl border border-border/50 bg-background p-4 transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
+                      className="group relative flex items-center gap-3.5 rounded-xl border border-border/50 bg-surface p-4 transition-all duration-300 hover:border-border-2 hover:shadow-lg hover:shadow-sm"
                     >
                       {/* Avatar */}
                       <Link
@@ -175,13 +175,13 @@ export const AddFriendSearch = forwardRef<AddFriendSearchHandle, AddFriendSearch
                       <div className="min-w-0 flex-1">
                         <Link
                           href={`/dashboard/profile/${user.id}`}
-                          className="block truncate text-sm font-bold text-foreground transition-colors group-hover:text-primary"
+                          className="block truncate text-sm font-bold text-text-primary transition-colors group-hover:text-text-primary"
                         >
                           {displayName}
                         </Link>
                         <div className="mt-0.5 flex items-center gap-1">
-                          <AtSign className="h-3 w-3 flex-shrink-0 text-muted-foreground" />
-                          <p className="truncate text-xs font-medium text-muted-foreground">{username}</p>
+                          <AtSign className="h-3 w-3 flex-shrink-0 text-text-secondary" />
+                          <p className="truncate text-xs font-medium text-text-secondary">{username}</p>
                         </div>
                       </div>
 
@@ -191,7 +191,7 @@ export const AddFriendSearch = forwardRef<AddFriendSearchHandle, AddFriendSearch
                           <button
                             onClick={() => outgoingId && onCancelRequest(outgoingId)}
                             disabled={isCancelling}
-                            className="inline-flex items-center gap-1.5 rounded-xl border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-600 transition-all duration-200 hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-600 transition-all duration-200 hover:border-negative hover:bg-negative-bg hover:text-negative disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             {isCancelling ? (
                               <>
@@ -210,7 +210,7 @@ export const AddFriendSearch = forwardRef<AddFriendSearchHandle, AddFriendSearch
                           <button
                             onClick={() => onSendRequest(username, user.id)}
                             disabled={isSending}
-                            className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground shadow-sm transition-all duration-200 hover:bg-primary/90 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-text-primary px-3.5 py-2 text-xs font-semibold text-text-primary-foreground shadow-sm transition-all duration-200 hover:bg-text-primary/90 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             {isSending ? (
                               <>

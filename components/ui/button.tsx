@@ -11,13 +11,13 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const VARIANT_CLASSES = {
   primary:
-    "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-button-primary hover:shadow-xl hover:shadow-indigo-500/30 hover:-translate-y-0.5",
+    "bg-text-text-primary text-surface hover:opacity-90 shadow-button-primary",
   secondary:
-    "border border-gray-200 bg-white text-gray-700 shadow-button hover:bg-gray-50 hover:border-gray-300",
+    "border border-border bg-surface text-text-primary shadow-button hover:bg-surface-2",
   danger:
     "bg-red-600 text-white shadow-button hover:bg-red-700",
   ghost:
-    "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
+    "text-text-secondary hover:bg-surface-2 hover:text-text-primary",
 } as const;
 
 const SIZE_CLASSES = {
@@ -38,7 +38,7 @@ export function Button({
   return (
     <button
       disabled={disabled || loading}
-      className={`inline-flex items-center justify-center font-semibold rounded-button transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${className}`}
+      className={`inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${className}`}
       {...props}
     >
       {loading && <Spinner className="h-4 w-4" />}

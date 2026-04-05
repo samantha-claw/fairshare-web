@@ -64,18 +64,18 @@ export function ShareProfileModal({
     <Modal isOpen={isOpen} onClose={onClose} title="Share Profile" maxWidth="sm">
       {/* Header Gradient */}
       <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 px-6 pb-8 pt-6">
-        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-surface/10 blur-xl" />
         <div className="absolute -bottom-6 left-8 h-20 w-20 rounded-full bg-purple-400/20 blur-lg" />
 
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-xl bg-white/15 p-1.5 text-white/80 backdrop-blur-sm transition-colors hover:bg-white/25 hover:text-white"
+          className="absolute right-4 top-4 rounded-xl bg-surface/15 p-1.5 text-white/80 backdrop-blur-sm transition-colors hover:bg-surface/25 hover:text-white"
         >
           <X className="h-4 w-4" />
         </button>
 
         <div className="relative flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface/20 backdrop-blur-sm">
             <QrCode className="h-4 w-4 text-white" />
           </div>
           <div>
@@ -87,7 +87,7 @@ export function ShareProfileModal({
 
       {/* QR Code */}
       <div className="flex flex-col items-center px-6 py-6">
-        <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+        <div className="rounded-2xl border border-border bg-surface p-4 shadow-sm">
           <QRCode
             value={profileUrl}
             size={180}
@@ -96,16 +96,16 @@ export function ShareProfileModal({
             fgColor="#312e81"
           />
         </div>
-        <p className="mt-3 text-center text-xs text-gray-400">
+        <p className="mt-3 text-center text-xs text-text-tertiary">
           Scan to view {displayName}&apos;s profile
         </p>
       </div>
 
       {/* URL + Actions */}
-      <div className="border-t border-gray-100 px-6 pb-6 pt-4">
-        <div className="mb-4 flex items-center gap-2 rounded-xl bg-gray-50 px-3 py-2.5">
-          <ExternalLink className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" />
-          <p className="flex-1 truncate text-xs font-medium text-gray-600">
+      <div className="border-t border-border px-6 pb-6 pt-4">
+        <div className="mb-4 flex items-center gap-2 rounded-xl bg-surface-2 px-3 py-2.5">
+          <ExternalLink className="h-3.5 w-3.5 flex-shrink-0 text-text-tertiary" />
+          <p className="flex-1 truncate text-xs font-medium text-text-secondary">
             {profileUrl}
           </p>
         </div>
@@ -116,7 +116,7 @@ export function ShareProfileModal({
             className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-300 ${
               copied
                 ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                : "bg-surface-2 text-text-primary hover:bg-gray-200"
             }`}
           >
             {copied ? (
@@ -136,7 +136,7 @@ export function ShareProfileModal({
             typeof navigator.share === "function" && (
               <button
                 onClick={handleNativeShare}
-                className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:shadow-md hover:shadow-indigo-200"
+                className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-text-text-primary to-text-secondary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:shadow-md hover:shadow-indigo-200"
               >
                 <Share2 className="h-4 w-4" />
                 Share

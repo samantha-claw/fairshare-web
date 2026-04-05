@@ -222,7 +222,7 @@ export default function RegisterPage() {
   if (emailConfirmationSent) {
     return (
       <div className="w-full max-w-md">
-        <div className="rounded-3xl border border-white/10 bg-white/[0.07] p-8 text-center shadow-2xl shadow-black/20 backdrop-blur-xl">
+        <div className="rounded-3xl border border-white/10 bg-surface/[0.07] p-8 text-center shadow-2xl shadow-black/20 backdrop-blur-xl">
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20">
             <CheckCircle2 className="h-8 w-8 text-emerald-400" />
           </div>
@@ -234,7 +234,7 @@ export default function RegisterPage() {
           </p>
           <Link
             href="/login"
-            className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-white/10 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/20"
+            className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-surface/10 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-surface/20"
           >
             Back to Sign In
             <ArrowRight className="h-4 w-4" />
@@ -260,7 +260,7 @@ export default function RegisterPage() {
       </div>
 
       {/* ── Glass Card ── */}
-      <div className="rounded-3xl border border-white/10 bg-white/[0.07] p-8 shadow-2xl shadow-black/20 backdrop-blur-xl">
+      <div className="rounded-3xl border border-white/10 bg-surface/[0.07] p-8 shadow-2xl shadow-black/20 backdrop-blur-xl">
         {/* Error Banner */}
         {error && (
           <div className="mb-6 flex items-start gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 backdrop-blur-sm">
@@ -295,7 +295,7 @@ export default function RegisterPage() {
                 aria-describedby="fullName-error"
                 aria-invalid={fullNameHasError}
                 required
-                className="w-full rounded-2xl border border-white/10 bg-white/[0.05] py-3.5 pl-12 pr-4 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:border-purple-500/50 focus:bg-white/[0.08] focus:ring-2 focus:ring-purple-500/20"
+                className="w-full rounded-2xl border border-white/10 bg-surface/[0.05] py-3.5 pl-12 pr-4 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:border-purple-500/50 focus:bg-surface/[0.08] focus:ring-2 focus:ring-purple-500/20"
               />
             </div>
             <p
@@ -329,7 +329,7 @@ export default function RegisterPage() {
                 aria-describedby="username-error"
                 aria-invalid={usernameHasError}
                 required
-                className={`w-full rounded-2xl border bg-white/[0.05] py-3.5 pl-12 pr-12 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:bg-white/[0.08] focus:ring-2 ${getUsernameBorderClass()}`}
+                className={`w-full rounded-2xl border bg-surface/[0.05] py-3.5 pl-12 pr-12 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:bg-surface/[0.08] focus:ring-2 ${getUsernameBorderClass()}`}
               />
               {/* Dynamic right-side icon */}
               <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -388,7 +388,7 @@ export default function RegisterPage() {
 
                 {/* Smart Suggestions */}
                 {usernameSuggestions.length > 0 && (
-                  <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-3">
+                  <div className="rounded-2xl border border-white/[0.06] bg-surface/[0.03] p-3">
                     <div className="mb-2 flex items-center gap-1.5">
                       <Sparkles className="h-3 w-3 text-purple-400" />
                       <p className="text-[11px] font-medium text-white/40">
@@ -401,7 +401,7 @@ export default function RegisterPage() {
                           key={suggestion}
                           type="button"
                           onClick={() => handleSelectSuggestion(suggestion)}
-                          className="group/pill flex items-center gap-1 rounded-xl border border-white/10 bg-white/[0.05] px-3 py-1.5 text-xs font-medium text-purple-300 backdrop-blur-sm transition-all duration-200 hover:border-purple-500/40 hover:bg-purple-500/15 hover:text-purple-200 hover:shadow-md hover:shadow-purple-500/10 active:scale-95"
+                          className="group/pill flex items-center gap-1 rounded-xl border border-white/10 bg-surface/[0.05] px-3 py-1.5 text-xs font-medium text-purple-300 backdrop-blur-sm transition-all duration-200 hover:border-purple-500/40 hover:bg-purple-500/15 hover:text-purple-200 hover:shadow-md hover:shadow-purple-500/10 active:scale-95"
                         >
                           <AtSign className="h-3 w-3 opacity-50 transition-opacity group-hover/pill:opacity-100" />
                           {suggestion}
@@ -450,7 +450,7 @@ export default function RegisterPage() {
                 aria-describedby="email-error"
                 aria-invalid={emailHasError}
                 required
-                className="w-full rounded-2xl border border-white/10 bg-white/[0.05] py-3.5 pl-12 pr-4 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:border-purple-500/50 focus:bg-white/[0.08] focus:ring-2 focus:ring-purple-500/20"
+                className="w-full rounded-2xl border border-white/10 bg-surface/[0.05] py-3.5 pl-12 pr-4 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:border-purple-500/50 focus:bg-surface/[0.08] focus:ring-2 focus:ring-purple-500/20"
               />
             </div>
             <p
@@ -486,7 +486,7 @@ export default function RegisterPage() {
                 aria-invalid={passwordHasError}
                 required
                 minLength={6}
-                className="w-full rounded-2xl border border-white/10 bg-white/[0.05] py-3.5 pl-12 pr-12 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:border-purple-500/50 focus:bg-white/[0.08] focus:ring-2 focus:ring-purple-500/20"
+                className="w-full rounded-2xl border border-white/10 bg-surface/[0.05] py-3.5 pl-12 pr-12 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:border-purple-500/50 focus:bg-surface/[0.08] focus:ring-2 focus:ring-purple-500/20"
               />
               <button
                 type="button"
@@ -505,7 +505,7 @@ export default function RegisterPage() {
             {/* Password Strength Meter */}
             {password.length > 0 && (
               <div className="mt-3">
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface/10">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${passwordStrength.color}`}
                     style={{ width: passwordStrength.width }}
@@ -554,7 +554,7 @@ export default function RegisterPage() {
                 aria-invalid={confirmPasswordHasError}
                 required
                 minLength={6}
-                className={`w-full rounded-2xl border bg-white/[0.05] py-3.5 pl-12 pr-20 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:bg-white/[0.08] focus:ring-2 ${
+                className={`w-full rounded-2xl border bg-surface/[0.05] py-3.5 pl-12 pr-20 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:bg-surface/[0.08] focus:ring-2 ${
                   confirmPasswordMatch === null
                     ? "border-white/10 focus:border-purple-500/50 focus:ring-purple-500/20"
                     : confirmPasswordMatch

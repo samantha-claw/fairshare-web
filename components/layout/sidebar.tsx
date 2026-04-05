@@ -1,24 +1,20 @@
 "use client";
 
-// ==========================================
-// 📦 IMPORTS
-// ==========================================
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
+  FolderOpen,
   Settings,
-  MessageCircle,
+  LogOut,
   Sun,
   Moon,
-  LogOut,
+  User,
 } from "lucide-react";
+import { useTheme } from "@/providers/theme-provider";
 
-// ==========================================
-// 🧩 TYPES
-// ==========================================
 interface SidebarProps {
   displayName: string;
   avatarUrl: string;
@@ -26,18 +22,9 @@ interface SidebarProps {
   isMobile?: boolean;
 }
 
-interface NavItem {
-  label: string;
-  href: string;
-  icon: React.ElementType;
-}
-
-// ==========================================
-// ⚙️ LOGIC
-// ==========================================
-const NAV_ITEMS: NavItem[] = [
+const NAV_ITEMS = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Groups", href: "/dashboard/groups", icon: Users },
+  { label: "Groups", href: "/dashboard/groups", icon: FolderOpen },
   { label: "Friends", href: "/dashboard/friends", icon: Users },
   { label: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
@@ -47,9 +34,6 @@ function isActive(pathname: string, href: string): boolean {
   return pathname.startsWith(href);
 }
 
-// ==========================================
-// 🎨 UI RENDER — NEW DESIGN
-// ==========================================
 export function Sidebar({
   displayName,
   avatarUrl,
@@ -57,112 +41,93 @@ export function Sidebar({
   isMobile = false,
 }: SidebarProps) {
   const pathname = usePathname();
-  
-  // Theme state
-  const [isDark, setIsDark] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const { isDark, toggle } = useTheme();
 
-  // Initialize theme from localStorage
-  useEffect(() => {
-    setMounted(true);
-    const stored = localStorage.getItem("theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const initialDark = stored ? stored === "dark" : prefersDark;
-    setIsDark(initialDark);
-    document.documentElement.classList.toggle("dark", initialDark);
-  }, []);
-
-  // Toggle theme
-  const toggleTheme = () => {
-    const newDark = !isDark;
-    setIsDark(newDark);
-    localStorage.setItem("theme", newDark ? "dark" : "light");
-    document.documentElement.classList.toggle("dark", newDark);
-  };
+  const initials = displayName
+    ? displayName
+        .split(" ")
+        .map((w) => w[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "U";
 
   return (
     <aside
       className={
         isMobile
-          ? "flex h-full w-full flex-col bg-[#121212]"
-          : "w-64 flex-shrink-0 flex flex-col justify-between rounded-3xl p-6 hidden md:flex border border-white/5 bg-[#121212]"
+          ? "flex h-full w-full flex-col bg-sidebar-bg px-4 py-6"
+          : "hidden md:flex w-60 flex-shrink-0 flex-col justify-between rounded-2xl px-4 py-6 bg-sidebar-bg border border-sidebar-border"
       }
     >
-      {/* ── Logo & Navigation ───────────────────── */}
+      {/* ── Logo ── */}
       <div>
-        {/* Logo */}
-        <Link href="/dashboard" className="flex items-center gap-3 mb-10">
-          <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center relative overflow-hidden">
-            <div className="absolute inset-0 border-[4px] border-white rounded-full" />
-            <div className="w-full h-0.5 bg-white absolute top-1/2 -translate-y-1/2" />
-            <div className="w-0.5 h-full bg-white absolute left-1/2 -translate-x-1/2" />
+        <Link href="/dashboard" className="flex items-center gap-3 px-2 mb-8">
+          <div className="w-8 h-8 rounded-lg bg-surface/10 flex items-center justify-center border border-white/10">
+            <span className="text-xs font-black text-white">FS</span>
           </div>
-          <span className="font-bold text-xl tracking-tight text-white">
+          <span className="font-bold text-base tracking-tight text-white">
             FairShare
           </span>
         </Link>
 
-        {/* Navigation */}
-        <nav className="space-y-1">
-          {NAV_ITEMS.map((item) => {
-            const active = isActive(pathname, item.href);
-            const Icon = item.icon;
+        {/* ── Nav ── */}
+        <nav className="space-y-0.5">
+          {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
+            const active = isActive(pathname, href);
             return (
               <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${
+                key={href}
+                href={href}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                   active
-                    ? "bg-white/10 text-white font-bold"
-                    : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                    ? "bg-surface/10 text-white"
+                    : "text-sidebar-text hover:bg-surface/5 hover:text-white"
                 }`}
               >
-                <Icon className="h-5 w-5" />
-                <span>{item.label}</span>
+                <Icon className="h-4 w-4 flex-shrink-0" />
+                {label}
               </Link>
             );
           })}
         </nav>
       </div>
 
-      {/* ── Bottom Section ──────────────────────── */}
-      <div className="space-y-3 pt-6">
-        {/* Chat Button */}
-        <button className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors border border-white/10 text-zinc-400">
-          <MessageCircle className="h-5 w-5" />
+      {/* ── Bottom ── */}
+      <div className="space-y-1">
+        {/* Profile link */}
+        <Link
+          href="/dashboard/profile"
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+            isActive(pathname, "/dashboard/profile")
+              ? "bg-surface/10 text-white"
+              : "text-sidebar-text hover:bg-surface/5 hover:text-white"
+          }`}
+        >
+          <User className="h-4 w-4 flex-shrink-0" />
+          <span className="truncate">{displayName || "Profile"}</span>
+        </Link>
+
+        {/* Theme toggle */}
+        <button
+          onClick={toggle}
+          className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-sidebar-text hover:bg-surface/5 hover:text-white transition-colors"
+        >
+          {isDark ? (
+            <Sun className="h-4 w-4 flex-shrink-0" />
+          ) : (
+            <Moon className="h-4 w-4 flex-shrink-0" />
+          )}
+          {isDark ? "Light mode" : "Dark mode"}
         </button>
 
-        {/* Theme Toggle */}
-        <div className="rounded-full p-1 w-10 flex flex-col items-center bg-white/5">
-          <button
-            onClick={() => mounted && isDark && toggleTheme()}
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-              mounted && !isDark
-                ? "bg-white/10 text-white"
-                : "text-zinc-400 hover:text-white"
-            }`}
-          >
-            <Sun className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => mounted && !isDark && toggleTheme()}
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-              mounted && isDark
-                ? "bg-white/10 text-white"
-                : "text-zinc-400 hover:text-white"
-            }`}
-          >
-            <Moon className="h-4 w-4" />
-          </button>
-        </div>
-
-        {/* Sign Out */}
+        {/* Sign out */}
         <button
           onClick={onSignOut}
-          className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-zinc-400 hover:bg-red-500/10 hover:text-red-400 w-full"
+          className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-sidebar-text hover:bg-red-500/10 hover:text-red-400 transition-colors"
         >
-          <LogOut className="h-5 w-5" />
-          <span className="text-sm font-medium">Sign out</span>
+          <LogOut className="h-4 w-4 flex-shrink-0" />
+          Sign out
         </button>
       </div>
     </aside>

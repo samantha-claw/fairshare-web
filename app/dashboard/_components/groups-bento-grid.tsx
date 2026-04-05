@@ -32,9 +32,9 @@ const STATUS_COLORS = {
     border: "border-rose-500/30",
   },
   neutral: {
-    bg: "bg-gray-100 dark:bg-gray-800",
-    text: "text-gray-600 dark:text-gray-400",
-    border: "border-gray-200 dark:border-gray-700",
+    bg: "bg-surface-2 dark:bg-gray-800",
+    text: "text-text-secondary dark:text-text-tertiary",
+    border: "border-border dark:border-gray-700",
   },
 };
 
@@ -73,7 +73,7 @@ function GlassGroupCard({ group, status, isFeatured, isOwner }: GlassGroupCardPr
     >
       <Link
         href={`/dashboard/groups/${group.group_id}`}
-        className="group relative h-full overflow-hidden rounded-2xl border border-border/50 bg-card/30 backdrop-blur-md transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 block"
+        className="group relative h-full overflow-hidden rounded-2xl border border-border/50 bg-card/30 backdrop-blur-md transition-all duration-300 hover:border-border-2 hover:shadow-xl hover:shadow-primary/10 block"
       >
         {/* Image Section */}
         <div className="relative aspect-[16/9] overflow-hidden">
@@ -89,7 +89,7 @@ function GlassGroupCard({ group, status, isFeatured, isOwner }: GlassGroupCardPr
             {tags.map((tag, index) => (
               <span
                 key={index}
-                className="bg-background/50 backdrop-blur-sm text-xs font-semibold px-3 py-1 rounded-full text-foreground hover:bg-background/80"
+                className="bg-surface/50 backdrop-blur-sm text-xs font-semibold px-3 py-1 rounded-full text-text-primary hover:bg-surface/80"
               >
                 {tag}
               </span>
@@ -97,11 +97,11 @@ function GlassGroupCard({ group, status, isFeatured, isOwner }: GlassGroupCardPr
           </div>
           
           {/* Hover Overlay Action */}
-          <div className="absolute inset-0 flex items-center justify-center bg-background/20 backdrop-blur-[2px] opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+          <div className="absolute inset-0 flex items-center justify-center bg-surface/20 backdrop-blur-[2px] opacity-0 transition-opacity duration-300 group-hover:opacity-100">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/25"
+              className="flex items-center gap-2 rounded-full bg-text-primary px-6 py-2.5 text-sm font-medium text-text-primary-foreground shadow-lg shadow-primary/25"
             >
               <Users className="h-4 w-4" />
               View Group
@@ -112,12 +112,12 @@ function GlassGroupCard({ group, status, isFeatured, isOwner }: GlassGroupCardPr
         {/* Content Section */}
         <div className="flex flex-col gap-4 p-5">
           <div className="space-y-2">
-            <h3 className="text-xl font-semibold leading-tight tracking-tight text-foreground transition-colors group-hover:text-primary">
+            <h3 className="text-xl font-semibold leading-tight tracking-tight text-text-primary transition-colors group-hover:text-text-primary">
               {group.group_name}
             </h3>
             
             {/* Balance */}
-            <p className="line-clamp-2 text-sm text-muted-foreground">
+            <p className="line-clamp-2 text-sm text-text-secondary">
               {group.net_balance > 0
                 ? `You get back ${formatCurrency(group.net_balance, group.currency)}`
                 : group.net_balance < 0
@@ -139,7 +139,7 @@ function GlassGroupCard({ group, status, isFeatured, isOwner }: GlassGroupCardPr
                 Owes {formatCurrency(Math.abs(group.net_balance), group.currency)}
               </div>
             ) : (
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-bold text-muted-foreground border border-border">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-surface-2 px-3 py-1.5 text-xs font-bold text-text-secondary border border-border">
                 <Wallet className="h-3 w-3" />
                 Settled up
               </div>
@@ -149,14 +149,14 @@ function GlassGroupCard({ group, status, isFeatured, isOwner }: GlassGroupCardPr
           {/* Footer */}
           <div className="flex items-center justify-between border-t border-border/50 pt-4">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center text-primary-foreground font-bold text-sm border border-border/50">
+              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center text-text-primary-foreground font-bold text-sm border border-border/50">
                 {group.group_name.charAt(0).toUpperCase()}
               </div>
               <div className="flex flex-col text-xs">
-                <span className="font-medium text-foreground">
+                <span className="font-medium text-text-primary">
                   Group
                 </span>
-                <span className="text-muted-foreground">
+                <span className="text-text-secondary">
                   {new Date(group.created_at).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
@@ -164,7 +164,7 @@ function GlassGroupCard({ group, status, isFeatured, isOwner }: GlassGroupCardPr
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1 text-xs text-text-secondary">
               <Clock className="h-3 w-3" />
               <span>{group.currency}</span>
             </div>
@@ -180,19 +180,19 @@ function GlassGroupCard({ group, status, isFeatured, isOwner }: GlassGroupCardPr
 // ==========================================
 function EmptyState() {
   return (
-    <div className="rounded-3xl border-2 border-dashed border-border bg-muted/30 py-20 text-center">
+    <div className="rounded-3xl border-2 border-dashed border-border bg-surface-2/30 py-20 text-center">
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: "spring", stiffness: 200 }}
         className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center"
       >
-        <Wallet className="h-8 w-8 text-primary" />
+        <Wallet className="h-8 w-8 text-text-primary" />
       </motion.div>
-      <h4 className="text-lg font-bold text-foreground">
+      <h4 className="text-lg font-bold text-text-primary">
         No groups yet
       </h4>
-      <p className="mx-auto mt-1 max-w-xs text-sm text-muted-foreground">
+      <p className="mx-auto mt-1 max-w-xs text-sm text-text-secondary">
         Create your first group to start splitting expenses with friends.
       </p>
       <Link

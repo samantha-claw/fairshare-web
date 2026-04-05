@@ -116,7 +116,7 @@ export function ExpensesTab({
             // ✅ FIX 2: Added overflow-hidden to each card
             <div
               key={exp.id}
-              className="flex items-start gap-3 overflow-hidden rounded-xl border border-gray-100 bg-gray-50/50 p-3 transition-all hover:border-gray-200 hover:shadow-sm sm:items-center sm:p-4"
+              className="flex items-start gap-3 overflow-hidden rounded-xl border border-border bg-surface-2/50 p-3 transition-all hover:border-border hover:shadow-sm sm:items-center sm:p-4"
             >
               {/* ── Left: Payer Avatar ── */}
               <Link
@@ -130,22 +130,22 @@ export function ExpensesTab({
               <div className="min-w-0 flex-1">
                 {/* Name + SplitBadge */}
                 <div className="mb-0.5 flex items-center gap-2 overflow-hidden">
-                  <h3 className="truncate text-sm font-semibold text-gray-900 sm:text-base">
+                  <h3 className="truncate text-sm font-semibold text-text-primary sm:text-base">
                     {exp.name}
                   </h3>
                   <SplitBadge type={(exp as any).split_type} />
                 </div>
 
-                <div className="mt-0.5 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs text-gray-500">
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs text-text-secondary">
                   <span>Paid by</span>
                   <Link
                     href={`/dashboard/profile/${exp.paid_by}`}
-                    className="max-w-[80px] truncate font-medium text-gray-700 hover:text-blue-600 hover:underline sm:max-w-[120px]"
+                    className="max-w-[80px] truncate font-medium text-text-primary hover:text-text-primary hover:underline sm:max-w-[120px]"
                     title={payerName}
                   >
                     {payerName}
                   </Link>
-                  <span className="text-gray-400">·</span>
+                  <span className="text-text-tertiary">·</span>
                   <span className="whitespace-nowrap">
                     {new Date(exp.created_at).toLocaleDateString()}
                   </span>
@@ -154,7 +154,7 @@ export function ExpensesTab({
 
               {/* ── Right: Amount + Mini Participant Avatars ── */}
               <div className="flex shrink-0 flex-col items-end gap-1.5">
-                <p className="text-base font-bold text-gray-900 sm:text-lg">
+                <p className="text-base font-bold text-text-primary sm:text-lg">
                   {formatCurrency(exp.amount, currency)}
                 </p>
 
@@ -195,7 +195,7 @@ export function ExpensesTab({
                   })}
                   {remainingCount > 0 && (
                     <div
-                      className="-ml-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-[10px] font-bold text-gray-600 ring-2 ring-white"
+                      className="-ml-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-[10px] font-bold text-text-secondary ring-2 ring-white"
                       title={`+${remainingCount} more`}
                     >
                       +{remainingCount}
@@ -213,16 +213,16 @@ export function ExpensesTab({
         <div className="-mx-4 -mb-4 mt-3 sm:-mx-6 sm:-mb-6">
           <button
             onClick={onViewAll}
-            className="flex w-full items-center justify-center gap-2 rounded-b-xl border-t border-gray-100 bg-gray-50 p-4 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100 active:scale-[0.99]"
+            className="flex w-full items-center justify-center gap-2 rounded-b-xl border-t border-border bg-surface-2 p-4 text-sm font-semibold text-text-primary transition-colors hover:bg-surface-2 active:scale-[0.99]"
           >
             View All Expenses
             {hasMore && (
-              <span className="inline-flex items-center justify-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-600">
+              <span className="inline-flex items-center justify-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-text-primary">
                 {expenses.length}
               </span>
             )}
             <svg
-              className="h-4 w-4 text-gray-400"
+              className="h-4 w-4 text-text-tertiary"
               fill="none"
               viewBox="0 0 24 24"
               strokeWidth={2}
