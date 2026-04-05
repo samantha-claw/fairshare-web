@@ -138,7 +138,7 @@ export function NotificationBell({ userId }: { userId: string }) {
                 {notifications.map((notif) => (
                   <div
                     key={notif.id}
-                    onClick={() => setIsOpen(false}
+                    onClick={() => setIsOpen(false)}
                     className={`flex items-start gap-3 p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer ${
                       !notif.is_read ? "bg-primary/5 dark:bg-primary/10" : ""
                     }`}
