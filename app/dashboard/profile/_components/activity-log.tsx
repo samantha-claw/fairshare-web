@@ -28,7 +28,7 @@ function getRelativeTime(dateStr: string): string {
 }
 
 const DOT_COLORS = [
-  "bg-text-text-primary",
+  "bg-text-primary",
   "bg-emerald-500",
   "bg-amber-500",
   "bg-rose-500",

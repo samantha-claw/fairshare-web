@@ -286,7 +286,7 @@ export function SplitTypeSelector({
 
   const barColors = {
     ok: "bg-emerald-500",
-    warn: "bg-text-text-primary",
+    warn: "bg-text-primary",
     error: "bg-red-500",
   };
 
@@ -384,7 +384,7 @@ export function SplitTypeSelector({
                   <div
                     className={`absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white text-[8px] transition-all ${
                       isSelected
-                        ? "bg-text-text-primary text-white"
+                        ? "bg-text-primary text-white"
                         : "bg-gray-200 text-transparent"
                     }`}
                   >

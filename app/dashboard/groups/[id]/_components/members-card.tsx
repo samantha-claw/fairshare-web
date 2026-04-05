@@ -35,7 +35,7 @@ export function MembersCard({
         {isOwner && (
           <button
             onClick={onOpenAddModal}
-            className="inline-flex items-center gap-1 rounded-md bg-text-text-primary px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:opacity-90"
+            className="inline-flex items-center gap-1 rounded-md bg-text-primary px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:opacity-90"
           >
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />

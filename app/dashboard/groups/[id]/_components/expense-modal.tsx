@@ -314,7 +314,7 @@ className="flex-1 overflow-y-auto overscroll-contain px-5 py-3 sm:px-6 custom-sc
             <button
               type="submit"
               disabled={submitting || !isValidSplit}
-              className="flex-1 rounded-xl bg-text-text-primary py-3 text-sm font-medium text-white transition-colors hover:opacity-90 active:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex-1 rounded-xl bg-text-primary py-3 text-sm font-medium text-white transition-colors hover:opacity-90 active:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {submitting
                 ? "Saving…"

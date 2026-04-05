@@ -283,7 +283,7 @@ const handleJoin = useCallback(async () => {
         {/* ── Auth Required ── */}
         {state === "auth_required" && (
           <div className="overflow-hidden rounded-3xl border border-border bg-surface shadow-xl">
-            <div className="bg-gradient-to-br bg-text-text-primary px-6 py-8 text-center">
+            <div className="bg-gradient-to-br bg-text-primary px-6 py-8 text-center">
               <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-surface/20 backdrop-blur-sm">
                 <LogIn className="h-7 w-7 text-surface" />
               </div>
@@ -297,7 +297,7 @@ const handleJoin = useCallback(async () => {
             <div className="px-6 py-6">
               <button
                 onClick={handleLoginRedirect}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r bg-text-text-primary py-3.5 text-sm font-bold text-surface shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl active:scale-[0.98]"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r bg-text-primary py-3.5 text-sm font-bold text-surface shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl active:scale-[0.98]"
               >
                 <LogIn className="h-4 w-4" />
                 Sign In to Continue
@@ -316,7 +316,7 @@ const handleJoin = useCallback(async () => {
         {/* ── Ready to Join ── */}
         {state === "ready" && groupInfo && (
           <div className="overflow-hidden rounded-3xl border border-border bg-surface shadow-xl">
-            <div className="bg-gradient-to-br bg-text-text-primary px-6 py-8 text-center">
+            <div className="bg-gradient-to-br bg-text-primary px-6 py-8 text-center">
               <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-surface/20 backdrop-blur-sm">
                 <Users className="h-7 w-7 text-surface" />
               </div>
@@ -369,7 +369,7 @@ const handleJoin = useCallback(async () => {
                 </button>
                 <button
                   onClick={handleJoin}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r bg-text-text-primary py-3 text-sm font-bold text-surface shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl active:scale-[0.98]"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r bg-text-primary py-3 text-sm font-bold text-surface shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl active:scale-[0.98]"
                 >
                   <LogIn className="h-4 w-4" />
                   Join Group
@@ -427,7 +427,7 @@ const handleJoin = useCallback(async () => {
               </p>
               <button
                 onClick={handleGoToGroup}
-                className="mt-5 w-full rounded-xl bg-text-text-primary py-3 text-sm font-bold text-surface transition-colors hover:bg-indigo-700"
+                className="mt-5 w-full rounded-xl bg-text-primary py-3 text-sm font-bold text-surface transition-colors hover:bg-indigo-700"
               >
                 Go to Group
               </button>

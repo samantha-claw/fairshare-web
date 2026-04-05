@@ -97,7 +97,7 @@ function InputField({
           className={`block w-full rounded-2xl border bg-surface-2/50 py-3 pl-11 pr-4 text-sm text-text-primary placeholder-gray-400 transition-all duration-200 focus:bg-surface focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
             error
               ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
-              : "border-border focus:border-indigo-300 focus:ring-indigo-100"
+              : "border-border focus:border-border-border-2 focus:ring-border"
           }`}
         />
       </div>
@@ -176,7 +176,7 @@ function TextAreaField({
           className={`block w-full resize-none rounded-2xl border bg-surface-2/50 py-3 pl-11 pr-4 text-sm text-text-primary placeholder-gray-400 transition-all duration-200 focus:bg-surface focus:outline-none focus:ring-2 ${
             error
               ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
-              : "border-border focus:border-indigo-300 focus:ring-indigo-100"
+              : "border-border focus:border-border-border-2 focus:ring-border"
           }`}
         />
       </div>
@@ -269,11 +269,11 @@ export default function EditProfilePage() {
       {/* ── Main Form Card ───────────────────────── */}
       <div className="relative overflow-hidden rounded-3xl border border-border bg-surface shadow-sm">
         {/* Decorative Background */}
-        <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-gradient-to-br from-indigo-100/50 to-purple-100/30 blur-3xl" />
-        <div className="absolute -bottom-16 -left-16 h-40 w-40 rounded-full bg-gradient-to-tr from-blue-100/30 to-cyan-100/20 blur-2xl" />
+        <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-gradient-to-br from-surface-2/50 to-border/30 blur-3xl" />
+        <div className="absolute -bottom-16 -left-16 h-40 w-40 rounded-full bg-gradient-to-tr from-surface-2/30 to-border/20 blur-2xl" />
 
         {/* Header Banner */}
-        <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 px-8 pb-20 pt-8">
+        <div className="relative bg-gradient-to-br from-text-primary via-text-secondary to-border px-8 pb-20 pt-8">
           {/* Decorative */}
           <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-surface/10 blur-xl" />
           <div className="absolute bottom-4 left-1/4 h-16 w-16 rounded-full bg-purple-400/15 blur-lg" />
@@ -284,7 +284,7 @@ export default function EditProfilePage() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-white">Edit Profile</h1>
-              <p className="text-sm text-indigo-200">
+              <p className="text-sm text-text-secondary">
                 Update your personal information
               </p>
             </div>
@@ -308,7 +308,7 @@ export default function EditProfilePage() {
           <button
             type="button"
             onClick={e.triggerFileInput}
-            className="group -mt-16 relative rounded-full bg-surface p-2 shadow-xl transition-all duration-200 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-indigo-200"
+            className="group -mt-16 relative rounded-full bg-surface p-2 shadow-xl transition-all duration-200 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-border-border"
             aria-label="Change profile photo"
           >
             <img
@@ -331,7 +331,7 @@ export default function EditProfilePage() {
             <button
               type="button"
               onClick={e.triggerFileInput}
-              className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-text-primary transition-all hover:bg-indigo-50"
+              className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-text-primary transition-all hover:bg-surface-2"
             >
               <Camera className="h-3.5 w-3.5" />
               Change Photo
@@ -439,9 +439,9 @@ export default function EditProfilePage() {
           <div className="my-6 border-t border-border" />
 
           {/* ── Security Note ────────────────────── */}
-          <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-indigo-100 bg-indigo-50/50 px-4 py-3">
+          <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-border bg-surface-2/50 px-4 py-3">
             <Shield className="mt-0.5 h-4 w-4 flex-shrink-0 text-text-primary" />
-            <p className="text-xs leading-relaxed text-indigo-700">
+            <p className="text-xs leading-relaxed text-text-primary">
               Your profile information is stored securely. Only your
               display name, username, and avatar are publicly visible.
             </p>
@@ -476,7 +476,7 @@ export default function EditProfilePage() {
             <button
               type="submit"
               disabled={e.saving || !e.hasChanges}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-text-text-primary to-text-secondary px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-500/30 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-text-primary to-text-secondary-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-text-primary/10 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-text-primary/15 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
             >
               {e.saving ? (
                 <>
@@ -504,7 +504,7 @@ export default function EditProfilePage() {
         !e.avatarRemoved && (
           <div className="mt-6 rounded-3xl border border-border bg-surface p-6 shadow-sm">
             <div className="mb-3 flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-surface-2">
                 <Image className="h-3.5 w-3.5 text-text-primary" />
               </div>
               <h3 className="text-sm font-bold text-text-primary">

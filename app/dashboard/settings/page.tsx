@@ -323,7 +323,7 @@ export default function SettingsPage() {
                 <button
                   type="submit"
                   disabled={isUpdatingEmail || !newEmail.trim()}
-                  className="inline-flex items-center gap-2 rounded-xl bg-text-text-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-xl bg-text-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
                 >
                   {isUpdatingEmail ? (
                     <>
@@ -449,7 +449,7 @@ export default function SettingsPage() {
                     !passwordLongEnough ||
                     !passwordsMatch
                   }
-                  className="inline-flex items-center gap-2 rounded-xl bg-text-text-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-xl bg-text-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
                 >
                   {isUpdatingPassword ? (
                     <>
