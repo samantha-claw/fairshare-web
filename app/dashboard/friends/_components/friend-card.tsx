@@ -27,7 +27,7 @@ export function FriendCard({ friend, onRemove }: FriendCardProps) {
   
   const displayName = friend.friend_display_name || friend.friend_username;
   const avatarUrl = friend.friend_avatar_url;
-  const description = friend.friend_bio || "No bio yet";
+  const description = "Fairshare user";
   
   // Stats placeholders (could be enhanced with real data)
   const followers = 0;
