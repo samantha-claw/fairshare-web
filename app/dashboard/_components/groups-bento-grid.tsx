@@ -6,7 +6,7 @@
 import Link from "next/link";
 import { formatCurrency } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Wallet, Users, ArrowUpRight } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet, Users, Clock } from "lucide-react";
 import type { GroupBalance } from "@/types/dashboard";
 
 // ==========================================
@@ -18,17 +18,8 @@ interface GroupsBentoGridProps {
 }
 
 // ==========================================
-// ⚙️ GRADIENTS & COLORS (Premium palette - no purple)
+// ⚙️ STATUS COLORS (Original from design)
 // ==========================================
-const GRADIENTS = [
-  "from-slate-800 via-slate-700 to-slate-600",
-  "from-emerald-700 via-emerald-600 to-teal-600",
-  "from-amber-700 via-orange-600 to-red-600",
-  "from-rose-700 via-pink-600 to-rose-500",
-  "from-cyan-700 via-teal-600 to-cyan-600",
-  "from-stone-700 via-stone-600 to-stone-500",
-];
-
 const STATUS_COLORS = {
   positive: {
     bg: "bg-emerald-500/10",
@@ -48,19 +39,31 @@ const STATUS_COLORS = {
 };
 
 // ==========================================
-// 🎨 GLASS GROUP CARD COMPONENT
+// 🎨 GLASS GROUP CARD (Exact design from user's file)
 // ==========================================
 interface GlassGroupCardProps {
   group: GroupBalance;
-  gradient: string;
   status: keyof typeof STATUS_COLORS;
   isFeatured?: boolean;
   isOwner: boolean;
 }
 
-function GlassGroupCard({ group, gradient, status, isFeatured, isOwner }: GlassGroupCardProps) {
+function GlassGroupCard({ group, status, isFeatured, isOwner }: GlassGroupCardProps) {
   const statusStyle = STATUS_COLORS[status];
   
+  // Use Unsplash images for group backgrounds
+  const images = [
+    "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80",
+    "https://images.unsplash.com/photo-1557683316-973673baf926?w=800&q=80",
+    "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&q=80",
+    "https://images.unsplash.com/photo-1579546929518-9e396f3ccac9?w=800&q=80",
+    "https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=800&q=80",
+    "https://images.unsplash.com/photo-1557682250-33ba708c2713?w=800&q=80",
+  ];
+  
+  const image = images[Math.abs(group.group_id.charCodeAt(0)) % images.length];
+  const tags = [group.currency, isOwner ? "Owner" : "Member"];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -72,33 +75,29 @@ function GlassGroupCard({ group, gradient, status, isFeatured, isOwner }: GlassG
         href={`/dashboard/groups/${group.group_id}`}
         className="group relative h-full overflow-hidden rounded-2xl border border-border/50 bg-card/30 backdrop-blur-md transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 block"
       >
-        {/* Image/Gradient Section */}
+        {/* Image Section */}
         <div className="relative aspect-[16/9] overflow-hidden">
-          <motion.div
-            className={`h-full w-full bg-gradient-to-br ${gradient} transition-transform duration-500 group-hover:scale-110`}
+          <motion.img
+            src={image}
+            alt={group.group_name}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
-          
-          {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-60 transition-opacity duration-300 group-hover:opacity-40" />
           
           {/* Tags/Badges */}
           <div className="absolute bottom-3 left-3 flex gap-2">
-            <span className="bg-background/50 backdrop-blur-sm text-xs font-semibold px-3 py-1 rounded-full text-foreground">
-              {group.currency}
-            </span>
-            {isOwner && (
-              <span className="bg-amber-500/90 backdrop-blur-sm text-xs font-bold px-3 py-1 rounded-full text-white">
-                Owner
+            {tags.map((tag, index) => (
+              <span
+                key={index}
+                className="bg-background/50 backdrop-blur-sm text-xs font-semibold px-3 py-1 rounded-full text-foreground hover:bg-background/80"
+              >
+                {tag}
               </span>
-            )}
+            ))}
           </div>
           
           {/* Hover Overlay Action */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileHover={{ opacity: 1 }}
-            className="absolute inset-0 flex items-center justify-center bg-background/20 backdrop-blur-[2px] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-          >
+          <div className="absolute inset-0 flex items-center justify-center bg-background/20 backdrop-blur-[2px] opacity-0 transition-opacity duration-300 group-hover:opacity-100">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -107,38 +106,44 @@ function GlassGroupCard({ group, gradient, status, isFeatured, isOwner }: GlassG
               <Users className="h-4 w-4" />
               View Group
             </motion.button>
-          </motion.div>
+          </div>
         </div>
         
         {/* Content Section */}
         <div className="flex flex-col gap-4 p-5">
           <div className="space-y-2">
-            <div className="flex items-start justify-between">
-              <h3 className="text-xl font-semibold leading-tight tracking-tight text-foreground transition-colors group-hover:text-primary">
-                {group.group_name}
-              </h3>
-              <ArrowUpRight className="h-4 w-4 text-muted-foreground transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary" />
-            </div>
+            <h3 className="text-xl font-semibold leading-tight tracking-tight text-foreground transition-colors group-hover:text-primary">
+              {group.group_name}
+            </h3>
             
-            {/* Balance Badge */}
-            <div className="mt-3">
-              {group.net_balance > 0 ? (
-                <div className={`inline-flex items-center gap-1.5 rounded-full ${statusStyle.bg} ${statusStyle.text} px-3 py-1.5 text-xs font-bold ${statusStyle.border} border`}>
-                  <TrendingUp className="h-3 w-3" />
-                  Gets back {formatCurrency(group.net_balance, group.currency)}
-                </div>
-              ) : group.net_balance < 0 ? (
-                <div className={`inline-flex items-center gap-1.5 rounded-full ${statusStyle.bg} ${statusStyle.text} px-3 py-1.5 text-xs font-bold ${statusStyle.border} border`}>
-                  <TrendingDown className="h-3 w-3" />
-                  Owes {formatCurrency(Math.abs(group.net_balance), group.currency)}
-                </div>
-              ) : (
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-bold text-muted-foreground border border-border">
-                  <Wallet className="h-3 w-3" />
-                  Settled up
-                </div>
-              )}
-            </div>
+            {/* Balance */}
+            <p className="line-clamp-2 text-sm text-muted-foreground">
+              {group.net_balance > 0
+                ? `You get back ${formatCurrency(group.net_balance, group.currency)}`
+                : group.net_balance < 0
+                ? `You owe ${formatCurrency(Math.abs(group.net_balance), group.currency)}`
+                : "You're settled up"}
+            </p>
+          </div>
+          
+          {/* Balance Badge */}
+          <div className="mt-2">
+            {group.net_balance > 0 ? (
+              <div className={`inline-flex items-center gap-1.5 rounded-full ${statusStyle.bg} ${statusStyle.text} px-3 py-1.5 text-xs font-bold ${statusStyle.border} border`}>
+                <TrendingUp className="h-3 w-3" />
+                Gets back {formatCurrency(group.net_balance, group.currency)}
+              </div>
+            ) : group.net_balance < 0 ? (
+              <div className={`inline-flex items-center gap-1.5 rounded-full ${statusStyle.bg} ${statusStyle.text} px-3 py-1.5 text-xs font-bold ${statusStyle.border} border`}>
+                <TrendingDown className="h-3 w-3" />
+                Owes {formatCurrency(Math.abs(group.net_balance), group.currency)}
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-bold text-muted-foreground border border-border">
+                <Wallet className="h-3 w-3" />
+                Settled up
+              </div>
+            )}
           </div>
           
           {/* Footer */}
@@ -160,8 +165,8 @@ function GlassGroupCard({ group, gradient, status, isFeatured, isOwner }: GlassG
               </div>
             </div>
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Users className="h-3 w-3" />
-              <span>Members</span>
+              <Clock className="h-3 w-3" />
+              <span>{group.currency}</span>
             </div>
           </div>
         </div>
@@ -211,7 +216,6 @@ export function GroupsBentoGrid({ groups, userId }: GroupsBentoGridProps) {
   return (
     <div className="grid auto-rows-[minmax(280px,auto)] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2">
       {groups.slice(0, 6).map((group, index) => {
-        const gradient = GRADIENTS[index % GRADIENTS.length];
         const status = group.net_balance > 0
           ? "positive"
           : group.net_balance < 0
@@ -224,7 +228,6 @@ export function GroupsBentoGrid({ groups, userId }: GroupsBentoGridProps) {
           <GlassGroupCard
             key={group.group_id}
             group={group}
-            gradient={gradient}
             status={status}
             isFeatured={isFeatured}
             isOwner={isOwner}
