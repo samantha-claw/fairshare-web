@@ -22,9 +22,9 @@ interface FriendCardProps {
 export function FriendCard({ friend, onRemove }: FriendCardProps) {
   const displayName = friend.friend_display_name || friend.friend_username;
   const avatarUrl = friend.friend_avatar_url;
-  const description = "Fairshare user";
+  const description = "Fairshare user"; // No bio field in Friend type
   
-  // Stats placeholders
+  // Stats placeholders - could be enhanced with real data later
   const followers = 0;
   const following = 0;
 
