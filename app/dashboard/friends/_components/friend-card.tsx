@@ -40,9 +40,9 @@ export function FriendCard({ friend, onRemove }: FriendCardProps) {
           scale: 1.02,
           y: -4,
           filter: "blur(0px)",
-          transition: { type: "spring", stiffness: 400, damping: 28, mass: 0.6 },
+          transition: { type: "spring" as const, stiffness: 400, damping: 28, mass: 0.6 },
         }
-      : {},
+      : { scale: 1, y: 0, filter: "blur(0px)" },
   };
 
   const imageVariants = {
