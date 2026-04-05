@@ -28,13 +28,13 @@
   --success-bg: rgba(0, 230, 118, 0.1);
   --danger-bg: rgba(255, 77, 79, 0.1);
   
-  /* Theme defaults */
+  /* Default to light mode */
   --background: var(--background-light);
   --foreground: var(--text-light-primary);
 }
 
-/* Dark mode */
-.dark {
+/* Dark mode class - applies to <html> */
+html.dark {
   --background: var(--background-dark);
   --foreground: var(--text-dark-primary);
 }
@@ -59,26 +59,124 @@
   --color-danger-bg: var(--danger-bg);
 }
 
-/* Base styles */
+/* ==========================================
+   🎨 BASE STYLES - CRITICAL FOR DARK MODE
+   ========================================== */
+
+/* Light mode (default) */
+html {
+  color-scheme: light;
+}
+
+html.light {
+  color-scheme: light;
+}
+
+html.light body {
+  background-color: var(--background-light);
+  color: var(--text-light-primary);
+}
+
+/* Dark mode */
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: var(--background-dark);
+  color: var(--text-dark-primary);
+}
+
+/* Base body styles */
 body {
-  background: var(--background);
-  color: var(--foreground);
   font-family: 'Inter', Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* ==========================================
-   🎨 TAILWIND EXTEND CONFIG
+   🎨 TAILWIND DARK MODE OVERRIDES
+   These ensure dark: classes work properly
    ========================================== */
-/* 
-   These colors are available via Tailwind classes:
-   - bg-surface-light, bg-surface-dark
-   - bg-background-light, bg-background-dark
-   - text-text-light-primary, text-text-dark-primary
-   - text-text-light-secondary, text-text-dark-secondary
-   - border-border-light, border-border-dark
-   - bg-primary, text-primary
-   - bg-success-bg, bg-danger-bg
-*/
+
+/* Background colors */
+.dark .bg-surface-light {
+  background-color: var(--surface-dark) !important;
+}
+
+.dark .bg-background-light {
+  background-color: var(--background-dark) !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: rgb(26 26 26) !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: rgb(31 31 31) !important;
+}
+
+.dark .bg-white {
+  background-color: var(--surface-dark) !important;
+}
+
+/* Text colors */
+.dark .text-text-light-primary {
+  color: var(--text-dark-primary) !important;
+}
+
+.dark .text-text-light-secondary {
+  color: var(--text-dark-secondary) !important;
+}
+
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-gray-700 {
+  color: var(--text-dark-primary) !important;
+}
+
+.dark .text-gray-600,
+.dark .text-gray-500 {
+  color: var(--text-dark-secondary) !important;
+}
+
+/* Border colors */
+.dark .border-border-light {
+  border-color: var(--border-dark) !important;
+}
+
+.dark .border-gray-200,
+.dark .border-gray-100 {
+  border-color: var(--border-dark) !important;
+}
+
+/* ==========================================
+   🎨 COMPONENT SPECIFIC DARK MODE
+   ========================================== */
+
+/* Cards and surfaces */
+.dark .rounded-3xl.bg-surface-light,
+.dark .rounded-2xl.bg-surface-light {
+  background-color: var(--surface-dark);
+  border-color: var(--border-dark);
+}
+
+/* Sidebar dark mode */
+.dark aside,
+aside.dark {
+  background-color: var(--surface-darker) !important;
+  border-color: var(--border-dark) !important;
+}
+
+/* Headers */
+.dark header,
+header.dark {
+  background-color: rgba(24 24 24, 0.7) !important;
+  border-color: var(--border-dark) !important;
+}
+
+/* ==========================================
+   🎨 UTILITY CLASSES
+   ========================================== */
 
 /* Material Icons sizing */
 .material-icons-outlined {

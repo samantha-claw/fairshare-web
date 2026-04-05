@@ -6,19 +6,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Avatar } from "@/components/ui/avatar";
 import {
   LayoutDashboard,
   Users,
-  UserCircle,
-  PlusCircle,
-  LogOut,
-  ChevronRight,
-  Sparkles,
   Settings,
   MessageCircle,
   Sun,
   Moon,
+  LogOut,
 } from "lucide-react";
 
 // ==========================================
@@ -160,18 +155,6 @@ export function Sidebar({
             <Moon className="h-4 w-4" />
           </button>
         </div>
-
-        {/* Profile Link */}
-        <Link
-          href="/dashboard/profile"
-          className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-zinc-400 hover:bg-white/5 hover:text-white"
-        >
-          <div className="relative">
-            <Avatar src={avatarUrl} name={displayName} size="sm" />
-            <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-[1.5px] border-[#121212] bg-primary" />
-          </div>
-          <span className="text-sm font-medium truncate">{displayName}</span>
-        </Link>
 
         {/* Sign Out */}
         <button
