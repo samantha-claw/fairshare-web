@@ -121,11 +121,11 @@ export function DeleteAccountDialog({ username }: DeleteAccountDialogProps) {
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-red-100">
             <ShieldAlert className="h-7 w-7 text-red-600" />
           </div>
-          <h2 className="text-center text-xl font-black text-gray-900">
+          <h2 className="text-center text-xl font-black text-text-primary">
             Delete your account?
           </h2>
           <div className="space-y-4 pt-2">
-            <p className="text-center text-sm text-gray-600">
+            <p className="text-center text-sm text-text-secondary">
               This action is{" "}
               <span className="font-bold text-red-600">permanent</span> and
               cannot be undone. Here is what will happen:
@@ -135,7 +135,7 @@ export function DeleteAccountDialog({ username }: DeleteAccountDialogProps) {
             <div className="space-y-2.5 rounded-xl border border-red-100 bg-red-50/50 p-4">
               <div className="flex items-start gap-3">
                 <UserX className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-text-primary">
                   Your profile will be <span className="font-semibold">anonymized</span> to{" "}
                   <code className="rounded bg-red-100 px-1.5 py-0.5 text-xs font-bold text-red-700">
                     [Deleted User]
@@ -144,20 +144,20 @@ export function DeleteAccountDialog({ username }: DeleteAccountDialogProps) {
               </div>
               <div className="flex items-start gap-3">
                 <Users className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-text-primary">
                   You will be <span className="font-semibold">removed from all groups</span>{" "}
                   (except ones you own)
                 </p>
               </div>
               <div className="flex items-start gap-3">
                 <Bell className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-text-primary">
                   All <span className="font-semibold">friendships and notifications</span> will be deleted
                 </p>
               </div>
               <div className="flex items-start gap-3">
                 <Database className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-text-primary">
                   Expense records are preserved for group integrity but de-identified
                 </p>
               </div>
@@ -176,10 +176,10 @@ export function DeleteAccountDialog({ username }: DeleteAccountDialogProps) {
             <div className="space-y-2 pt-1">
               <label
                 htmlFor="delete-confirm-input"
-                className="text-sm font-semibold text-gray-700"
+                className="text-sm font-semibold text-text-primary"
               >
                 Type{" "}
-                <code className="rounded bg-gray-100 px-1.5 py-0.5 text-xs font-bold text-gray-900">
+                <code className="rounded bg-surface-2 px-1.5 py-0.5 text-xs font-bold text-text-primary">
                   {username}
                 </code>{" "}
                 to confirm
@@ -197,7 +197,7 @@ export function DeleteAccountDialog({ username }: DeleteAccountDialogProps) {
                 className="w-full rounded-xl border border-gray-300 px-3 py-2 font-mono text-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
                 aria-describedby="delete-confirm-hint"
               />
-              <p id="delete-confirm-hint" className="text-xs text-gray-500">
+              <p id="delete-confirm-hint" className="text-xs text-text-secondary">
                 This ensures you do not accidentally delete your account.
               </p>
             </div>
@@ -208,7 +208,7 @@ export function DeleteAccountDialog({ username }: DeleteAccountDialogProps) {
               type="button"
               onClick={() => setIsOpen(false)}
               disabled={isDeleting}
-              className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-60"
+              className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold text-text-primary transition-colors hover:bg-surface-2 disabled:opacity-60"
             >
               Cancel
             </button>

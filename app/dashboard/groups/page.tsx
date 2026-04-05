@@ -44,7 +44,7 @@ export default function GroupsPage() {
       <button
         type="button"
         onClick={() => router.push("/dashboard")}
-        className="mb-6 inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm text-gray-500 transition-all hover:bg-white hover:text-gray-900 hover:shadow-sm"
+        className="mb-6 inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm text-text-secondary transition-all hover:bg-surface hover:text-text-primary hover:shadow-sm"
       >
         <ArrowLeft className="h-4 w-4" />
         Dashboard
@@ -53,13 +53,13 @@ export default function GroupsPage() {
       <div className="mb-8 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 shadow-lg shadow-indigo-500/20">
-            <Users className="h-5 w-5 text-white" />
+            <Users className="h-5 w-5 text-surface" />
           </div>
           <div>
-            <h1 className="text-2xl font-black tracking-tight text-gray-900 sm:text-3xl">
+            <h1 className="text-2xl font-black tracking-tight text-text-primary sm:text-3xl">
               Groups
             </h1>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-text-secondary">
               View and manage all your shared groups
             </p>
           </div>
@@ -68,7 +68,7 @@ export default function GroupsPage() {
         <button
           type="button"
           onClick={() => router.push("/dashboard/groups/new")}
-          className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+          className="rounded-xl bg-text-text-primary px-4 py-2 text-sm font-semibold text-surface transition-colors hover:bg-indigo-700"
         >
           New Group
         </button>

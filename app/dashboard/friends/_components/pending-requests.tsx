@@ -64,7 +64,7 @@ export function PendingRequests({
         <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500/10">
           <Clock className="h-4 w-4 text-amber-600" />
         </div>
-        <h2 className="text-sm font-bold text-foreground">Pending Requests</h2>
+        <h2 className="text-sm font-bold text-text-primary">Pending Requests</h2>
         {totalCount > 0 && (
           <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-500/10 px-1.5 text-xs font-bold text-amber-600">
             {totalCount}
@@ -75,14 +75,14 @@ export function PendingRequests({
       <div className="px-5 py-4">
         {loadingPending ? (
           <div className="flex items-center justify-center py-6">
-            <Spinner className="h-5 w-5 text-primary" />
+            <Spinner className="h-5 w-5 text-text-primary" />
           </div>
         ) : (
           <div className="space-y-4">
             {/* Incoming Requests */}
             {incoming.length > 0 && (
               <div>
-                <p className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                <p className="mb-2 text-xs font-bold uppercase tracking-widest text-text-secondary">
                   Incoming
                 </p>
                 <div className="space-y-2">
@@ -95,7 +95,7 @@ export function PendingRequests({
                     return (
                       <div
                         key={req.request_id}
-                        className="flex items-center gap-3 rounded-xl border border-border/50 bg-background p-3.5 transition-all duration-200 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
+                        className="flex items-center gap-3 rounded-xl border border-border/50 bg-surface p-3.5 transition-all duration-200 hover:border-border-2 hover:shadow-lg hover:shadow-sm"
                       >
                         <Link
                           href={`/dashboard/profile/${req.sender_id}`}
@@ -106,11 +106,11 @@ export function PendingRequests({
                         <div className="min-w-0 flex-1">
                           <Link
                             href={`/dashboard/profile/${req.sender_id}`}
-                            className="block truncate text-sm font-semibold text-foreground hover:text-primary"
+                            className="block truncate text-sm font-semibold text-text-primary hover:text-text-primary"
                           >
                             {name}
                           </Link>
-                          <p className="truncate text-xs text-muted-foreground">
+                          <p className="truncate text-xs text-text-secondary">
                             @{req.sender_username} · {timeAgo(req.created_at)}
                           </p>
                         </div>
@@ -126,7 +126,7 @@ export function PendingRequests({
                           <button
                             onClick={() => onDecline(req.request_id)}
                             disabled={isProcessing}
-                            className="inline-flex items-center gap-1 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-all hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-text-secondary transition-all hover:border-negative hover:bg-negative-bg hover:text-negative disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             {isDeclining ? <Spinner className="h-3 w-3" /> : <X className="h-3 w-3" />}
                           </button>
@@ -141,7 +141,7 @@ export function PendingRequests({
             {/* Outgoing Requests */}
             {outgoing.length > 0 && (
               <div>
-                <p className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                <p className="mb-2 text-xs font-bold uppercase tracking-widest text-text-secondary">
                   Sent by you
                 </p>
                 <div className="space-y-2">
@@ -152,7 +152,7 @@ export function PendingRequests({
                     return (
                       <div
                         key={req.request_id}
-                        className="flex items-center gap-3 rounded-xl border border-border/50 bg-background p-3.5 transition-all duration-200"
+                        className="flex items-center gap-3 rounded-xl border border-border/50 bg-surface p-3.5 transition-all duration-200"
                       >
                         <Link
                           href={`/dashboard/profile/${req.receiver_id}`}
@@ -163,11 +163,11 @@ export function PendingRequests({
                         <div className="min-w-0 flex-1">
                           <Link
                             href={`/dashboard/profile/${req.receiver_id}`}
-                            className="block truncate text-sm font-semibold text-foreground hover:text-primary"
+                            className="block truncate text-sm font-semibold text-text-primary hover:text-text-primary"
                           >
                             {name}
                           </Link>
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1 text-xs text-text-secondary">
                             <Send className="h-2.5 w-2.5" />
                             <span>Sent {timeAgo(req.created_at)}</span>
                           </div>
@@ -175,7 +175,7 @@ export function PendingRequests({
                         <button
                           onClick={() => onCancel(req.request_id)}
                           disabled={isCancelling}
-                          className="inline-flex items-center gap-1 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-all hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50"
+                          className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-text-secondary transition-all hover:border-negative hover:bg-negative-bg hover:text-negative disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           {isCancelling ? <Spinner className="h-3 w-3" /> : <X className="h-3 w-3" />}
                           Cancel

@@ -41,19 +41,19 @@ export function BalancesCard({
   }, [balances]);
 
   return (
-    <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+    <section className="overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
       {/* ── Header & Tabs ── */}
-      <div className="border-b border-gray-100 p-4 sm:p-5">
+      <div className="border-b border-border p-4 sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-sm font-bold text-gray-900">Group Balances</h2>
+          <h2 className="text-sm font-bold text-text-primary">Group Balances</h2>
 
-          <div className="flex rounded-lg bg-gray-100 p-1 self-start sm:self-auto">
+          <div className="flex rounded-lg bg-surface-2 p-1 self-start sm:self-auto">
             <button
               onClick={() => setView("settlements")}
               className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
                 view === "settlements"
-                  ? "bg-white text-indigo-600 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "bg-surface text-text-primary shadow-sm"
+                  : "text-text-secondary hover:text-text-primary"
               }`}
             >
               Settle Up
@@ -62,8 +62,8 @@ export function BalancesCard({
               onClick={() => setView("net")}
               className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
                 view === "net"
-                  ? "bg-white text-indigo-600 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "bg-surface text-text-primary shadow-sm"
+                  : "text-text-secondary hover:text-text-primary"
               }`}
             >
               Net Balance
@@ -83,7 +83,7 @@ export function BalancesCard({
                 <p className="text-sm font-bold text-emerald-600">
                   All settled up! 🎉
                 </p>
-                <p className="mt-1 text-xs font-medium text-gray-500">
+                <p className="mt-1 text-xs font-medium text-text-secondary">
                   No one owes anything.
                 </p>
               </div>
@@ -91,7 +91,7 @@ export function BalancesCard({
               simplifiedDebts.map((debt, i) => (
                 <div
                   key={i}
-                  className="rounded-xl border border-gray-200 bg-gray-50/50 shadow-sm"
+                  className="rounded-xl border border-border bg-surface-2/50 shadow-sm"
                 >
                   {/* ── Stacked layout: From → Amount → To ── */}
                   <div className="flex flex-col items-stretch">
@@ -108,7 +108,7 @@ export function BalancesCard({
                         />
                       </Link>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-bold text-gray-800">
+                        <p className="truncate text-sm font-bold text-text-primary">
                           {debt.from.displayName}
                         </p>
                         <p className="text-[11px] font-medium text-red-500">
@@ -140,7 +140,7 @@ export function BalancesCard({
                         />
                       </Link>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-bold text-gray-800">
+                        <p className="truncate text-sm font-bold text-text-primary">
                           {debt.to.displayName}
                         </p>
                         <p className="text-[11px] font-medium text-emerald-600">
@@ -161,11 +161,11 @@ export function BalancesCard({
         {view === "net" && (
           <div>
             {balances.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50/60 px-4 py-8 text-center">
-                <p className="text-sm font-bold text-gray-900">
+              <div className="rounded-xl border border-dashed border-border bg-surface-2/60 px-4 py-8 text-center">
+                <p className="text-sm font-bold text-text-primary">
                   No balances yet
                 </p>
-                <p className="mt-1 text-xs font-medium text-gray-500">
+                <p className="mt-1 text-xs font-medium text-text-secondary">
                   Add an expense to see balances.
                 </p>
               </div>
@@ -191,14 +191,14 @@ export function BalancesCard({
                           name={bal.display_name}
                           size="sm"
                         />
-                        <span className="truncate text-sm font-semibold text-gray-900">
+                        <span className="truncate text-sm font-semibold text-text-primary">
                           {bal.display_name}
                         </span>
                       </Link>
 
                       <div className="shrink-0 text-right">
                         {isSettled ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-400">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2.5 py-1 text-xs font-semibold text-text-tertiary">
                             Settled
                           </span>
                         ) : (

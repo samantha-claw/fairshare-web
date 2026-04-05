@@ -160,13 +160,13 @@ export function QRShareModal({
       >
         <button
           onClick={handleClose}
-          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white/80 backdrop-blur-sm transition-colors hover:bg-white/30 hover:text-white"
+          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-surface/20 text-white/80 backdrop-blur-sm transition-colors hover:bg-surface/30 hover:text-white"
         >
           <X className="h-4 w-4" />
         </button>
 
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface/20 backdrop-blur-sm">
             <Wallet className="h-5 w-5 text-white" />
           </div>
           <div className="min-w-0">
@@ -182,7 +182,7 @@ export function QRShareModal({
       <div className="relative z-10 -mt-6 px-6">
         <div
           ref={qrRef}
-          className="mx-auto flex w-fit items-center justify-center rounded-2xl border-4 border-white bg-white p-5 shadow-lg"
+          className="mx-auto flex w-fit items-center justify-center rounded-2xl border-4 border-white bg-surface p-5 shadow-lg"
         >
           <QRCodeSVG
             value={value}
@@ -207,14 +207,14 @@ export function QRShareModal({
 
       {/* ── URL Preview ── */}
       <div className="mx-6 mt-4">
-        <div className="flex items-center gap-2 rounded-xl bg-gray-50 px-3 py-2.5">
-          <p className="flex-1 truncate text-xs text-gray-500">{value}</p>
+        <div className="flex items-center gap-2 rounded-xl bg-surface-2 px-3 py-2.5">
+          <p className="flex-1 truncate text-xs text-text-secondary">{value}</p>
           <button
             onClick={handleCopy}
             className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-all ${
               copied
                 ? "bg-emerald-100 text-emerald-600"
-                : "bg-gray-200 text-gray-500 hover:bg-gray-300"
+                : "bg-gray-200 text-text-secondary hover:bg-gray-300"
             }`}
           >
             {copied ? (
@@ -262,7 +262,7 @@ export function QRShareModal({
               <button
                 onClick={() => setShowResetConfirm(false)}
                 disabled={resetting}
-                className="flex flex-1 items-center justify-center rounded-xl border border-red-200 bg-white py-2.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-50"
+                className="flex flex-1 items-center justify-center rounded-xl border border-red-200 bg-surface py-2.5 text-xs font-semibold text-text-secondary transition-colors hover:bg-surface-2 disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -295,7 +295,7 @@ export function QRShareModal({
           className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all ${
             copied
               ? "bg-emerald-50 text-emerald-700"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              : "bg-surface-2 text-text-primary hover:bg-gray-200"
           }`}
         >
           {copied ? (
@@ -313,7 +313,7 @@ export function QRShareModal({
 
         <button
           onClick={handleDownload}
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-600 transition-colors hover:bg-gray-200"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-text-secondary transition-colors hover:bg-gray-200"
           title="Download QR"
         >
           <Download className="h-4 w-4" />

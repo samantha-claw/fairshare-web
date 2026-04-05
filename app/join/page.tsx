@@ -269,12 +269,12 @@ const handleJoin = useCallback(async () => {
       <div className="w-full max-w-sm">
         {/* ── Loading ── */}
         {state === "loading" && (
-          <div className="flex flex-col items-center justify-center rounded-3xl border border-gray-200 bg-white px-6 py-16 shadow-xl">
-            <Loader2 className="mb-4 h-10 w-10 animate-spin text-indigo-600" />
-            <h2 className="text-lg font-bold text-gray-900">
+          <div className="flex flex-col items-center justify-center rounded-3xl border border-border bg-surface px-6 py-16 shadow-xl">
+            <Loader2 className="mb-4 h-10 w-10 animate-spin text-text-primary" />
+            <h2 className="text-lg font-bold text-text-primary">
               {token ? "Verifying Invite Link…" : "Loading Group…"}
             </h2>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-text-secondary">
               Please wait a moment
             </p>
           </div>
@@ -282,29 +282,29 @@ const handleJoin = useCallback(async () => {
 
         {/* ── Auth Required ── */}
         {state === "auth_required" && (
-          <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-xl">
-            <div className="bg-gradient-to-br from-indigo-600 to-purple-600 px-6 py-8 text-center">
-              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
-                <LogIn className="h-7 w-7 text-white" />
+          <div className="overflow-hidden rounded-3xl border border-border bg-surface shadow-xl">
+            <div className="bg-gradient-to-br bg-text-text-primary px-6 py-8 text-center">
+              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-surface/20 backdrop-blur-sm">
+                <LogIn className="h-7 w-7 text-surface" />
               </div>
-              <h2 className="text-xl font-bold text-white">
+              <h2 className="text-xl font-bold text-surface">
                 Sign In Required
               </h2>
-              <p className="mt-1 text-sm text-white/70">
+              <p className="mt-1 text-sm text-surface/70">
                 You need to sign in before joining this group
               </p>
             </div>
             <div className="px-6 py-6">
               <button
                 onClick={handleLoginRedirect}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl active:scale-[0.98]"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r bg-text-text-primary py-3.5 text-sm font-bold text-surface shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl active:scale-[0.98]"
               >
                 <LogIn className="h-4 w-4" />
                 Sign In to Continue
               </button>
               <button
                 onClick={() => router.push("/")}
-                className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-2xl py-3 text-sm font-medium text-gray-500 transition-colors hover:text-gray-700"
+                className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-2xl py-3 text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
                 Go Home
@@ -315,26 +315,26 @@ const handleJoin = useCallback(async () => {
 
         {/* ── Ready to Join ── */}
         {state === "ready" && groupInfo && (
-          <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-xl">
-            <div className="bg-gradient-to-br from-indigo-600 to-blue-600 px-6 py-8 text-center">
-              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
-                <Users className="h-7 w-7 text-white" />
+          <div className="overflow-hidden rounded-3xl border border-border bg-surface shadow-xl">
+            <div className="bg-gradient-to-br bg-text-text-primary px-6 py-8 text-center">
+              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-surface/20 backdrop-blur-sm">
+                <Users className="h-7 w-7 text-surface" />
               </div>
-              <h2 className="text-xl font-bold text-white">
+              <h2 className="text-xl font-bold text-surface">
                 You&apos;re Invited!
               </h2>
-              <p className="mt-1 text-sm text-white/70">
+              <p className="mt-1 text-sm text-surface/70">
                 Join this group to start sharing expenses
               </p>
             </div>
 
             <div className="px-6 py-6">
               {/* Group Info Card */}
-              <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                <h3 className="text-lg font-bold text-gray-900">
+              <div className="rounded-2xl border border-border bg-surface-2 p-4">
+                <h3 className="text-lg font-bold text-text-primary">
                   {groupInfo.name}
                 </h3>
-                <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-gray-500">
+                <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-text-secondary">
                   <span className="flex items-center gap-1">
                     <Users className="h-4 w-4" />
                     {groupInfo.memberCount} member
@@ -345,7 +345,7 @@ const handleJoin = useCallback(async () => {
                     {groupInfo.currency}
                   </span>
                 </div>
-                <p className="mt-2 text-xs text-gray-400">
+                <p className="mt-2 text-xs text-text-tertiary">
                   Created by {groupInfo.ownerName}
                 </p>
 
@@ -363,13 +363,13 @@ const handleJoin = useCallback(async () => {
               <div className="mt-5 flex gap-3">
                 <button
                   onClick={() => router.push("/dashboard")}
-                  className="flex-1 rounded-xl border border-gray-200 bg-white py-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                  className="flex-1 rounded-xl border border-border bg-surface py-3 text-sm font-semibold text-text-primary transition-colors hover:bg-surface-2"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleJoin}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl active:scale-[0.98]"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r bg-text-text-primary py-3 text-sm font-bold text-surface shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl active:scale-[0.98]"
                 >
                   <LogIn className="h-4 w-4" />
                   Join Group
@@ -381,12 +381,12 @@ const handleJoin = useCallback(async () => {
 
         {/* ── Joining ── */}
         {state === "joining" && (
-          <div className="flex flex-col items-center justify-center rounded-3xl border border-gray-200 bg-white px-6 py-16 shadow-xl">
-            <Loader2 className="mb-4 h-10 w-10 animate-spin text-indigo-600" />
-            <h2 className="text-lg font-bold text-gray-900">
+          <div className="flex flex-col items-center justify-center rounded-3xl border border-border bg-surface px-6 py-16 shadow-xl">
+            <Loader2 className="mb-4 h-10 w-10 animate-spin text-text-primary" />
+            <h2 className="text-lg font-bold text-text-primary">
               Joining Group…
             </h2>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-text-secondary">
               Please wait a moment
             </p>
           </div>
@@ -394,14 +394,14 @@ const handleJoin = useCallback(async () => {
 
         {/* ── Success ── */}
         {state === "success" && (
-          <div className="flex flex-col items-center justify-center rounded-3xl border border-gray-200 bg-white px-6 py-16 shadow-xl">
+          <div className="flex flex-col items-center justify-center rounded-3xl border border-border bg-surface px-6 py-16 shadow-xl">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50">
               <CheckCircle2 className="h-8 w-8 text-emerald-600" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900">
+            <h2 className="text-xl font-bold text-text-primary">
               Welcome Aboard! 🎉
             </h2>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-text-secondary">
               Redirecting to the group…
             </p>
           </div>
@@ -409,15 +409,15 @@ const handleJoin = useCallback(async () => {
 
         {/* ── Already a Member ── */}
         {state === "already_member" && (
-          <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-xl">
+          <div className="overflow-hidden rounded-3xl border border-border bg-surface shadow-xl">
             <div className="px-6 py-10 text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50">
-                <Users className="h-8 w-8 text-blue-600" />
+                <Users className="h-8 w-8 text-text-primary" />
               </div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-text-primary">
                 Already a Member
               </h2>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-text-secondary">
                 You&apos;re already in{" "}
                 {groupInfo ? (
                   <strong>{groupInfo.name}</strong>
@@ -427,7 +427,7 @@ const handleJoin = useCallback(async () => {
               </p>
               <button
                 onClick={handleGoToGroup}
-                className="mt-5 w-full rounded-xl bg-indigo-600 py-3 text-sm font-bold text-white transition-colors hover:bg-indigo-700"
+                className="mt-5 w-full rounded-xl bg-text-text-primary py-3 text-sm font-bold text-surface transition-colors hover:bg-indigo-700"
               >
                 Go to Group
               </button>
@@ -437,20 +437,20 @@ const handleJoin = useCallback(async () => {
 
         {/* ── Invalid Token ── */}
         {state === "invalid_token" && (
-          <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-xl">
+          <div className="overflow-hidden rounded-3xl border border-border bg-surface shadow-xl">
             <div className="px-6 py-10 text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-50">
                 <ShieldAlert className="h-8 w-8 text-amber-500" />
               </div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-text-primary">
                 Invalid Invite Link
               </h2>
-              <p className="mt-2 max-w-xs text-sm leading-relaxed text-gray-500">
+              <p className="mt-2 max-w-xs text-sm leading-relaxed text-text-secondary">
                 {errorMsg}
               </p>
               <button
                 onClick={() => router.push("/dashboard")}
-                className="mt-5 w-full rounded-xl bg-gray-100 py-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-200"
+                className="mt-5 w-full rounded-xl bg-surface-2 py-3 text-sm font-semibold text-text-primary transition-colors hover:bg-gray-200"
               >
                 Go to Dashboard
               </button>
@@ -460,18 +460,18 @@ const handleJoin = useCallback(async () => {
 
         {/* ── Error ── */}
         {state === "error" && (
-          <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-xl">
+          <div className="overflow-hidden rounded-3xl border border-border bg-surface shadow-xl">
             <div className="px-6 py-10 text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
                 <AlertTriangle className="h-8 w-8 text-red-500" />
               </div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-text-primary">
                 Unable to Join
               </h2>
-              <p className="mt-2 text-sm text-gray-500">{errorMsg}</p>
+              <p className="mt-2 text-sm text-text-secondary">{errorMsg}</p>
               <button
                 onClick={() => router.push("/dashboard")}
-                className="mt-5 w-full rounded-xl bg-gray-100 py-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-200"
+                className="mt-5 w-full rounded-xl bg-surface-2 py-3 text-sm font-semibold text-text-primary transition-colors hover:bg-gray-200"
               >
                 Go to Dashboard
               </button>
@@ -491,7 +491,7 @@ export default function JoinPage() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
-          <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+          <Loader2 className="h-8 w-8 animate-spin text-text-primary" />
         </div>
       }
     >

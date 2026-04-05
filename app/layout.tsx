@@ -1,9 +1,8 @@
-// app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ToastProvider } from "@/providers/toast-provider";
+import { ThemeProvider } from "@/providers/theme-provider";
 
-// 1. إعدادات الـ Metadata
 export const metadata: Metadata = {
   title: "FairShare",
   description: "Financial collaboration made simple",
@@ -13,9 +12,8 @@ export const metadata: Metadata = {
   },
 };
 
-// 2. إعدادات شاشة الموبايل
 export const viewport: Viewport = {
-  themeColor: "#00E676",
+  themeColor: "#111111",
 };
 
 export default function RootLayout({
@@ -24,21 +22,27 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="light">
+    <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Google Fonts - Inter */}
+        {/* FOUC prevention script — runs before React hydrates. Reads localStorage and sets the correct class on <html> so there is never a flash of the wrong theme. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;if(t==='dark'||(t===null&&d)){document.documentElement.classList.add('dark');}}catch(e){}})();`,
+          }}
+        />
         <link
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
-        {/* Material Icons */}
         <link
           href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined"
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-screen bg-background-light dark:bg-background-dark text-text-light-primary dark:text-text-dark-primary antialiased font-sans">
-        <ToastProvider>{children}</ToastProvider>
+      <body className="min-h-screen bg-surface text-text-primary antialiased">
+        <ThemeProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

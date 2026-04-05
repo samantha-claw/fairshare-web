@@ -1,17 +1,13 @@
 "use client";
 
-// ==========================================
-// 📦 IMPORTS
-// ==========================================
 import { useEffect, useState, useCallback, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Sidebar } from "./sidebar";
+import { Header } from "./header";
+import { MobileNav } from "./mobile-nav";
 import { Spinner } from "@/components/ui/spinner";
 
-// ==========================================
-// 🧩 TYPES
-// ==========================================
 interface DashboardShellProps {
   children: ReactNode;
 }
@@ -22,17 +18,14 @@ interface UserProfile {
   avatar_url: string;
 }
 
-// ==========================================
-// ⚙️ SKELETON
-// ==========================================
 function ShellSkeleton() {
   return (
-    <div className="flex min-h-screen w-full items-center justify-center overflow-hidden bg-background-light dark:bg-background-dark">
+    <div className="flex min-h-screen w-full items-center justify-center overflow-hidden bg-surface">
       <div className="flex flex-col items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-emerald-600 shadow-lg shadow-primary/20">
-          <span className="text-lg font-black text-white">F</span>
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-text-text-primary shadow-lg">
+          <span className="text-lg font-black text-surface">F</span>
         </div>
-        <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-dark-secondary">
+        <div className="flex items-center gap-2 text-sm text-text-secondary">
           <Spinner className="h-4 w-4" />
           Loading…
         </div>
@@ -41,9 +34,6 @@ function ShellSkeleton() {
   );
 }
 
-// ==========================================
-// 🎨 UI RENDER — NEW DESIGN
-// ==========================================
 export function DashboardShell({ children }: DashboardShellProps) {
   const router = useRouter();
   const supabase = createClient();
@@ -120,36 +110,50 @@ export function DashboardShell({ children }: DashboardShellProps) {
   if (loading) return <ShellSkeleton />;
 
   return (
-    <div className="bg-background-light dark:bg-background-dark text-text-light-primary dark:text-text-dark-primary min-h-screen flex antialiased p-4 lg:p-6 gap-6 transition-colors duration-200">
-      {/* ── Sidebar (Desktop) ───────────────────── */}
-      <Sidebar
-        displayName={profile.display_name}
-        avatarUrl={profile.avatar_url}
-        onSignOut={handleSignOut}
-      />
+    <div className="min-h-screen bg-surface text-text-primary flex antialiased transition-colors duration-200">
+      {/* ── Desktop Sidebar ── */}
+      <div className="hidden md:flex md:flex-shrink-0 p-3">
+        <Sidebar
+          displayName={profile.display_name}
+          avatarUrl={profile.avatar_url}
+          onSignOut={handleSignOut}
+        />
+      </div>
 
-      {/* ── Mobile Sidebar Overlay ─────────────── */}
+      {/* ── Mobile Sidebar Overlay ── */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <div className="absolute inset-y-0 left-0 w-[280px] animate-in slide-in-from-left duration-300">
+          <div className="absolute inset-y-0 left-0 w-72 animate-fade-in">
             <Sidebar
               displayName={profile.display_name}
               avatarUrl={profile.avatar_url}
               onSignOut={handleSignOut}
-              isMobile={true}
+              isMobile
             />
           </div>
         </div>
       )}
 
-      {/* ── Main Content ────────────────────────── */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-surface-light dark:bg-surface-dark rounded-3xl border border-border-light dark:border-border-dark shadow-sm">
-        {children}
+      {/* ── Main ── */}
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <Header
+          displayName={profile.display_name}
+          avatarUrl={profile.avatar_url}
+          userId={profile.id}
+          onMobileMenuToggle={() => setMobileMenuOpen((v) => !v)}
+        />
+        <div className="flex-1 overflow-y-auto">{children}</div>
       </main>
+
+      {/* ── Mobile Bottom Nav ── */}
+      <MobileNav
+        displayName={profile.display_name}
+        avatarUrl={profile.avatar_url}
+      />
     </div>
   );
 }

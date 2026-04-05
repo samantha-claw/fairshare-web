@@ -91,8 +91,8 @@ export default function GroupDetailsPage() {
   /* ── Loading ─────────────────────────────────────────── */
   if (data.loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="flex items-center gap-2 text-gray-500">
+      <div className="flex min-h-screen items-center justify-center bg-surface-2">
+        <div className="flex items-center gap-2 text-text-secondary">
           <Spinner className="h-5 w-5" />
           Loading Group…
         </div>
@@ -103,14 +103,14 @@ export default function GroupDetailsPage() {
   /* ── Error ───────────────────────────────────────────── */
   if (data.error || !data.group) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="rounded-2xl bg-white p-8 text-center shadow-lg">
+      <div className="flex min-h-screen items-center justify-center bg-surface-2">
+        <div className="rounded-2xl bg-surface p-8 text-center shadow-lg">
           <h2 className="text-xl font-semibold text-red-600">
             {data.error || "Group not found"}
           </h2>
           <button
             onClick={data.goBack}
-            className="mt-4 text-blue-600 hover:underline"
+            className="mt-4 text-text-primary hover:underline"
           >
             Go Back
           </button>
@@ -134,15 +134,15 @@ export default function GroupDetailsPage() {
 
   /* ── Render ──────────────────────────────────────────── */
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-surface-2 pb-20">
       {/* ── Header ───────────────────────────────────── */}
-      <div className="border-b border-gray-200 bg-white px-4 py-5 sm:px-6 sm:py-6">
+      <div className="border-b border-border bg-surface px-4 py-5 sm:px-6 sm:py-6">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-xl font-bold tracking-tight text-gray-900 sm:text-2xl">
+            <h1 className="truncate text-xl font-bold tracking-tight text-text-primary sm:text-2xl">
               {data.group.name}
             </h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-text-secondary">
               {data.members.length} member{data.members.length !== 1 && "s"} ·{" "}
               {currency}
             </p>
@@ -151,7 +151,7 @@ export default function GroupDetailsPage() {
           <div className="flex shrink-0 items-center gap-2">
             <button
               onClick={() => setIsShareModalOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 shadow-sm transition-all duration-200 hover:bg-indigo-100 active:scale-95"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 shadow-sm transition-all duration-200 hover:bg-surface-2 active:scale-95"
               title="Share Group via QR"
             >
               <QrCode className="h-4 w-4" />
@@ -160,7 +160,7 @@ export default function GroupDetailsPage() {
 
             <button
               onClick={() => settingsCtl.setIsSettingsModalOpen(true)}
-              className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 shadow-sm transition-all duration-200 hover:bg-gray-50 active:scale-95"
+              className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-secondary shadow-sm transition-all duration-200 hover:bg-surface-2 active:scale-95"
               title="Group Settings"
             >
               <svg
@@ -209,16 +209,16 @@ export default function GroupDetailsPage() {
               onDelete={settleCtl.handleDeleteSettlement}
             />
 
-            <section className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+            <section className="w-full overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
               {/* ── Tabs + Action Buttons ── */}
-              <div className="flex flex-col border-b border-gray-200 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col border-b border-border sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex">
                   <button
                     onClick={() => setActiveTab("expenses")}
                     className={`flex-1 px-4 py-3 text-sm font-semibold transition-all duration-200 sm:flex-initial sm:px-6 ${
                       activeTab === "expenses"
-                        ? "border-b-2 border-blue-600 text-blue-600"
-                        : "text-gray-500 hover:text-gray-700"
+                        ? "border-b-2 border-blue-600 text-text-primary"
+                        : "text-text-secondary hover:text-text-primary"
                     }`}
                   >
                     💸 Expenses ({data.expenses.length})
@@ -227,8 +227,8 @@ export default function GroupDetailsPage() {
                     onClick={() => setActiveTab("activity")}
                     className={`flex-1 px-4 py-3 text-sm font-semibold transition-all duration-200 sm:flex-initial sm:px-6 ${
                       activeTab === "activity"
-                        ? "border-b-2 border-blue-600 text-blue-600"
-                        : "text-gray-500 hover:text-gray-700"
+                        ? "border-b-2 border-blue-600 text-text-primary"
+                        : "text-text-secondary hover:text-text-primary"
                     }`}
                   >
                     📋 Activity ({data.allActivities.length})
@@ -238,7 +238,7 @@ export default function GroupDetailsPage() {
                 <div className="mb-5 mt-4 flex w-full items-center justify-center gap-3 sm:justify-end">
                   <button
                     onClick={settleCtl.openSettleUpModal}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-50 active:scale-[0.98] sm:flex-none"
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-gray-300 bg-surface px-4 py-2.5 text-sm font-semibold text-text-primary shadow-sm transition-all hover:bg-surface-2 active:scale-[0.98] sm:flex-none"
                   >
                     <span>🤝</span> Settle Up
                   </button>

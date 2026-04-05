@@ -24,19 +24,19 @@ export function FriendsList({ friends, loading, onRemoveFriend }: FriendsListPro
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Spinner className="h-6 w-6 text-primary" />
+        <Spinner className="h-6 w-6 text-text-primary" />
       </div>
     );
   }
 
   if (friends.length === 0) {
     return (
-      <div className="rounded-3xl border-2 border-dashed border-border bg-muted/30 py-16 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-          <Users className="h-8 w-8 text-primary" />
+      <div className="rounded-3xl border-2 border-dashed border-border bg-surface-2/30 py-16 text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-text-primary/10">
+          <Users className="h-8 w-8 text-text-primary" />
         </div>
-        <h3 className="text-base font-bold text-foreground">No friends yet</h3>
-        <p className="mx-auto mt-1 max-w-xs text-sm text-muted-foreground">
+        <h3 className="text-base font-bold text-text-primary">No friends yet</h3>
+        <p className="mx-auto mt-1 max-w-xs text-sm text-text-secondary">
           Search for people above and send them a friend request to get started.
         </p>
       </div>

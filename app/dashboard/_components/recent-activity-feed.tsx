@@ -29,7 +29,7 @@ function getRelativeTime(dateStr: string): string {
 }
 
 const DOT_COLORS = [
-  "bg-indigo-500",
+  "bg-text-text-primary",
   "bg-emerald-500",
   "bg-amber-500",
   "bg-rose-500",
@@ -52,21 +52,21 @@ interface RecentActivityFeedProps {
 export function RecentActivityFeed({ expenses }: RecentActivityFeedProps) {
   if (expenses.length === 0) {
     return (
-      <div className="rounded-3xl border border-gray-100 bg-white p-8 text-center shadow-sm">
+      <div className="rounded-3xl border border-border bg-surface p-8 text-center shadow-sm">
         <Clock className="mx-auto mb-3 h-10 w-10 text-gray-300" />
-        <p className="text-sm font-medium text-gray-500">No recent activity yet</p>
-        <p className="mt-1 text-xs text-gray-400">Expenses will appear here as they are added.</p>
+        <p className="text-sm font-medium text-text-secondary">No recent activity yet</p>
+        <p className="mt-1 text-xs text-text-tertiary">Expenses will appear here as they are added.</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+    <div className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
       <div className="mb-5 flex items-center gap-2">
         <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-50">
-          <Zap className="h-4 w-4 text-indigo-500" />
+          <Zap className="h-4 w-4 text-text-primary" />
         </div>
-        <h3 className="text-sm font-bold text-gray-900">Recent Activity</h3>
+        <h3 className="text-sm font-bold text-text-primary">Recent Activity</h3>
       </div>
 
       <div className="relative space-y-1">
@@ -83,7 +83,7 @@ export function RecentActivityFeed({ expenses }: RecentActivityFeedProps) {
             <Link
               key={expense.id}
               href={`/dashboard/groups/${expense.group_id}`}
-              className="group relative flex items-start gap-4 rounded-2xl p-3 transition-all hover:bg-gray-50/80"
+              className="group relative flex items-start gap-4 rounded-2xl p-3 transition-all hover:bg-surface-2/80"
             >
               {/* Timeline Dot */}
               <div className="relative z-10 mt-1.5 flex-shrink-0">
@@ -99,18 +99,18 @@ export function RecentActivityFeed({ expenses }: RecentActivityFeedProps) {
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-gray-900 group-hover:text-indigo-600">
+                    <p className="truncate text-sm font-semibold text-text-primary group-hover:text-text-primary">
                       {expense.name}
                     </p>
-                    <p className="mt-0.5 truncate text-xs text-gray-500">
+                    <p className="mt-0.5 truncate text-xs text-text-secondary">
                       {paidByName} • {groupName}
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-0.5">
-                    <span className="whitespace-nowrap font-mono text-sm font-bold text-gray-900">
+                    <span className="whitespace-nowrap font-mono text-sm font-bold text-text-primary">
                       {formatCurrency(expense.amount)}
                     </span>
-                    <span className="whitespace-nowrap text-[10px] text-gray-400">
+                    <span className="whitespace-nowrap text-[10px] text-text-tertiary">
                       {getRelativeTime(expense.created_at)}
                     </span>
                   </div>

@@ -22,7 +22,7 @@ import {
 // ── Skeleton ────────────────────────────────────────────
 function PageSkeleton() {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-surface-2">
       <div className="mx-auto max-w-3xl animate-pulse px-4 py-10 sm:px-6">
         <div className="mb-6 h-5 w-32 rounded bg-gray-200" />
         <div className="mb-8 flex items-center gap-4">
@@ -69,13 +69,13 @@ function PasswordInput({
         disabled={disabled}
         autoComplete="new-password"
         aria-describedby={ariaDescribedBy}
-        className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-4 pr-11 text-sm text-gray-900 shadow-sm transition-all duration-200 placeholder:text-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 disabled:cursor-not-allowed disabled:opacity-50"
+        className="w-full rounded-xl border border-border bg-surface py-2.5 pl-4 pr-11 text-sm text-text-primary shadow-sm transition-all duration-200 placeholder:text-text-tertiary focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 disabled:cursor-not-allowed disabled:opacity-50"
       />
       <button
         type="button"
         onClick={() => setShow((s) => !s)}
         aria-pressed={show}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary transition-colors hover:text-text-secondary"
         aria-label={show ? "Hide password" : "Show password"}
       >
         {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -238,13 +238,13 @@ export default function SettingsPage() {
     confirmPassword.length > 0 && newPassword === confirmPassword;
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20 md:pb-10">
+    <div className="min-h-screen bg-surface-2 pb-20 md:pb-10">
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
         {/* ── Back Button ────────────────────────────── */}
         <button
           type="button"
           onClick={() => router.push("/dashboard")}
-          className="mb-6 inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm text-gray-500 transition-all hover:bg-white hover:text-gray-900 hover:shadow-sm"
+          className="mb-6 inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm text-text-secondary transition-all hover:bg-surface hover:text-text-primary hover:shadow-sm"
         >
           <ArrowLeft className="h-4 w-4" />
           Dashboard
@@ -256,10 +256,10 @@ export default function SettingsPage() {
             <Settings className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-black tracking-tight text-gray-900 sm:text-3xl">
+            <h1 className="text-2xl font-black tracking-tight text-text-primary sm:text-3xl">
               Settings
             </h1>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-text-secondary">
               Manage your account, security, and preferences
             </p>
           </div>
@@ -269,19 +269,19 @@ export default function SettingsPage() {
           {/* ═══════════════════════════════════════════
               SECTION 1 — Change Email
               ═══════════════════════════════════════════ */}
-          <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-            <div className="border-b border-gray-100 px-6 py-4">
+          <section className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+            <div className="border-b border-border px-6 py-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50">
-                  <Mail className="h-5 w-5 text-blue-600" />
+                  <Mail className="h-5 w-5 text-text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-gray-900">
+                  <h2 className="text-base font-bold text-text-primary">
                     Email Address
                   </h2>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-text-secondary">
                     Currently:{" "}
-                    <span className="font-medium text-gray-700">
+                    <span className="font-medium text-text-primary">
                       {userEmail}
                     </span>
                   </p>
@@ -294,7 +294,7 @@ export default function SettingsPage() {
                 <div>
                   <label
                     htmlFor="new-email"
-                    className="mb-1.5 block text-sm font-semibold text-gray-700"
+                    className="mb-1.5 block text-sm font-semibold text-text-primary"
                   >
                     New email address
                   </label>
@@ -306,7 +306,7 @@ export default function SettingsPage() {
                     placeholder="your-new-email@example.com"
                     disabled={isUpdatingEmail}
                     autoComplete="email"
-                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm transition-all duration-200 placeholder:text-gray-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/20 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-text-primary shadow-sm transition-all duration-200 placeholder:text-text-tertiary focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/20 disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 </div>
 
@@ -323,7 +323,7 @@ export default function SettingsPage() {
                 <button
                   type="submit"
                   disabled={isUpdatingEmail || !newEmail.trim()}
-                  className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-xl bg-text-text-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
                 >
                   {isUpdatingEmail ? (
                     <>
@@ -344,17 +344,17 @@ export default function SettingsPage() {
           {/* ═══════════════════════════════════════════
               SECTION 2 — Change Password
               ═══════════════════════════════════════════ */}
-          <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-            <div className="border-b border-gray-100 px-6 py-4">
+          <section className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+            <div className="border-b border-border px-6 py-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50">
-                  <Lock className="h-5 w-5 text-indigo-600" />
+                  <Lock className="h-5 w-5 text-text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-gray-900">
+                  <h2 className="text-base font-bold text-text-primary">
                     Password
                   </h2>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-text-secondary">
                     Update your password to keep your account secure
                   </p>
                 </div>
@@ -366,7 +366,7 @@ export default function SettingsPage() {
                 <div>
                   <label
                     htmlFor="new-password"
-                    className="mb-1.5 block text-sm font-semibold text-gray-700"
+                    className="mb-1.5 block text-sm font-semibold text-text-primary"
                   >
                     New password
                   </label>
@@ -383,7 +383,7 @@ export default function SettingsPage() {
                 <div>
                   <label
                     htmlFor="confirm-password"
-                    className="mb-1.5 block text-sm font-semibold text-gray-700"
+                    className="mb-1.5 block text-sm font-semibold text-text-primary"
                   >
                     Confirm new password
                   </label>
@@ -400,9 +400,9 @@ export default function SettingsPage() {
                 {/* Validation hints */}
                 <div
                   id="password-requirements"
-                  className="space-y-1.5 rounded-lg bg-gray-50 p-3"
+                  className="space-y-1.5 rounded-lg bg-surface-2 p-3"
                 >
-                  <p className="mb-1 text-xs font-semibold text-gray-500">
+                  <p className="mb-1 text-xs font-semibold text-text-secondary">
                     Requirements:
                   </p>
                   <div className="flex items-center gap-2">
@@ -410,13 +410,13 @@ export default function SettingsPage() {
                       className={`flex h-4 w-4 items-center justify-center rounded-full transition-colors ${
                         passwordLongEnough
                           ? "bg-emerald-100 text-emerald-600"
-                          : "bg-gray-200 text-gray-400"
+                          : "bg-gray-200 text-text-tertiary"
                       }`}
                     >
                       <Check className="h-2.5 w-2.5" />
                     </div>
                     <span
-                      className={`text-xs ${passwordLongEnough ? "text-emerald-700" : "text-gray-500"}`}
+                      className={`text-xs ${passwordLongEnough ? "text-emerald-700" : "text-text-secondary"}`}
                     >
                       At least 8 characters
                     </span>
@@ -426,14 +426,14 @@ export default function SettingsPage() {
                       className={`flex h-4 w-4 items-center justify-center rounded-full transition-colors ${
                         passwordsMatch
                           ? "bg-emerald-100 text-emerald-600"
-                          : "bg-gray-200 text-gray-400"
+                          : "bg-gray-200 text-text-tertiary"
                       }`}
                     >
                       <Check className="h-2.5 w-2.5" />
                     </div>
                     <span
                       id="password-match-hint"
-                      className={`text-xs ${passwordsMatch ? "text-emerald-700" : "text-gray-500"}`}
+                      className={`text-xs ${passwordsMatch ? "text-emerald-700" : "text-text-secondary"}`}
                     >
                       Passwords match
                     </span>
@@ -449,7 +449,7 @@ export default function SettingsPage() {
                     !passwordLongEnough ||
                     !passwordsMatch
                   }
-                  className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-xl bg-text-text-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
                 >
                   {isUpdatingPassword ? (
                     <>
@@ -470,7 +470,7 @@ export default function SettingsPage() {
           {/* ═══════════════════════════════════════════
               SECTION 3 — Danger Zone
               ═══════════════════════════════════════════ */}
-          <section className="overflow-hidden rounded-2xl border border-red-200 bg-white shadow-sm">
+          <section className="overflow-hidden rounded-2xl border border-red-200 bg-surface shadow-sm">
             <div className="border-b border-red-100 bg-red-50/50 px-6 py-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-100">
@@ -490,10 +490,10 @@ export default function SettingsPage() {
             <div className="px-6 py-5">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
-                  <h3 className="text-sm font-bold text-gray-900">
+                  <h3 className="text-sm font-bold text-text-primary">
                     Delete Account
                   </h3>
-                  <p className="mt-0.5 text-xs text-gray-500">
+                  <p className="mt-0.5 text-xs text-text-secondary">
                     Permanently anonymize your profile, remove you from groups,
                     and delete your auth credentials. This cannot be undone.
                   </p>

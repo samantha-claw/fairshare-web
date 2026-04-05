@@ -54,7 +54,7 @@ export function PendingSettlements({
           return (
             <div
               key={s.id}
-              className="flex flex-col gap-3 rounded-lg border border-amber-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-3 rounded-lg border border-amber-200 bg-surface p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex items-center gap-3">
                 <Link href={`/dashboard/profile/${s.from_user}`}>
@@ -65,16 +65,16 @@ export function PendingSettlements({
                   />
                 </Link>
                 <div className="text-sm">
-                  <p className="text-gray-800">
-                    <Link href={`/dashboard/profile/${s.from_user}`} className="font-semibold hover:text-blue-600 hover:underline">
+                  <p className="text-text-primary">
+                    <Link href={`/dashboard/profile/${s.from_user}`} className="font-semibold hover:text-text-primary hover:underline">
                       {isSender ? "You" : s.from_profile.display_name || s.from_profile.username}
                     </Link>
                     {" → "}
-                    <Link href={`/dashboard/profile/${s.to_user}`} className="font-semibold hover:text-blue-600 hover:underline">
+                    <Link href={`/dashboard/profile/${s.to_user}`} className="font-semibold hover:text-text-primary hover:underline">
                       {isReceiver ? "You" : s.to_profile.display_name || s.to_profile.username}
                     </Link>
                   </p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-text-tertiary">
                     {new Date(s.created_at).toLocaleString("en-US", {
                       month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
                     })}
@@ -83,7 +83,7 @@ export function PendingSettlements({
               </div>
 
               <div className="flex items-center gap-3">
-                <span className="text-lg font-bold text-gray-900">
+                <span className="text-lg font-bold text-text-primary">
                   {formatCurrency(s.amount, currency)}
                 </span>
 
@@ -99,7 +99,7 @@ export function PendingSettlements({
                     <button
                       onClick={() => onReject(s.id)}
                       disabled={isProcessing}
-                      className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 shadow-sm transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex items-center gap-1 rounded-md border border-border bg-surface px-3 py-1.5 text-xs font-medium text-red-600 shadow-sm transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {isProcessing ? <Spinner className="h-3.5 w-3.5" /> : "❌"} Reject
                     </button>
@@ -112,7 +112,7 @@ export function PendingSettlements({
                     <button
                       onClick={() => onDelete(s.id)}
                       disabled={isProcessing}
-                      className="p-1 text-gray-400 transition-colors hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="p-1 text-text-tertiary transition-colors hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
                       title="Cancel request"
                     >
                       {isProcessing ? (
@@ -127,7 +127,7 @@ export function PendingSettlements({
                 )}
 
                 {!isSender && !isReceiver && (
-                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">Pending</span>
+                  <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text-secondary">Pending</span>
                 )}
               </div>
             </div>

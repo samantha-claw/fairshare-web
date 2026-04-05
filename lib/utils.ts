@@ -78,5 +78,5 @@ export function formatSignedCurrency(
   const formatted = formatCurrency(amount, currency);
   if (amount > 0) return { text: `+${formatted}`, sign: "+", colorClass: "text-emerald-600" };
   if (amount < 0) return { text: `−${formatted}`, sign: "−", colorClass: "text-rose-600" };
-  return { text: formatted, sign: "", colorClass: "text-gray-500" };
+  return { text: formatted, sign: "", colorClass: "text-text-secondary" };
 }

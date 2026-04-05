@@ -258,10 +258,10 @@ export function AllExpensesModal({
       {/* Constrain height so the body scrolls, not the whole modal */}
       <div className="flex max-h-[90vh] flex-col sm:max-h-[85vh]">
         {/* ── Header ── */}
-        <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-5 py-4">
+        <div className="flex shrink-0 items-center justify-between border-b border-border px-5 py-4">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">All Expenses</h2>
-            <p className="mt-0.5 text-xs text-gray-500">
+            <h2 className="text-lg font-bold text-text-primary">All Expenses</h2>
+            <p className="mt-0.5 text-xs text-text-secondary">
               {isLoadingInitial
                 ? "Loading…"
                 : `${totalCount} expense${totalCount !== 1 ? "s" : ""} · ${currency}`}
@@ -270,7 +270,7 @@ export function AllExpensesModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-gray-400 transition-all duration-200 hover:bg-gray-100 hover:text-gray-600 active:scale-95"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-text-tertiary transition-all duration-200 hover:bg-surface-2 hover:text-text-secondary active:scale-95"
             title="Close"
           >
             <svg
@@ -297,7 +297,7 @@ export function AllExpensesModal({
               {Array.from({ length: 4 }).map((_, i) => (
                 <div
                   key={i}
-                  className="animate-pulse rounded-xl border border-gray-100 bg-gray-50/50 p-4"
+                  className="animate-pulse rounded-xl border border-border bg-surface-2/50 p-4"
                 >
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full bg-gray-200" />
@@ -319,7 +319,7 @@ export function AllExpensesModal({
             </div>
           ) : expenses.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-300 py-12 text-center">
-              <p className="text-gray-500">No expenses yet.</p>
+              <p className="text-text-secondary">No expenses yet.</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -337,7 +337,7 @@ export function AllExpensesModal({
                 return (
                   <div
                     key={exp.id}
-                    className="group rounded-xl border border-gray-100 bg-gray-50/50 p-3 transition-all hover:border-gray-200 hover:shadow-sm sm:p-4"
+                    className="group rounded-xl border border-border bg-surface-2/50 p-3 transition-all hover:border-border hover:shadow-sm sm:p-4"
                   >
                     {/* Top Row */}
                     <div className="flex items-center gap-3">
@@ -355,17 +355,17 @@ export function AllExpensesModal({
                       <div className="min-w-0 flex-1">
                         {/* Name + SplitBadge */}
                         <div className="mb-0.5 flex items-center gap-2">
-                          <h3 className="truncate text-sm font-semibold text-gray-900 sm:text-base">
+                          <h3 className="truncate text-sm font-semibold text-text-primary sm:text-base">
                             {exp.name}
                           </h3>
                           <SplitBadge type={exp.split_type ?? undefined} />
                         </div>
 
-                        <p className="truncate text-xs text-gray-500">
+                        <p className="truncate text-xs text-text-secondary">
                           Paid by{" "}
                           <Link
                             href={`/dashboard/profile/${exp.paid_by}`}
-                            className="font-medium text-gray-700 hover:text-blue-600 hover:underline"
+                            className="font-medium text-text-primary hover:text-text-primary hover:underline"
                           >
                             {payerName}
                           </Link>{" "}
@@ -375,7 +375,7 @@ export function AllExpensesModal({
                       </div>
 
                       <div className="flex flex-shrink-0 flex-col items-end gap-1.5">
-                        <p className="text-base font-bold text-gray-900 sm:text-lg">
+                        <p className="text-base font-bold text-text-primary sm:text-lg">
                           {formatCurrency(exp.amount, currency)}
                         </p>
                         <div className="flex items-center">
@@ -410,7 +410,7 @@ export function AllExpensesModal({
                           })}
                           {remainingCount > 0 && (
                             <div
-                              className="-ml-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-[10px] font-bold text-gray-600 ring-2 ring-white"
+                              className="-ml-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-[10px] font-bold text-text-secondary ring-2 ring-white"
                               title={`+${remainingCount} more`}
                             >
                               +{remainingCount}
@@ -422,14 +422,14 @@ export function AllExpensesModal({
 
                     {/* Action Buttons */}
                     {showActions && (
-                      <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
+                      <div className="mt-3 flex items-center justify-end gap-2 border-t border-border pt-3">
                         <button
                           type="button"
                           onClick={() => {
                             onEditExpense(exp);
                             onClose();
                           }}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 shadow-sm transition-all duration-200 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 active:scale-95"
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium text-text-secondary shadow-sm transition-all duration-200 hover:border-blue-300 hover:bg-blue-50 hover:text-text-primary active:scale-95"
                           title={`Edit "${exp.name}"`}
                         >
                           <svg
@@ -453,7 +453,7 @@ export function AllExpensesModal({
                             onDeleteExpense(exp.id, exp.name);
                             onClose();
                           }}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 shadow-sm transition-all duration-200 hover:border-red-300 hover:bg-red-50 hover:text-red-600 active:scale-95"
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium text-text-secondary shadow-sm transition-all duration-200 hover:border-red-300 hover:bg-red-50 hover:text-red-600 active:scale-95"
                           title={`Delete "${exp.name}"`}
                         >
                           <svg
@@ -488,25 +488,25 @@ export function AllExpensesModal({
         </div>
 
         {/* ── Footer ── */}
-        <div className="shrink-0 border-t border-gray-200 px-5 py-3">
+        <div className="shrink-0 border-t border-border px-5 py-3">
           {totalPages > 1 && (
-            <div className="mb-3 flex items-center justify-between border-b border-gray-100 pb-3">
+            <div className="mb-3 flex items-center justify-between border-b border-border pb-3">
               <button
                 type="button"
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={page === 0 || isLoadingInitial}
-                className="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-lg px-3 py-1.5 text-sm font-medium text-text-secondary hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Previous
               </button>
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-text-tertiary">
                 Page {page + 1} of {totalPages}
               </span>
               <button
                 type="button"
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
                 disabled={page === totalPages - 1 || isLoadingInitial}
-                className="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-lg px-3 py-1.5 text-sm font-medium text-text-secondary hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Next
               </button>
@@ -515,7 +515,7 @@ export function AllExpensesModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-full rounded-xl bg-gray-100 py-2.5 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-200 active:scale-[0.98]"
+            className="w-full rounded-xl bg-surface-2 py-2.5 text-sm font-semibold text-text-primary transition-all duration-200 hover:bg-gray-200 active:scale-[0.98]"
           >
             Close
           </button>

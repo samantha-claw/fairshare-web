@@ -55,11 +55,11 @@ export function FriendCard({ friend, onRemove }: FriendCardProps) {
       >
         {/* Name and Verification */}
         <div className="flex items-center gap-2">
-          <h2 className="text-xl font-bold text-foreground truncate">
+          <h2 className="text-xl font-bold text-text-primary truncate">
             {displayName}
           </h2>
           <motion.div
-            className="flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground flex-shrink-0"
+            className="flex items-center justify-center w-5 h-5 rounded-full bg-text-primary text-text-primary-foreground flex-shrink-0"
             whileHover={{ scale: 1.1, rotate: 5 }}
           >
             <Check className="w-3 h-3" />
@@ -67,20 +67,20 @@ export function FriendCard({ friend, onRemove }: FriendCardProps) {
         </div>
 
         {/* Description */}
-        <p className="text-muted-foreground text-sm leading-relaxed line-clamp-1">
+        <p className="text-text-secondary text-sm leading-relaxed line-clamp-1">
           {description}
         </p>
 
         {/* Stats */}
         <div className="flex items-center gap-4 pt-1">
-          <div className="flex items-center gap-1.5 text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-text-secondary">
             <Users className="w-3.5 h-3.5" />
-            <span className="font-semibold text-foreground text-sm">0</span>
+            <span className="font-semibold text-text-primary text-sm">0</span>
             <span className="text-xs">followers</span>
           </div>
-          <div className="flex items-center gap-1.5 text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-text-secondary">
             <UserCheck className="w-3.5 h-3.5" />
-            <span className="font-semibold text-foreground text-sm">0</span>
+            <span className="font-semibold text-text-primary text-sm">0</span>
             <span className="text-xs">following</span>
           </div>
         </div>
@@ -107,7 +107,7 @@ export function FriendCard({ friend, onRemove }: FriendCardProps) {
               e.preventDefault();
               onRemove(friend.friend_id);
             }}
-            className="cursor-pointer py-2.5 px-4 rounded-xl font-semibold text-sm transition-all duration-200 border border-border/20 shadow-sm bg-muted text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30"
+            className="cursor-pointer py-2.5 px-4 rounded-xl font-semibold text-sm transition-all duration-200 border border-border/20 shadow-sm bg-surface-2 text-text-secondary hover:bg-negative-bg hover:text-negative hover:border-destructive/30"
           >
             Remove
           </motion.button>

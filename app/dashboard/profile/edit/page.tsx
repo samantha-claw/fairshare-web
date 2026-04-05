@@ -62,14 +62,14 @@ function InputField({
   return (
     <div>
       <label htmlFor={fieldName} className="mb-2 flex items-center justify-between">
-        <span className="flex items-center gap-1.5 text-sm font-semibold text-gray-700">
+        <span className="flex items-center gap-1.5 text-sm font-semibold text-text-primary">
           {label}
           {required && <span className="text-rose-400">*</span>}
         </span>
         {maxLength && (
           <span
             className={`text-[10px] font-medium ${
-              value.length > maxLength ? "text-rose-500" : "text-gray-400"
+              value.length > maxLength ? "text-rose-500" : "text-text-tertiary"
             }`}
           >
             {value.length}/{maxLength}
@@ -81,7 +81,7 @@ function InputField({
         <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2">
           <Icon
             className={`h-4 w-4 ${
-              error ? "text-rose-400" : "text-gray-400"
+              error ? "text-rose-400" : "text-text-tertiary"
             }`}
           />
         </div>
@@ -94,10 +94,10 @@ function InputField({
           disabled={disabled}
           aria-invalid={error ? "true" : undefined}
           aria-describedby={error ? `${fieldName}-error` : undefined}
-          className={`block w-full rounded-2xl border bg-gray-50/50 py-3 pl-11 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+          className={`block w-full rounded-2xl border bg-surface-2/50 py-3 pl-11 pr-4 text-sm text-text-primary placeholder-gray-400 transition-all duration-200 focus:bg-surface focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
             error
               ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
-              : "border-gray-200 focus:border-indigo-300 focus:ring-indigo-100"
+              : "border-border focus:border-indigo-300 focus:ring-indigo-100"
           }`}
         />
       </div>
@@ -113,7 +113,7 @@ function InputField({
         </p>
       )}
       {hint && !error && (
-        <p className="mt-1.5 text-xs text-gray-400">{hint}</p>
+        <p className="mt-1.5 text-xs text-text-tertiary">{hint}</p>
       )}
     </div>
   );
@@ -143,13 +143,13 @@ function TextAreaField({
   return (
     <div>
       <label htmlFor={fieldName} className="mb-2 flex items-center justify-between">
-        <span className="flex items-center gap-1.5 text-sm font-semibold text-gray-700">
+        <span className="flex items-center gap-1.5 text-sm font-semibold text-text-primary">
           {label}
         </span>
         {maxLength && (
           <span
             className={`text-[10px] font-medium ${
-              value.length > maxLength ? "text-rose-500" : "text-gray-400"
+              value.length > maxLength ? "text-rose-500" : "text-text-tertiary"
             }`}
           >
             {value.length}/{maxLength}
@@ -161,7 +161,7 @@ function TextAreaField({
         <div className="pointer-events-none absolute left-4 top-3.5">
           <Icon
             className={`h-4 w-4 ${
-              error ? "text-rose-400" : "text-gray-400"
+              error ? "text-rose-400" : "text-text-tertiary"
             }`}
           />
         </div>
@@ -173,10 +173,10 @@ function TextAreaField({
           rows={3}
           aria-invalid={error ? "true" : undefined}
           aria-describedby={error ? `${fieldName}-error` : undefined}
-          className={`block w-full resize-none rounded-2xl border bg-gray-50/50 py-3 pl-11 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 ${
+          className={`block w-full resize-none rounded-2xl border bg-surface-2/50 py-3 pl-11 pr-4 text-sm text-text-primary placeholder-gray-400 transition-all duration-200 focus:bg-surface focus:outline-none focus:ring-2 ${
             error
               ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
-              : "border-gray-200 focus:border-indigo-300 focus:ring-indigo-100"
+              : "border-border focus:border-indigo-300 focus:ring-indigo-100"
           }`}
         />
       </div>
@@ -192,7 +192,7 @@ function TextAreaField({
         </p>
       )}
       {hint && !error && (
-        <p className="mt-1.5 text-xs text-gray-400">{hint}</p>
+        <p className="mt-1.5 text-xs text-text-tertiary">{hint}</p>
       )}
     </div>
   );
@@ -206,15 +206,15 @@ function EditSkeleton() {
   return (
     <div className="mx-auto max-w-2xl animate-pulse px-4 py-8 sm:px-6">
       <div className="mb-8 h-6 w-40 rounded-lg bg-gray-200" />
-      <div className="rounded-3xl border border-gray-100 bg-white p-8 shadow-sm">
+      <div className="rounded-3xl border border-border bg-surface p-8 shadow-sm">
         <div className="mb-8 flex justify-center">
           <div className="h-32 w-32 rounded-full bg-gray-200" />
         </div>
         <div className="space-y-6">
-          <div className="h-12 rounded-2xl bg-gray-100" />
-          <div className="h-12 rounded-2xl bg-gray-100" />
-          <div className="h-12 rounded-2xl bg-gray-100" />
-          <div className="h-24 rounded-2xl bg-gray-100" />
+          <div className="h-12 rounded-2xl bg-surface-2" />
+          <div className="h-12 rounded-2xl bg-surface-2" />
+          <div className="h-12 rounded-2xl bg-surface-2" />
+          <div className="h-24 rounded-2xl bg-surface-2" />
         </div>
       </div>
     </div>
@@ -260,14 +260,14 @@ export default function EditProfilePage() {
       {/* ── Back Button ──────────────────────────── */}
       <button
         onClick={e.handleCancel}
-        className="mb-6 inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-medium text-gray-500 transition-all hover:bg-white hover:text-gray-900 hover:shadow-sm"
+        className="mb-6 inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-medium text-text-secondary transition-all hover:bg-surface hover:text-text-primary hover:shadow-sm"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Profile
       </button>
 
       {/* ── Main Form Card ───────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
+      <div className="relative overflow-hidden rounded-3xl border border-border bg-surface shadow-sm">
         {/* Decorative Background */}
         <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-gradient-to-br from-indigo-100/50 to-purple-100/30 blur-3xl" />
         <div className="absolute -bottom-16 -left-16 h-40 w-40 rounded-full bg-gradient-to-tr from-blue-100/30 to-cyan-100/20 blur-2xl" />
@@ -275,11 +275,11 @@ export default function EditProfilePage() {
         {/* Header Banner */}
         <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 px-8 pb-20 pt-8">
           {/* Decorative */}
-          <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+          <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-surface/10 blur-xl" />
           <div className="absolute bottom-4 left-1/4 h-16 w-16 rounded-full bg-purple-400/15 blur-lg" />
 
           <div className="relative flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface/20 backdrop-blur-sm">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -308,7 +308,7 @@ export default function EditProfilePage() {
           <button
             type="button"
             onClick={e.triggerFileInput}
-            className="group -mt-16 relative rounded-full bg-white p-2 shadow-xl transition-all duration-200 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-indigo-200"
+            className="group -mt-16 relative rounded-full bg-surface p-2 shadow-xl transition-all duration-200 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-indigo-200"
             aria-label="Change profile photo"
           >
             <img
@@ -331,7 +331,7 @@ export default function EditProfilePage() {
             <button
               type="button"
               onClick={e.triggerFileInput}
-              className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-indigo-600 transition-all hover:bg-indigo-50"
+              className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-text-primary transition-all hover:bg-indigo-50"
             >
               <Camera className="h-3.5 w-3.5" />
               Change Photo
@@ -436,11 +436,11 @@ export default function EditProfilePage() {
           </div>
 
           {/* ── Divider ──────────────────────────── */}
-          <div className="my-6 border-t border-gray-100" />
+          <div className="my-6 border-t border-border" />
 
           {/* ── Security Note ────────────────────── */}
           <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-indigo-100 bg-indigo-50/50 px-4 py-3">
-            <Shield className="mt-0.5 h-4 w-4 flex-shrink-0 text-indigo-500" />
+            <Shield className="mt-0.5 h-4 w-4 flex-shrink-0 text-text-primary" />
             <p className="text-xs leading-relaxed text-indigo-700">
               Your profile information is stored securely. Only your
               display name, username, and avatar are publicly visible.
@@ -454,7 +454,7 @@ export default function EditProfilePage() {
               <button
                 type="button"
                 onClick={e.handleCancel}
-                className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-600 transition-all duration-200 hover:bg-gray-50"
+                className="inline-flex items-center gap-2 rounded-2xl border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-text-secondary transition-all duration-200 hover:bg-surface-2"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Cancel
@@ -464,7 +464,7 @@ export default function EditProfilePage() {
                 <button
                   type="button"
                   onClick={e.handleReset}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-500 transition-all duration-200 hover:bg-gray-50 hover:text-gray-700"
+                  className="inline-flex items-center gap-2 rounded-2xl border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-text-secondary transition-all duration-200 hover:bg-surface-2 hover:text-text-primary"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
                   Reset
@@ -476,7 +476,7 @@ export default function EditProfilePage() {
             <button
               type="submit"
               disabled={e.saving || !e.hasChanges}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-500/30 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-text-text-primary to-text-secondary px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-500/30 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
             >
               {e.saving ? (
                 <>
@@ -502,17 +502,17 @@ export default function EditProfilePage() {
       {/* ── Avatar Preview Card ──────────────────── */}
       {(e.avatarPreviewUrl || e.formData.avatar_url.trim().length > 0) &&
         !e.avatarRemoved && (
-          <div className="mt-6 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+          <div className="mt-6 rounded-3xl border border-border bg-surface p-6 shadow-sm">
             <div className="mb-3 flex items-center gap-2">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50">
-                <Image className="h-3.5 w-3.5 text-indigo-600" />
+                <Image className="h-3.5 w-3.5 text-text-primary" />
               </div>
-              <h3 className="text-sm font-bold text-gray-900">
+              <h3 className="text-sm font-bold text-text-primary">
                 Avatar Preview
               </h3>
             </div>
 
-            <div className="flex items-center gap-4 rounded-2xl bg-gray-50/50 p-4">
+            <div className="flex items-center gap-4 rounded-2xl bg-surface-2/50 p-4">
               {/* Multiple Sizes */}
               <div className="flex items-end gap-3">
                 <div className="text-center">
@@ -525,7 +525,7 @@ export default function EditProfilePage() {
                         getFallbackAvatar(displayName);
                     }}
                   />
-                  <p className="mt-1 text-[10px] text-gray-400">Large</p>
+                  <p className="mt-1 text-[10px] text-text-tertiary">Large</p>
                 </div>
                 <div className="text-center">
                   <img
@@ -537,7 +537,7 @@ export default function EditProfilePage() {
                         getFallbackAvatar(displayName);
                     }}
                   />
-                  <p className="mt-1 text-[10px] text-gray-400">Med</p>
+                  <p className="mt-1 text-[10px] text-text-tertiary">Med</p>
                 </div>
                 <div className="text-center">
                   <img
@@ -549,12 +549,12 @@ export default function EditProfilePage() {
                         getFallbackAvatar(displayName);
                     }}
                   />
-                  <p className="mt-1 text-[10px] text-gray-400">Sm</p>
+                  <p className="mt-1 text-[10px] text-text-tertiary">Sm</p>
                 </div>
               </div>
 
               {/* Profile Preview */}
-              <div className="ml-auto rounded-2xl border border-gray-100 bg-white p-3">
+              <div className="ml-auto rounded-2xl border border-border bg-surface p-3">
                 <div className="flex items-center gap-2.5">
                   <img
                     src={resolvedAvatarSrc}
@@ -566,10 +566,10 @@ export default function EditProfilePage() {
                     }}
                   />
                   <div>
-                    <p className="text-sm font-bold text-gray-900">
+                    <p className="text-sm font-bold text-text-primary">
                       {e.formData.display_name || "Display Name"}
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-text-tertiary">
                       @{e.formData.username || "username"}
                     </p>
                   </div>
