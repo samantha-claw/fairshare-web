@@ -12,7 +12,7 @@ import { QuickActions } from "./_components/quick-actions";
 import { Receipt, HandCoins, Plus, Bell, MessageCircle, Search } from "lucide-react";
 
 // ==========================================
-// 🎨 UI RENDER — SKELETON (content only)
+// 🎨 UI RENDER - SKELETON (content only)
 // ==========================================
 function DashboardSkeleton() {
   return (
@@ -25,7 +25,7 @@ function DashboardSkeleton() {
           <div className="h-10 w-24 rounded-xl bg-gray-200 dark:bg-surface-dark" />
         </div>
       </header>
-      
+
       {/* Main content placeholder */}
       <div className="flex-1 overflow-y-auto px-6 pb-4">
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 h-full">
@@ -44,7 +44,7 @@ function DashboardSkeleton() {
 }
 
 // ==========================================
-// 🎨 UI RENDER — DASHBOARD PAGE (NEW DESIGN)
+// 🎨 UI RENDER - DASHBOARD PAGE (NEW DESIGN)
 // ==========================================
 export default function DashboardPage() {
   const d = useDashboard();
@@ -54,13 +54,13 @@ export default function DashboardPage() {
   return (
     <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
       {/* ════════════════════════════════════════════════
-          HEADER — Clean top bar matching new design
+          HEADER - Clean top bar matching new design
           ════════════════════════════════════════════════ */}
       <header className="h-16 flex items-center justify-between mb-8 px-6">
         <h1 className="text-3xl font-bold tracking-tight text-text-light-primary dark:text-text-dark-primary">
           Dashboard
         </h1>
-        
+
         {/* Search + Actions */}
         <div className="flex items-center gap-3">
           {/* Search */}
@@ -72,7 +72,7 @@ export default function DashboardPage() {
               className="w-full pl-10 pr-4 py-2.5 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
             />
           </div>
-          
+
           {/* Create Button */}
           <Link
             href="/dashboard/groups/new"
@@ -80,17 +80,17 @@ export default function DashboardPage() {
           >
             Create
           </Link>
-          
+
           {/* Notifications */}
           <button className="w-10 h-10 rounded-full bg-surface-light dark:bg-surface-dark flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm border border-border-light dark:border-border-dark">
             <Bell className="h-5 w-5 text-text-light-secondary dark:text-text-dark-secondary" />
           </button>
-          
+
           {/* Messages */}
           <button className="w-10 h-10 rounded-full bg-surface-light dark:bg-surface-dark flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm border border-border-light dark:border-border-dark">
             <MessageCircle className="h-5 w-5 text-text-light-secondary dark:text-text-dark-secondary" />
           </button>
-          
+
           {/* Avatar */}
           <button className="w-10 h-10 rounded-full border border-border-light dark:border-border-dark overflow-hidden shadow-sm">
             <div className="w-full h-full bg-gradient-to-br from-primary to-emerald-600 flex items-center justify-center text-white font-bold text-sm">
@@ -105,19 +105,19 @@ export default function DashboardPage() {
           ════════════════════════════════════════════════ */}
       <div className="flex-1 overflow-y-auto px-6 pb-4">
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 h-full">
-          
+
           {/* ── LEFT COLUMN (2 spans) ───────────────────── */}
           <div className="xl:col-span-2 flex flex-col gap-6">
-            
-            {/* Overview Widget — Financial summary cards */}
+
+            {/* Overview Widget - Financial summary cards */}
             <OverviewWidget
               totalNet={d.totalNet}
               totalOwedToMe={d.totalOwedToMe}
               totalIOwe={d.totalIOwe}
               groups={d.groups}
             />
-            
-            {/* Financial View — Bar chart section */}
+
+            {/* Financial View - Bar chart section */}
             <div className="bg-surface-light dark:bg-surface-dark rounded-3xl p-6 shadow-sm dark:shadow-none border border-border-light dark:border-border-dark flex-1 flex flex-col relative min-h-[350px]">
               <div className="flex items-center justify-between mb-8">
                 <h2 className="text-xl font-bold text-text-light-primary dark:text-text-dark-primary">
@@ -135,20 +135,20 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-              
-              {/* Chart placeholder — will integrate with real data */}
+
+              {/* Chart placeholder - will integrate with real data */}
               <div className="flex-1 flex items-end justify-end gap-3 pb-6 pr-4 mt-16">
                 {d.groups.slice(0, 7).map((group, index) => {
-                  const height = Math.abs(group.net_balance) > 0 
-                    ? Math.min(Math.abs(group.net_balance) / 100, 80) + 20 
+                  const height = Math.abs(group.net_balance) > 0
+                    ? Math.min(Math.abs(group.net_balance) / 100, 80) + 20
                     : 30;
                   const isActive = index === 3;
                   return (
                     <div
                       key={group.group_id}
                       className={`w-12 rounded-t-lg relative group transition-all ${
-                        isActive 
-                          ? "bg-primary shadow-[0_0_20px_rgba(0,230,118,0.3)]" 
+                        isActive
+                          ? "bg-primary"
                           : "bg-gray-200 dark:bg-[#2A2A2A]"
                       }`}
                       style={{ height: `${height}%` }}
@@ -169,7 +169,7 @@ export default function DashboardPage() {
                   );
                 })}
               </div>
-              
+
               {/* Total amount */}
               <div className="absolute bottom-6 left-6 flex flex-col">
                 <div className="text-4xl font-bold leading-none mb-2 tracking-tight flex items-baseline">
@@ -192,16 +192,16 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-          
+
           {/* ── RIGHT COLUMN (1 span) ───────────────────── */}
           <div className="flex flex-col gap-6">
-            
-            {/* Spending Breakdown — Donut chart */}
+
+            {/* Spending Breakdown - Donut chart */}
             <div className="bg-surface-light dark:bg-surface-dark rounded-3xl p-6 shadow-sm dark:shadow-none border border-border-light dark:border-border-dark flex flex-col">
               <h2 className="text-xl font-bold mb-6 text-text-light-primary dark:text-text-dark-primary">
                 Spending Breakdown
               </h2>
-              
+
               {/* Donut Chart */}
               <div className="relative w-48 h-48 mx-auto my-4">
                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
@@ -226,8 +226,8 @@ export default function DashboardPage() {
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <span className="text-3xl font-bold text-text-light-primary dark:text-text-dark-primary">
-                    {d.totalIOwe > 0 
-                      ? Math.round(d.totalOwedToMe / (d.totalOwedToMe + d.totalIOwe) * 100) 
+                    {d.totalIOwe > 0
+                      ? Math.round(d.totalOwedToMe / (d.totalOwedToMe + d.totalIOwe) * 100)
                       : 0}%
                   </span>
                   <span className="text-xs text-text-light-secondary dark:text-text-dark-secondary mt-1">
@@ -235,7 +235,7 @@ export default function DashboardPage() {
                   </span>
                 </div>
               </div>
-              
+
               {/* Legend */}
               <div className="flex justify-between items-end mt-auto pt-6 border-t border-border-light dark:border-border-dark">
                 <div className="flex flex-col gap-1">
@@ -244,8 +244,8 @@ export default function DashboardPage() {
                     Owed to you
                   </div>
                   <span className="font-bold text-sm text-text-light-primary dark:text-text-dark-primary">
-                    {d.totalOwedToMe > 0 
-                      ? Math.round(d.totalOwedToMe / (d.totalOwedToMe + d.totalIOwe) * 100) 
+                    {d.totalOwedToMe > 0
+                      ? Math.round(d.totalOwedToMe / (d.totalOwedToMe + d.totalIOwe) * 100)
                       : 0}%
                   </span>
                 </div>
@@ -255,20 +255,20 @@ export default function DashboardPage() {
                     You owe
                   </div>
                   <span className="font-bold text-sm text-text-light-primary dark:text-text-dark-primary">
-                    {d.totalIOwe > 0 
-                      ? Math.round(d.totalIOwe / (d.totalOwedToMe + d.totalIOwe) * 100) 
+                    {d.totalIOwe > 0
+                      ? Math.round(d.totalIOwe / (d.totalOwedToMe + d.totalIOwe) * 100)
                       : 0}%
                   </span>
                 </div>
               </div>
             </div>
-            
+
             {/* Popular Groups */}
             <div className="bg-surface-light dark:bg-surface-dark rounded-3xl p-6 shadow-sm dark:shadow-none border border-border-light dark:border-border-dark flex-1 flex flex-col">
               <h2 className="text-xl font-bold mb-6 text-text-light-primary dark:text-text-dark-primary">
                 Popular groups
               </h2>
-              
+
               <div className="flex flex-col gap-4 flex-1">
                 {d.groups.slice(0, 4).map((group) => (
                   <Link
@@ -290,10 +290,10 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex flex-col items-end gap-1">
                       <span className={`font-bold text-sm ${
-                        group.net_balance > 0 
-                          ? "text-primary" 
-                          : group.net_balance < 0 
-                            ? "text-rose-500" 
+                        group.net_balance > 0
+                          ? "text-primary"
+                          : group.net_balance < 0
+                            ? "text-rose-500"
                             : "text-text-light-secondary dark:text-text-dark-secondary"
                       }`}>
                         {group.net_balance > 0 ? "+" : ""}{group.net_balance.toFixed(0)}
@@ -309,7 +309,7 @@ export default function DashboardPage() {
                   </Link>
                 ))}
               </div>
-              
+
               <Link
                 href="/dashboard/groups"
                 className="w-full mt-6 py-3 px-4 border border-border-light dark:border-border-dark rounded-xl text-sm font-semibold text-text-light-primary dark:text-text-dark-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-center"
