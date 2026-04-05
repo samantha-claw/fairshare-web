@@ -150,10 +150,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
       </main>
 
       {/* ── Mobile Bottom Nav ── */}
-      <MobileNav
-        displayName={profile.display_name}
-        avatarUrl={profile.avatar_url}
-      />
+      <MobileNav />
     </div>
   );
 }

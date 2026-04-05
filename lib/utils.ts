@@ -1,11 +1,16 @@
 // ==========================================
 // 📦 IMPORTS
 // ==========================================
-// (none)
+import { clsx, type ClassValue } from "clsx";
 
 // ==========================================
 // ⚙️ LOGIC
 // ==========================================
+
+/** Class name utility for conditional classes */
+export function cn(...inputs: ClassValue[]) {
+  return clsx(inputs);
+}
 
 export function formatCurrency(amount: number, currency = "USD"): string {
   return new Intl.NumberFormat("en-US", {
