@@ -62,7 +62,8 @@ interface GroupCardProps {
 
 function IPhoneGroupCard({ group, gradient, status, isFeatured, isOwner }: GroupCardProps) {
   const statusStyle = STATUS_COLORS[status];
-  const memberCount = group.member_count || 3;
+  // Using a default count since member_count is not in GroupBalance type
+  const memberCount = 3;
   
   return (
     <motion.div
