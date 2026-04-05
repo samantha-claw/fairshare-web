@@ -6,37 +6,27 @@
 import { useRef } from "react";
 import Link from "next/link";
 import { useFriends } from "@/hooks/use-friends";
-import { Avatar } from "@/components/ui/avatar";
 import { Spinner } from "@/components/ui/spinner";
-import {
-  AddFriendSearch,
-  type AddFriendSearchHandle,
-} from "./_components/add-friend-search";
+import { AddFriendSearch, type AddFriendSearchHandle, } from "./_components/add-friend-search";
 import { PendingRequests } from "./_components/pending-requests";
 import { FriendsList } from "./_components/friends-list";
 import { FriendsEmptyState } from "@/components/ui/empty-states";
-import {
-  ArrowLeft,
-  HeartHandshake,
-  UserCheck,
-} from "lucide-react";
+import { ArrowLeft, HeartHandshake, UserCheck, Users } from "lucide-react";
+import { motion } from "framer-motion";
 
 // ==========================================
 // 🎨 UI RENDER — SKELETON
 // ==========================================
 function PageSkeleton() {
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-5xl animate-pulse px-4 py-10 sm:px-6">
-        <div className="mb-6 h-5 w-40 rounded bg-gray-200" />
-        <div className="mb-8 h-10 w-64 rounded-lg bg-gray-200" />
-        <div className="mb-8 h-40 rounded-3xl bg-gray-200/50" />
-        <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="h-48 rounded-3xl bg-gray-200/40"
-            />
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-6xl animate-pulse px-4 py-10 sm:px-6">
+        <div className="mb-6 h-5 w-40 rounded bg-muted" />
+        <div className="mb-8 h-10 w-64 rounded-lg bg-muted" />
+        <div className="mb-8 h-40 rounded-3xl bg-muted/50" />
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="h-[380px] rounded-3xl bg-muted/40" />
           ))}
         </div>
       </div>
@@ -57,37 +47,49 @@ export default function FriendsPage() {
   const friendsLoaded = !f.loadingFriends;
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20 md:pb-10">
-      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+    <div className="min-h-screen bg-background pb-20 md:pb-10">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         {/* ── Back Button ────────────────────────────── */}
-        <button
+        <motion.button
           type="button"
           onClick={f.navigateToDashboard}
-          className="mb-6 inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm text-gray-500 transition-all hover:bg-white hover:text-gray-900 hover:shadow-sm"
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="mb-6 inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
           Dashboard
-        </button>
+        </motion.button>
 
         {/* ── Page Header ────────────────────────────── */}
-        <div className="mb-8 flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/20">
-            <HeartHandshake className="h-6 w-6 text-white" />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-8 flex items-center gap-4"
+        >
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/20">
+            <HeartHandshake className="h-7 w-7 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-black tracking-tight text-gray-900 sm:text-3xl">
+            <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
               Friends
             </h1>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               Manage your connections and friend requests
             </p>
           </div>
-        </div>
+        </motion.div>
 
         {/* ── Main Layout ────────────────────────────── */}
         <div className="grid gap-6 lg:grid-cols-5">
           {/* Left Sidebar — Search + Pending */}
-          <div className="space-y-6 lg:col-span-2">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="space-y-6 lg:col-span-2"
+          >
             <AddFriendSearch
               ref={addFriendSearchRef}
               searchTerm={f.searchTerm}
@@ -102,7 +104,6 @@ export default function FriendsPage() {
               getOutgoingRequestId={f.getOutgoingRequestId}
               onClearSearch={f.clearSearch}
             />
-
             <PendingRequests
               incoming={f.pendingRequests}
               outgoing={f.outgoingRequests}
@@ -114,31 +115,36 @@ export default function FriendsPage() {
               onDecline={f.handleDeclineRequest}
               onCancel={f.handleCancelRequest}
             />
-          </div>
+          </motion.div>
 
-          {/* Right Content — Friends Grid or Empty State */}
-          <div className="lg:col-span-3">
+          {/* Right Content — Friends Grid */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="lg:col-span-3"
+          >
+            {/* Section Header */}
             <div className="mb-5 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50">
-                  <UserCheck className="h-3.5 w-3.5 text-emerald-600" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/10">
+                  <UserCheck className="h-4 w-4 text-emerald-600" />
                 </div>
-                <h2 className="text-sm font-bold text-gray-900">
+                <h2 className="text-base font-bold text-foreground">
                   Your Friends
                 </h2>
                 {hasFriends && (
-                  <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-600 ring-1 ring-inset ring-emerald-200">
+                  <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-bold text-emerald-600">
                     {f.friends.length}
                   </span>
                 )}
               </div>
             </div>
 
+            {/* Friends Grid or Empty State */}
             {friendsLoaded && !hasFriends ? (
               <div className="flex min-h-[60vh] items-center justify-center">
-                <FriendsEmptyState
-                  onFindFriends={() => addFriendSearchRef.current?.focusSearch()}
-                />
+                <FriendsEmptyState onFindFriends={() => addFriendSearchRef.current?.focusSearch()} />
               </div>
             ) : (
               <FriendsList
@@ -147,7 +153,7 @@ export default function FriendsPage() {
                 onRemoveFriend={f.handleRemoveFriend}
               />
             )}
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>
