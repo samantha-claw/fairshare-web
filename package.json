@@ -23,6 +23,7 @@
     "lucide-react": "^0.574.0",
     "next": "^14.2.35",
     "qrcode.react": "^4.2.0",
+    "radix-ui": "^1.4.3",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-qr-code": "^2.0.18",
