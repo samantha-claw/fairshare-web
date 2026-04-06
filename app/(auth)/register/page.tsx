@@ -1,4 +1,3 @@
-// app/(auth)/register/page.tsx
 "use client";
 
 import { useState, type FormEvent, type ChangeEvent } from "react";
@@ -18,6 +17,7 @@ import {
   XCircle,
   Sparkles,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function RegisterPage() {
@@ -43,9 +43,7 @@ export default function RegisterPage() {
   const [emailConfirmationSent, setEmailConfirmationSent] = useState(false);
 
   // Local format validation (instant, no DB)
-  const [usernameFormatValid, setUsernameFormatValid] = useState<
-    boolean | null
-  >(null);
+  const [usernameFormatValid, setUsernameFormatValid] = useState<boolean | null>(null);
   const usernameRegex = /^[a-z0-9_]{3,30}$/;
 
   // Live confirm-password match indicator
@@ -57,22 +55,17 @@ export default function RegisterPage() {
     pw: string
   ): { label: string; color: string; width: string } => {
     if (pw.length === 0) return { label: "", color: "", width: "0%" };
-    if (pw.length < 6)
-      return { label: "Too short", color: "bg-red-500", width: "20%" };
+    if (pw.length < 6) return { label: "Too short", color: "bg-negative", width: "20%" };
     let score = 0;
     if (pw.length >= 8) score++;
     if (/[A-Z]/.test(pw)) score++;
     if (/[0-9]/.test(pw)) score++;
     if (/[^A-Za-z0-9]/.test(pw)) score++;
     if (pw.length >= 12) score++;
-
-    if (score <= 1)
-      return { label: "Weak", color: "bg-orange-500", width: "40%" };
-    if (score <= 2)
-      return { label: "Fair", color: "bg-yellow-500", width: "60%" };
-    if (score <= 3)
-      return { label: "Strong", color: "bg-emerald-500", width: "80%" };
-    return { label: "Excellent", color: "bg-cyan-400", width: "100%" };
+    if (score <= 1) return { label: "Weak", color: "bg-orange-500", width: "40%" };
+    if (score <= 2) return { label: "Fair", color: "bg-amber-500", width: "60%" };
+    if (score <= 3) return { label: "Strong", color: "bg-positive", width: "80%" };
+    return { label: "Excellent", color: "bg-cyan-500", width: "100%" };
   };
 
   const passwordStrength = getPasswordStrength(password);
@@ -82,21 +75,16 @@ export default function RegisterPage() {
     const raw = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "");
     setUsername(raw);
     if (error) clearError();
-
     if (raw.length === 0) {
       setUsernameFormatValid(null);
       resetUsernameCheck();
       return;
     }
-
     const isFormatValid = usernameRegex.test(raw);
     setUsernameFormatValid(isFormatValid);
-
     if (isFormatValid) {
-      // Format is good → fire debounced availability check
       checkUsername(raw);
     } else {
-      // Format invalid → reset availability state
       resetUsernameCheck();
     }
   };
@@ -111,45 +99,36 @@ export default function RegisterPage() {
 
   // ── Derived: border class for username input ──
   const getUsernameBorderClass = (): string => {
-    if (username.length === 0) {
-      return "border-white/10 focus:border-purple-500/50 focus:ring-purple-500/20";
-    }
-    if (usernameFormatValid === false) {
-      return "border-red-500/30 focus:border-red-500/50 focus:ring-red-500/20";
-    }
-    // Format is valid → use availability status
+    if (username.length === 0) return "border-border focus:border-border-2 focus:ring-border/30";
+    if (usernameFormatValid === false) return "border-negative/50 focus:border-negative focus:ring-negative/30";
     switch (usernameStatus) {
       case "available":
-        return "border-emerald-500/30 focus:border-emerald-500/50 focus:ring-emerald-500/20";
+        return "border-positive/50 focus:border-positive focus:ring-positive/30";
       case "taken":
       case "error":
-        return "border-red-500/30 focus:border-red-500/50 focus:ring-red-500/20";
+        return "border-negative/50 focus:border-negative focus:ring-negative/30";
       case "checking":
-        return "border-purple-500/30 focus:border-purple-500/50 focus:ring-purple-500/20";
+        return "border-amber-500/50 focus:border-amber-500 focus:ring-amber-500/30";
       default:
-        return "border-white/10 focus:border-purple-500/50 focus:ring-purple-500/20";
+        return "border-border focus:border-border-2 focus:ring-border/30";
     }
   };
 
   // ── Derived: icon inside the username input ──
   const renderUsernameIcon = () => {
     if (username.length === 0) return null;
-
     if (usernameFormatValid === false) {
-      return <AlertCircle className="h-5 w-5 text-red-400" />;
+      return <AlertCircle className="h-5 w-5 text-negative" />;
     }
-
     switch (usernameStatus) {
       case "checking":
-        return (
-          <Loader2 className="h-5 w-5 animate-spin text-purple-400" />
-        );
+        return <Loader2 className="h-5 w-5 animate-spin text-amber-500" />;
       case "available":
-        return <CheckCircle2 className="h-5 w-5 text-emerald-400" />;
+        return <CheckCircle2 className="h-5 w-5 text-positive" />;
       case "taken":
-        return <XCircle className="h-5 w-5 text-red-400" />;
+        return <XCircle className="h-5 w-5 text-negative" />;
       case "error":
-        return <AlertCircle className="h-5 w-5 text-amber-400" />;
+        return <AlertCircle className="h-5 w-5 text-amber-500" />;
       default:
         return null;
     }
@@ -171,9 +150,8 @@ export default function RegisterPage() {
     usernameStatus === "error";
   const emailHasError = error?.field === "email";
   const passwordHasError = error?.field === "password";
-  const confirmPasswordHasError =
-    error?.field === "confirm_password" ||
-    confirmPasswordMatch === false;
+  const confirmPasswordHasError = error?.field === "confirm_password" || confirmPasswordMatch === false;
+
   const fullNameErrorMessage = fullNameHasError ? error?.message ?? "" : "";
   const usernameErrorMessage = (() => {
     if (error?.field === "username") return error.message;
@@ -192,19 +170,12 @@ export default function RegisterPage() {
     confirmPasswordMatch === false
       ? "Passwords do not match"
       : error?.field === "confirm_password"
-        ? error.message
-        : "";
-  const passwordAriaDescribedBy = (() => {
-    const ids: string[] = [];
-    if (password.length > 0) ids.push("password-strength");
-    if (passwordHasError) ids.push("password-error");
-    return ids.length > 0 ? ids.join(" ") : undefined;
-  })();
+      ? error.message
+      : "";
 
   // ── Form submit ──
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     const result = await signUp({
       email,
       password,
@@ -212,7 +183,6 @@ export default function RegisterPage() {
       username,
       fullName,
     });
-
     if (result && "confirmEmail" in result && result.confirmEmail) {
       setEmailConfirmationSent(true);
     }
@@ -221,67 +191,93 @@ export default function RegisterPage() {
   // ── Email Confirmation Success View ──
   if (emailConfirmationSent) {
     return (
-      <div className="w-full max-w-md">
-        <div className="rounded-3xl border border-white/10 bg-surface/[0.07] p-8 text-center shadow-2xl shadow-black/20 backdrop-blur-xl">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20">
-            <CheckCircle2 className="h-8 w-8 text-emerald-400" />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-md"
+      >
+        <div className="rounded-3xl border border-border bg-surface p-8 text-center shadow-lg">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-positive-bg">
+            <CheckCircle2 className="h-8 w-8 text-positive" />
           </div>
-          <h2 className="text-2xl font-bold text-white">Check your email</h2>
-          <p className="mt-3 text-sm leading-relaxed text-white/50">
+          <h2 className="text-2xl font-bold text-text-primary">Check your email</h2>
+          <p className="mt-3 text-sm leading-relaxed text-text-secondary">
             We&apos;ve sent a confirmation link to{" "}
-            <span className="font-medium text-white/70">{email}</span>. Click
-            the link to activate your account.
+            <span className="font-medium text-text-primary">{email}</span>. Click the link to activate your account.
           </p>
           <Link
             href="/login"
-            className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-surface/10 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-surface/20"
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-text-primary px-6 py-3 text-sm font-semibold text-surface transition-all hover:opacity-90"
           >
             Back to Sign In
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="w-full max-w-md">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="w-full max-w-md"
+    >
       {/* ── Logo / Header ── */}
       <div className="mb-8 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-cyan-500 shadow-lg shadow-purple-500/25">
-          <User className="h-8 w-8 text-white" strokeWidth={1.5} />
-        </div>
-        <h1 className="text-3xl font-bold tracking-tight text-white">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
+          className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-text-primary shadow-lg"
+        >
+          <User className="h-8 w-8 text-surface" strokeWidth={2} />
+        </motion.div>
+        <motion.h1
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="text-3xl font-black tracking-tight text-text-primary"
+        >
           Create account
-        </h1>
-        <p className="mt-2 text-sm text-white/50">
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="mt-2 text-sm text-text-secondary"
+        >
           Join us and start your journey today
-        </p>
+        </motion.p>
       </div>
 
-      {/* ── Glass Card ── */}
-      <div className="rounded-3xl border border-white/10 bg-surface/[0.07] p-8 shadow-2xl shadow-black/20 backdrop-blur-xl">
+      {/* ── Card ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="rounded-3xl border border-border bg-surface p-8 shadow-lg"
+      >
         {/* Error Banner */}
         {error && (
-          <div className="mb-6 flex items-start gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 backdrop-blur-sm">
-            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
-            <p className="text-sm leading-relaxed text-red-300">
-              {error.message}
-            </p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mb-6 flex items-start gap-3 rounded-xl border border-negative/30 bg-negative-bg px-4 py-3"
+          >
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-negative" />
+            <p className="text-sm text-negative">{error.message}</p>
+          </motion.div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* ── Full Name ── */}
           <div className="group">
-            <label
-              htmlFor="fullName"
-              className="mb-2 block text-xs font-semibold uppercase tracking-wider text-white/40"
-            >
+            <label htmlFor="fullName" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-text-secondary">
               Full Name
             </label>
             <div className="relative">
-              <User className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/30 transition-colors group-focus-within:text-purple-400" />
+              <User className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text-tertiary transition-colors group-focus-within:text-text-primary" />
               <input
                 id="fullName"
                 type="text"
@@ -295,30 +291,23 @@ export default function RegisterPage() {
                 aria-describedby="fullName-error"
                 aria-invalid={fullNameHasError}
                 required
-                className="w-full rounded-2xl border border-white/10 bg-surface/[0.05] py-3.5 pl-12 pr-4 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:border-purple-500/50 focus:bg-surface/[0.08] focus:ring-2 focus:ring-purple-500/20"
+                className="w-full rounded-xl border border-border bg-surface py-3.5 pl-12 pr-4 text-sm text-text-primary outline-none transition-all placeholder:text-text-tertiary focus:border-border-2 focus:ring-2 focus:ring-border/30"
               />
             </div>
-            <p
-              id="fullName-error"
-              className={
-                fullNameErrorMessage ? "mt-2 text-sm text-red-500" : "sr-only"
-              }
-              role="alert"
-            >
-              {fullNameErrorMessage}
-            </p>
+            {fullNameErrorMessage && (
+              <p id="fullName-error" className="mt-2 text-sm text-negative" role="alert">
+                {fullNameErrorMessage}
+              </p>
+            )}
           </div>
 
-          {/* ── Username (with real-time availability) ── */}
+          {/* ── Username ── */}
           <div className="group">
-            <label
-              htmlFor="username"
-              className="mb-2 block text-xs font-semibold uppercase tracking-wider text-white/40"
-            >
+            <label htmlFor="username" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-text-secondary">
               Username
             </label>
             <div className="relative">
-              <AtSign className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/30 transition-colors group-focus-within:text-purple-400" />
+              <AtSign className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text-tertiary transition-colors group-focus-within:text-text-primary" />
               <input
                 id="username"
                 type="text"
@@ -329,71 +318,43 @@ export default function RegisterPage() {
                 aria-describedby="username-error"
                 aria-invalid={usernameHasError}
                 required
-                className={`w-full rounded-2xl border bg-surface/[0.05] py-3.5 pl-12 pr-12 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:bg-surface/[0.08] focus:ring-2 ${getUsernameBorderClass()}`}
+                className={`w-full rounded-xl border bg-surface py-3.5 pl-12 pr-12 text-sm text-text-primary outline-none transition-all placeholder:text-text-tertiary focus:ring-2 ${getUsernameBorderClass()}`}
               />
-              {/* Dynamic right-side icon */}
-              <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                {renderUsernameIcon()}
-              </div>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2">{renderUsernameIcon()}</div>
             </div>
 
-            {/* ── Status messages ── */}
-
-            {/* Format hint (shown when idle or format-invalid) */}
-            {(usernameFormatValid === null ||
-              usernameFormatValid === false) && (
+            {/* Status messages */}
+            {(usernameFormatValid === null || usernameFormatValid === false) && (
               <div className="mt-2 flex items-center gap-1.5">
-                <Info className="h-3 w-3 text-white/20" />
-                <p
-                  className={`text-[11px] ${
-                    usernameFormatValid === false
-                      ? "text-red-400/80"
-                      : "text-white/25"
-                  }`}
-                >
+                <Info className="h-3 w-3 text-text-tertiary" />
+                <p className={`text-[11px] ${usernameFormatValid === false ? "text-negative" : "text-text-tertiary"}`}>
                   Lowercase letters, numbers, and underscores only (3-30 chars)
                 </p>
               </div>
             )}
-
-            {/* Checking */}
             {usernameFormatValid && usernameStatus === "checking" && (
               <div className="mt-2 flex items-center gap-1.5">
-                <Loader2 className="h-3 w-3 animate-spin text-purple-400" />
-                <p className="text-[11px] text-purple-400/90">
-                  Checking availability…
-                </p>
+                <Loader2 className="h-3 w-3 animate-spin text-amber-500" />
+                <p className="text-[11px] text-amber-600">Checking availability…</p>
               </div>
             )}
-
-            {/* Available */}
             {usernameFormatValid && usernameStatus === "available" && (
               <div className="mt-2 flex items-center gap-1.5">
-                <CheckCircle2 className="h-3 w-3 text-emerald-400" />
-                <p className="text-[11px] text-emerald-400">
-                  Username is available!
-                </p>
+                <CheckCircle2 className="h-3 w-3 text-positive" />
+                <p className="text-[11px] text-positive">Username is available!</p>
               </div>
             )}
-
-            {/* Taken + Suggestions */}
             {usernameFormatValid && usernameStatus === "taken" && (
               <div className="mt-2 space-y-2.5">
                 <div className="flex items-center gap-1.5">
-                  <XCircle className="h-3 w-3 text-red-400" />
-                  <p className="text-[11px] text-red-400">
-                    Username is taken.
-                  </p>
+                  <XCircle className="h-3 w-3 text-negative" />
+                  <p className="text-[11px] text-negative">Username is taken.</p>
                 </div>
-
-                {/* Smart Suggestions */}
                 {usernameSuggestions.length > 0 && (
-                  <div className="rounded-2xl border border-white/[0.06] bg-surface/[0.03] p-3">
+                  <div className="rounded-xl border border-border bg-surface-2 p-3">
                     <div className="mb-2 flex items-center gap-1.5">
-                      <Sparkles className="h-3 w-3 text-purple-400" />
-                      <p className="text-[11px] font-medium text-white/40">
-                        Available alternatives
-                      </p>
+                      <Sparkles className="h-3 w-3 text-text-primary" />
+                      <p className="text-[11px] font-medium text-text-secondary">Available alternatives</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {usernameSuggestions.map((suggestion) => (
@@ -401,10 +362,9 @@ export default function RegisterPage() {
                           key={suggestion}
                           type="button"
                           onClick={() => handleSelectSuggestion(suggestion)}
-                          className="group/pill flex items-center gap-1 rounded-xl border border-white/10 bg-surface/[0.05] px-3 py-1.5 text-xs font-medium text-purple-300 backdrop-blur-sm transition-all duration-200 hover:border-purple-500/40 hover:bg-purple-500/15 hover:text-purple-200 hover:shadow-md hover:shadow-purple-500/10 active:scale-95"
+                          className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text-primary transition-all hover:bg-surface-2 hover:shadow-sm active:scale-95"
                         >
-                          <AtSign className="h-3 w-3 opacity-50 transition-opacity group-hover/pill:opacity-100" />
-                          {suggestion}
+                          @{suggestion}
                         </button>
                       ))}
                     </div>
@@ -412,14 +372,10 @@ export default function RegisterPage() {
                 )}
               </div>
             )}
-
-            {/* Error state */}
             {usernameFormatValid && usernameStatus === "error" && (
               <div className="mt-2 flex items-center gap-1.5">
-                <AlertCircle className="h-3 w-3 text-amber-400" />
-                <p className="text-[11px] text-amber-400/80">
-                  Could not check availability. Try again.
-                </p>
+                <AlertCircle className="h-3 w-3 text-amber-500" />
+                <p className="text-[11px] text-amber-600">Could not check availability. Try again.</p>
               </div>
             )}
             <p id="username-error" className="sr-only" role="alert">
@@ -429,14 +385,11 @@ export default function RegisterPage() {
 
           {/* ── Email ── */}
           <div className="group">
-            <label
-              htmlFor="email"
-              className="mb-2 block text-xs font-semibold uppercase tracking-wider text-white/40"
-            >
+            <label htmlFor="email" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-text-secondary">
               Email Address
             </label>
             <div className="relative">
-              <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/30 transition-colors group-focus-within:text-purple-400" />
+              <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text-tertiary transition-colors group-focus-within:text-text-primary" />
               <input
                 id="email"
                 type="email"
@@ -450,28 +403,23 @@ export default function RegisterPage() {
                 aria-describedby="email-error"
                 aria-invalid={emailHasError}
                 required
-                className="w-full rounded-2xl border border-white/10 bg-surface/[0.05] py-3.5 pl-12 pr-4 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:border-purple-500/50 focus:bg-surface/[0.08] focus:ring-2 focus:ring-purple-500/20"
+                className="w-full rounded-xl border border-border bg-surface py-3.5 pl-12 pr-4 text-sm text-text-primary outline-none transition-all placeholder:text-text-tertiary focus:border-border-2 focus:ring-2 focus:ring-border/30"
               />
             </div>
-            <p
-              id="email-error"
-              className={emailErrorMessage ? "mt-2 text-sm text-red-500" : "sr-only"}
-              role="alert"
-            >
-              {emailErrorMessage}
-            </p>
+            {emailErrorMessage && (
+              <p id="email-error" className="mt-2 text-sm text-negative" role="alert">
+                {emailErrorMessage}
+              </p>
+            )}
           </div>
 
           {/* ── Password ── */}
           <div className="group">
-            <label
-              htmlFor="password"
-              className="mb-2 block text-xs font-semibold uppercase tracking-wider text-white/40"
-            >
+            <label htmlFor="password" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-text-secondary">
               Password
             </label>
             <div className="relative">
-              <Lock className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/30 transition-colors group-focus-within:text-purple-400" />
+              <Lock className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text-tertiary transition-colors group-focus-within:text-text-primary" />
               <input
                 id="password"
                 type={showPassword ? "text" : "password"}
@@ -482,64 +430,49 @@ export default function RegisterPage() {
                 }}
                 placeholder="••••••••"
                 autoComplete="new-password"
-                aria-describedby={passwordAriaDescribedBy}
+                aria-describedby="password-strength"
                 aria-invalid={passwordHasError}
                 required
                 minLength={6}
-                className="w-full rounded-2xl border border-white/10 bg-surface/[0.05] py-3.5 pl-12 pr-12 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:border-purple-500/50 focus:bg-surface/[0.08] focus:ring-2 focus:ring-purple-500/20"
+                className="w-full rounded-xl border border-border bg-surface py-3.5 pl-12 pr-12 text-sm text-text-primary outline-none transition-all placeholder:text-text-tertiary focus:border-border-2 focus:ring-2 focus:ring-border/30"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 transition-colors hover:text-white/60"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-text-tertiary transition-colors hover:text-text-primary"
                 tabIndex={-1}
               >
-                {showPassword ? (
-                  <EyeOff className="h-5 w-5" />
-                ) : (
-                  <Eye className="h-5 w-5" />
-                )}
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
-
             {/* Password Strength Meter */}
             {password.length > 0 && (
               <div className="mt-3">
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface/10">
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${passwordStrength.color}`}
                     style={{ width: passwordStrength.width }}
                   />
                 </div>
-                <p
-                  id="password-strength"
-                  className="mt-1.5 text-right text-[11px] text-white/30"
-                >
+                <p id="password-strength" className="mt-1.5 text-right text-[11px] text-text-tertiary">
                   {passwordStrength.label}
                 </p>
               </div>
             )}
-            <p
-              id="password-error"
-              className={
-                passwordErrorMessage ? "mt-2 text-sm text-red-500" : "sr-only"
-              }
-              role="alert"
-            >
-              {passwordErrorMessage}
-            </p>
+            {passwordErrorMessage && (
+              <p className="mt-2 text-sm text-negative" role="alert">
+                {passwordErrorMessage}
+              </p>
+            )}
           </div>
 
           {/* ── Confirm Password ── */}
           <div className="group">
-            <label
-              htmlFor="confirmPassword"
-              className="mb-2 block text-xs font-semibold uppercase tracking-wider text-white/40"
-            >
+            <label htmlFor="confirmPassword" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-text-secondary">
               Confirm Password
             </label>
             <div className="relative">
-              <Lock className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/30 transition-colors group-focus-within:text-purple-400" />
+              <Lock className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text-tertiary transition-colors group-focus-within:text-text-primary" />
               <input
                 id="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
@@ -554,93 +487,83 @@ export default function RegisterPage() {
                 aria-invalid={confirmPasswordHasError}
                 required
                 minLength={6}
-                className={`w-full rounded-2xl border bg-surface/[0.05] py-3.5 pl-12 pr-20 text-sm text-white placeholder-white/25 outline-none transition-all duration-300 focus:bg-surface/[0.08] focus:ring-2 ${
+                className={`w-full rounded-xl border bg-surface py-3.5 pl-12 pr-20 text-sm text-text-primary outline-none transition-all placeholder:text-text-tertiary focus:ring-2 ${
                   confirmPasswordMatch === null
-                    ? "border-white/10 focus:border-purple-500/50 focus:ring-purple-500/20"
+                    ? "border-border focus:border-border-2 focus:ring-border/30"
                     : confirmPasswordMatch
-                      ? "border-emerald-500/30 focus:border-emerald-500/50 focus:ring-emerald-500/20"
-                      : "border-red-500/30 focus:border-red-500/50 focus:ring-red-500/20"
+                    ? "border-positive/50 focus:border-positive focus:ring-positive/30"
+                    : "border-negative/50 focus:border-negative focus:ring-negative/30"
                 }`}
               />
               <div className="absolute right-4 top-1/2 flex -translate-y-1/2 items-center gap-2">
                 {confirmPasswordMatch !== null &&
                   (confirmPasswordMatch ? (
-                    <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                    <CheckCircle2 className="h-4 w-4 text-positive" />
                   ) : (
-                    <AlertCircle className="h-4 w-4 text-red-400" />
+                    <AlertCircle className="h-4 w-4 text-negative" />
                   ))}
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="text-white/30 transition-colors hover:text-white/60"
+                  className="text-text-tertiary transition-colors hover:text-text-primary"
                   tabIndex={-1}
                 >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
+                  {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
             </div>
-
-            {/* Mismatch hint */}
-            <p
-              id="confirmPassword-error"
-              className={
-                confirmPasswordErrorMessage
-                  ? "mt-2 text-sm text-red-500"
-                  : "sr-only"
-              }
-              role="alert"
-            >
-              {confirmPasswordErrorMessage}
-            </p>
+            {confirmPasswordErrorMessage && (
+              <p id="confirmPassword-error" className="mt-2 text-sm text-negative" role="alert">
+                {confirmPasswordErrorMessage}
+              </p>
+            )}
           </div>
 
           {/* ── Submit Button ── */}
           <button
             type="submit"
             disabled={isSubmitDisabled}
-            className="group relative mt-2 w-full overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-600 bg-[length:200%_100%] py-3.5 text-sm font-semibold text-white shadow-lg shadow-purple-500/25 transition-all duration-500 hover:bg-[position:100%_0] hover:shadow-xl hover:shadow-purple-500/30 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:ring-offset-2 focus:ring-offset-transparent disabled:cursor-not-allowed disabled:opacity-60"
+            className="group flex w-full items-center justify-center gap-2 rounded-xl bg-text-primary py-3.5 text-sm font-semibold text-surface shadow-lg transition-all hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? (
-              <span className="flex items-center justify-center gap-2">
+              <>
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Creating account…
-              </span>
+              </>
             ) : (
-              <span className="flex items-center justify-center gap-2">
+              <>
                 Create Account
-                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-              </span>
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </>
             )}
           </button>
         </form>
 
         {/* Divider */}
         <div className="my-6 flex items-center gap-4">
-          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-          <span className="text-xs text-white/30">OR</span>
-          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs text-text-tertiary">OR</span>
+          <div className="h-px flex-1 bg-border" />
         </div>
 
         {/* Login Link */}
-        <p className="text-center text-sm text-white/40">
+        <p className="text-center text-sm text-text-secondary">
           Already have an account?{" "}
-          <Link
-            href="/login"
-            className="font-semibold text-purple-400 transition-colors hover:text-purple-300"
-          >
+          <Link href="/login" className="font-semibold text-text-primary transition-colors hover:opacity-80">
             Sign in
           </Link>
         </p>
-      </div>
+      </motion.div>
 
-      {/* Footer accent */}
-      <p className="mt-8 text-center text-xs text-white/20">
+      {/* Footer */}
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        className="mt-8 text-center text-xs text-text-tertiary"
+      >
         By creating an account, you agree to our Terms of Service
-      </p>
-    </div>
+      </motion.p>
+    </motion.div>
   );
 }
