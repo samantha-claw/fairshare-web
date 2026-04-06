@@ -332,15 +332,6 @@ export default function CreateGroupPage() {
           type="button"
           onClick={g.handleCancel}
           disabled={g.saving}
-          className="mb-6 inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-medium text-text-secondary transition-all hover:bg-surface hover:text-text-primary hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Dashboard
-        </button>
-
-        {/* ── Main Form Card ───────────────────────── */}
-        <div className="relative overflow-hidden rounded-3xl border border-border bg-surface shadow-sm">
-          {/* Decorative Background */}
           <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-gradient-to-br from-surface-2/50 to-border/30 blur-3xl" />
           <div className="absolute -bottom-16 -left-16 h-40 w-40 rounded-full bg-gradient-to-tr from-surface-2/30 to-border/20 blur-2xl" />
 
