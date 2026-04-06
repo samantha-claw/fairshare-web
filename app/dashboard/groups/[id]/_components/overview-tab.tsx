@@ -1,9 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { formatCurrency } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
-import { Wallet, TrendingUp, TrendingDown, Eye, EyeOff, Users } from "lucide-react";
+import { motion, useSpring, useTransform, animate } from "framer-motion";
+import {
+  Wallet,
+  TrendingUp,
+  TrendingDown,
+  Eye,
+  EyeOff,
+  Users,
+  ArrowUpRight,
+  ArrowDownRight,
+  DollarSign,
+} from "lucide-react";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import type { Balance } from "@/types/group";
@@ -16,6 +26,154 @@ interface OverviewTabProps {
   currentUserId: string | null;
 }
 
+// Animated Balance Card Component
+interface AnimatedBalanceCardProps {
+  title: string;
+  subtitle: string;
+  amount: number;
+  currency: string;
+  isPositive?: boolean | null;
+  isVisible: boolean;
+  onToggleVisibility: () => void;
+  icon: React.ReactNode;
+  accentColor?: "positive" | "negative" | "neutral";
+}
+
+function AnimatedBalanceCard({
+  title,
+  subtitle,
+  amount,
+  currency,
+  isPositive,
+  isVisible,
+  onToggleVisibility,
+  icon,
+  accentColor = "neutral",
+}: AnimatedBalanceCardProps) {
+  const springValue = useSpring(0, { damping: 100, stiffness: 100 });
+  const displayValue = useTransform(springValue, (latest) => {
+    return formatCurrency(latest, currency);
+  });
+
+  useEffect(() => {
+    const controls = animate(springValue, Math.abs(amount), {
+      duration: 2,
+      ease: "easeOut",
+    });
+    return () => controls.stop();
+  }, [amount, springValue]);
+
+  const getAccentClasses = () => {
+    if (accentColor === "positive") {
+      return "from-positive/10 via-background to-background";
+    }
+    if (accentColor === "negative") {
+      return "from-negative/10 via-background to-background";
+    }
+    return "from-surface-2 via-background to-background";
+  };
+
+  const getIconBgClass = () => {
+    if (accentColor === "positive") {
+      return "bg-positive/10";
+    }
+    if (accentColor === "negative") {
+      return "bg-negative/10";
+    }
+    return "bg-surface-2";
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className={`rounded-3xl border border-border bg-gradient-to-br ${getAccentClasses()} p-6 shadow-lg relative overflow-hidden`}
+    >
+      {/* Animated background glow */}
+      <motion.div
+        className="absolute w-32 h-32 rounded-full bg-text-primary/5 blur-3xl"
+        animate={{
+          top: ["10%", "70%", "10%"],
+          left: ["10%", "80%", "10%"],
+        }}
+        transition={{
+          duration: 15,
+          repeat: Infinity,
+          ease: "linear",
+        }}
+      />
+
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${getIconBgClass()}`}>
+              {icon}
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-text-primary">{title}</h2>
+              <p className="text-xs text-text-secondary">{subtitle}</p>
+            </div>
+          </div>
+          <button
+            onClick={onToggleVisibility}
+            className="flex items-center justify-center w-8 h-8 rounded-full bg-surface-2 hover:bg-surface-2/80 transition-colors"
+          >
+            {isVisible ? (
+              <Eye className="w-4 h-4 text-text-secondary" />
+            ) : (
+              <EyeOff className="w-4 h-4 text-text-secondary" />
+            )}
+          </button>
+        </div>
+
+        {/* Balance Amount */}
+        <div className="flex items-baseline gap-2">
+          {isVisible ? (
+            <>
+              <DollarSign className="w-5 h-5 text-text-secondary mt-1" />
+              <motion.span className="text-4xl font-bold tracking-tight text-text-primary">
+                {displayValue}
+              </motion.span>
+            </>
+          ) : (
+            <span className="text-4xl font-bold tracking-tight text-text-primary">
+              ••••••
+            </span>
+          )}
+        </div>
+
+        {/* Status indicator */}
+        {isPositive !== null && isPositive !== undefined && (
+          <div className="flex items-center gap-2 mt-3">
+            <span
+              className={`flex items-center justify-center rounded-full p-1 ${
+                isPositive ? "bg-positive/20" : "bg-negative/20"
+              }`}
+            >
+              {isPositive ? (
+                <ArrowUpRight className="w-3 h-3 text-positive" />
+              ) : (
+                <ArrowDownRight className="w-3 h-3 text-negative" />
+              )}
+            </span>
+            <p className="text-sm text-text-secondary">
+              <span
+                className={`font-semibold ${
+                  isPositive ? "text-positive" : "text-negative"
+                }`}
+              >
+                {isPositive ? "You are owed" : "You owe"}
+              </span>
+            </p>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
 export function OverviewTab({
   totalGroupExpenses,
   myNetBalance,
@@ -23,123 +181,79 @@ export function OverviewTab({
   currency,
   currentUserId,
 }: OverviewTabProps) {
-  const [showBalances, setShowBalances] = useState(false);
+  const [showTotal, setShowTotal] = useState(true);
+  const [showMyBalance, setShowMyBalance] = useState(true);
+  const [showGroupBalances, setShowGroupBalances] = useState(false);
+
   const isPositive = myNetBalance > 0;
   const isNegative = myNetBalance < 0;
 
   return (
     <div className="space-y-6">
-      {/* Total Group Expenses */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="rounded-2xl border border-border bg-surface p-6"
-      >
-        <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-surface-2">
-            <Wallet className="h-7 w-7 text-text-primary" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-text-secondary">
-              Total Group Expenses
-            </p>
-            <p className="text-3xl font-bold text-text-primary">
-              {formatCurrency(totalGroupExpenses, currency)}
-            </p>
-          </div>
-        </div>
-      </motion.div>
+      {/* Balance Cards Grid */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {/* Total Group Expenses */}
+        <AnimatedBalanceCard
+          title="Total Expenses"
+          subtitle="All group expenses"
+          amount={totalGroupExpenses}
+          currency={currency}
+          isVisible={showTotal}
+          onToggleVisibility={() => setShowTotal(!showTotal)}
+          icon={<Wallet className="w-5 h-5 text-text-primary" />}
+          accentColor="neutral"
+        />
 
-      {/* My Balance */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.1 }}
-        className={`rounded-2xl border bg-surface p-6 ${
-          isPositive
-            ? "border-positive/30"
-            : isNegative
-            ? "border-negative/30"
-            : "border-border"
-        }`}
-      >
-        <div className="flex items-center gap-4">
-          <div
-            className={`flex h-14 w-14 items-center justify-center rounded-xl ${
-              isPositive
-                ? "bg-positive/10"
-                : isNegative
-                ? "bg-negative/10"
-                : "bg-surface-2"
-            }`}
-          >
-            {isPositive ? (
-              <TrendingUp className="h-7 w-7 text-positive" />
-            ) : isNegative ? (
-              <TrendingDown className="h-7 w-7 text-negative" />
+        {/* My Balance */}
+        <AnimatedBalanceCard
+          title="My Balance"
+          subtitle="Your net position"
+          amount={Math.abs(myNetBalance)}
+          currency={currency}
+          isPositive={myNetBalance !== 0 ? isPositive : null}
+          isVisible={showMyBalance}
+          onToggleVisibility={() => setShowMyBalance(!showMyBalance)}
+          icon={
+            myNetBalance > 0 ? (
+              <TrendingUp className="w-5 h-5 text-positive" />
+            ) : myNetBalance < 0 ? (
+              <TrendingDown className="w-5 h-5 text-negative" />
             ) : (
-              <Wallet className="h-7 w-7 text-text-secondary" />
-            )}
-          </div>
-          <div>
-            <p className="text-sm font-medium text-text-secondary">
-              My Balance
-            </p>
-            <div className="flex items-baseline gap-2">
-              <p
-                className={`text-3xl font-bold ${
-                  isPositive
-                    ? "text-positive"
-                    : isNegative
-                    ? "text-negative"
-                    : "text-text-primary"
-                }`}
-              >
-                {isPositive && "+"}
-                {formatCurrency(myNetBalance, currency)}
-              </p>
-            </div>
-            <p className="text-xs text-text-tertiary mt-1">
-              {isPositive
-                ? "You are owed money"
-                : isNegative
-                ? "You owe money"
-                : "All settled up"}
-            </p>
-          </div>
-        </div>
-      </motion.div>
+              <Wallet className="w-5 h-5 text-text-secondary" />
+            )
+          }
+          accentColor={
+            myNetBalance > 0 ? "positive" : myNetBalance < 0 ? "negative" : "neutral"
+          }
+        />
+      </div>
 
-      {/* Net Balance Section (from Group Balances) */}
+      {/* Group Balances Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.2 }}
-        className="rounded-2xl border border-border bg-surface overflow-hidden"
+        className="rounded-3xl border border-border bg-surface overflow-hidden shadow-lg"
       >
         {/* Header with Eye Toggle */}
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-text-secondary" />
-            <h3 className="font-semibold text-text-primary">
-              Group Balances
-            </h3>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center">
+              <Users className="w-5 h-5 text-text-primary" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-text-primary">Group Balances</h3>
+              <p className="text-xs text-text-secondary">Who owes whom</p>
+            </div>
           </div>
           <button
-            onClick={() => setShowBalances(!showBalances)}
-            className="flex items-center gap-1.5 rounded-lg border border-border bg-surface-2 px-3 py-1.5 text-sm font-medium text-text-secondary transition-all hover:bg-surface-2"
+            onClick={() => setShowGroupBalances(!showGroupBalances)}
+            className="flex items-center justify-center w-8 h-8 rounded-full bg-surface-2 hover:bg-surface-2/80 transition-colors"
           >
-            {showBalances ? (
-              <>
-                <EyeOff className="h-4 w-4" />
-                Hide
-              </>
+            {showGroupBalances ? (
+              <EyeOff className="w-4 h-4 text-text-secondary" />
             ) : (
-              <>
-                <Eye className="h-4 w-4" />
-                Show
-              </>
+              <Eye className="w-4 h-4 text-text-secondary" />
             )}
           </button>
         </div>
@@ -163,52 +277,49 @@ export function OverviewTab({
                 return (
                   <motion.div
                     key={bal.user_id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
                     className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
                   >
                     <Link
                       href={`/dashboard/profile/${bal.user_id}`}
-                      className="flex min-w-0 flex-1 items-center gap-3 hover:opacity-80"
+                      className="flex min-w-0 flex-1 items-center gap-3 hover:opacity-80 transition-opacity"
                     >
                       <Avatar
                         src={bal.avatar_url}
                         name={bal.display_name}
-                        size="sm"
+                        size="md"
                       />
                       <span className="truncate text-sm font-medium text-text-primary">
                         {bal.display_name}
                         {isCurrentUser && (
-                          <span className="text-text-tertiary"> (you)</span>
+                          <span className="text-text-tertiary ml-1">(you)</span>
                         )}
                       </span>
                     </Link>
 
                     <div className="shrink-0 text-right">
                       {balIsSettled ? (
-                        <span className="inline-flex items-center rounded-full bg-surface-2 px-2.5 py-1 text-xs font-medium text-text-tertiary">
+                        <span className="inline-flex items-center rounded-full bg-surface-2 px-3 py-1 text-xs font-medium text-text-tertiary">
                           Settled
                         </span>
-                      ) : showBalances ? (
+                      ) : showGroupBalances ? (
                         <div className="flex flex-col items-end">
                           <span
-                            className={`flex items-center gap-1 text-sm font-bold tabular-nums ${
-                              balIsPositive
-                                ? "text-positive"
-                                : "text-negative"
+                            className={`flex items-center gap-1 text-base font-bold tabular-nums ${
+                              balIsPositive ? "text-positive" : "text-negative"
                             }`}
                           >
                             {balIsPositive ? (
-                              <TrendingUp className="h-3.5 w-3.5" />
+                              <ArrowUpRight className="w-4 h-4" />
                             ) : (
-                              <TrendingDown className="h-3.5 w-3.5" />
+                              <ArrowDownRight className="w-4 h-4" />
                             )}
-                            {balIsPositive ? "+" : "-"}
                             {formatCurrency(Math.abs(bal.net_balance), currency)}
                           </span>
                           <span
-                            className={`text-[10px] font-medium ${
+                            className={`text-xs font-medium ${
                               balIsPositive ? "text-positive" : "text-negative"
                             }`}
                           >
@@ -222,7 +333,7 @@ export function OverviewTab({
                           </span>
                         </div>
                       ) : (
-                        <span className="text-sm font-medium text-text-tertiary">
+                        <span className="text-base font-medium text-text-tertiary">
                           ••••••
                         </span>
                       )}
