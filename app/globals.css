@@ -24,12 +24,14 @@
   --negative: #DC2626;
   --negative-bg: rgba(220, 38, 38, 0.08);
 
-  /* Sidebar (always dark) */
-  --sidebar-bg: #111111;
-  --sidebar-border: #222222;
-  --sidebar-text: #AAAAAA;
-  --sidebar-active: #FFFFFF;
-  --sidebar-hover: rgba(255,255,255,0.06);
+  /* Sidebar (theme-aware) */
+  --sidebar-bg: #F2F2F2;
+  --sidebar-border: #E4E4E4;
+  --sidebar-text: #666666;
+  --sidebar-active: #111111;
+  --sidebar-hover: rgba(0,0,0,0.05);
+  --sidebar-logo-text: #111111;
+  --sidebar-logo-bg: rgba(0,0,0,0.05);
 }
 
 html.dark {
@@ -42,7 +44,14 @@ html.dark {
   --text-secondary: #888888;
   --text-tertiary: #555555;
 
-  /* Sidebar stays identical in both modes */
+  /* Sidebar (dark mode) */
+  --sidebar-bg: #141414;
+  --sidebar-border: #2A2A2A;
+  --sidebar-text: #888888;
+  --sidebar-active: #F0F0F0;
+  --sidebar-hover: rgba(255,255,255,0.05);
+  --sidebar-logo-text: #F0F0F0;
+  --sidebar-logo-bg: rgba(255,255,255,0.05);
 }
 
 /* ==========================================
@@ -63,6 +72,11 @@ html.dark {
   --color-negative-bg: var(--negative-bg);
   --color-sidebar-bg: var(--sidebar-bg);
   --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-text: var(--sidebar-text);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-hover: var(--sidebar-hover);
+  --color-sidebar-logo-text: var(--sidebar-logo-text);
+  --color-sidebar-logo-bg: var(--sidebar-logo-bg);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
