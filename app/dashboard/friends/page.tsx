@@ -4,13 +4,12 @@
 // 📦 IMPORTS
 // ==========================================
 import { useRef, useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useFriends } from "@/hooks/use-friends";
-import { Spinner } from "@/components/ui/spinner";
-import { AddFriendSearch, type AddFriendSearchHandle } from "./_components/add-friend-search";
 import { PendingRequests } from "./_components/pending-requests";
 import { FriendsList } from "./_components/friends-list";
 import { FriendsEmptyState } from "@/components/ui/empty-states";
-import { HeartHandshake, UserCheck, Search, SortAsc, SortDesc } from "lucide-react";
+import { HeartHandshake, UserCheck, UserPlus, Search, SortAsc, SortDesc } from "lucide-react";
 import { motion } from "framer-motion";
 import {
   Select,
@@ -46,8 +45,8 @@ function PageSkeleton() {
 // 🎨 UI RENDER — PAGE
 // ==========================================
 export default function FriendsPage() {
+  const router = useRouter();
   const f = useFriends();
-  const addFriendSearchRef = useRef<AddFriendSearchHandle>(null);
   
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("name");
@@ -77,7 +76,6 @@ export default function FriendsPage() {
           comparison = aName.localeCompare(bName);
           break;
         case "recent":
-          // Use created_at as proxy for when friendship was established
           const aDate = (a as any).created_at || "";
           const bDate = (b as any).created_at || "";
           comparison = new Date(bDate).getTime() - new Date(aDate).getTime();
@@ -99,7 +97,6 @@ export default function FriendsPage() {
 
   const hasFriends = f.friends.length > 0;
   const friendsLoaded = !f.loadingFriends;
-  const filteredCount = filteredAndSortedFriends.length;
 
   return (
     <div className="min-h-screen bg-surface pb-20 md:pb-10">
@@ -109,45 +106,44 @@ export default function FriendsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="mb-8 flex items-center gap-4"
+          className="mb-8 flex items-center justify-between gap-4"
         >
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-text-primary shadow-lg">
-            <HeartHandshake className="h-7 w-7 text-surface" />
+          <div className="flex items-center gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-text-primary shadow-lg">
+              <HeartHandshake className="h-7 w-7 text-surface" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-black tracking-tight text-text-primary sm:text-4xl">
+                Friends
+              </h1>
+              <p className="text-sm text-text-secondary">
+                {hasFriends ? `${f.friends.length} connection${f.friends.length !== 1 ? "s" : ""}` : "Manage your connections"}
+                {f.pendingRequests.length > 0 && ` · ${f.pendingRequests.length} pending`}
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl font-black tracking-tight text-text-primary sm:text-4xl">
-              Friends
-            </h1>
-            <p className="text-sm text-text-secondary">
-              {hasFriends ? `${f.friends.length} connection${f.friends.length !== 1 ? "s" : ""}` : "Manage your connections"}
-              {f.pendingRequests.length > 0 && ` · ${f.pendingRequests.length} pending`}
-            </p>
-          </div>
+          
+          {/* Add Friend Button */}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => router.push("/dashboard/friends/add")}
+            className="flex items-center gap-2 rounded-xl bg-text-primary px-4 py-2.5 text-sm font-semibold text-surface shadow-sm transition-all hover:opacity-90"
+          >
+            <UserPlus className="h-4 w-4" />
+            <span className="hidden sm:inline">Add Friend</span>
+          </motion.button>
         </motion.div>
 
         {/* ── Main Layout ────────────────────────────── */}
         <div className="grid gap-6 lg:grid-cols-5">
-          {/* Left Sidebar — Search + Pending */}
+          {/* Left Sidebar — Pending Requests */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
             className="space-y-6 lg:col-span-2"
           >
-            <AddFriendSearch
-              ref={addFriendSearchRef}
-              searchTerm={f.searchTerm}
-              onSearchTermChange={f.setSearchTerm}
-              searchResults={f.searchResults}
-              searching={f.searching}
-              sendingToId={f.sendingToId}
-              cancellingId={f.cancellingId}
-              onSendRequest={f.handleSendRequest}
-              onCancelRequest={f.handleCancelRequest}
-              isOutgoingPending={f.isOutgoingPending}
-              getOutgoingRequestId={f.getOutgoingRequestId}
-              onClearSearch={f.clearSearch}
-            />
             <PendingRequests
               incoming={f.pendingRequests}
               outgoing={f.outgoingRequests}
@@ -232,9 +228,9 @@ export default function FriendsPage() {
             {/* Friends Grid or Empty State */}
             {friendsLoaded && !hasFriends ? (
               <div className="flex min-h-[60vh] items-center justify-center">
-                <FriendsEmptyState onFindFriends={() => addFriendSearchRef.current?.focusSearch()} />
+                <FriendsEmptyState onFindFriends={() => router.push("/dashboard/friends/add")} />
               </div>
-            ) : searchQuery && filteredCount === 0 ? (
+            ) : searchQuery && filteredAndSortedFriends.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Search className="h-12 w-12 text-text-tertiary mb-4" />
                 <p className="text-lg font-semibold text-text-primary mb-1">

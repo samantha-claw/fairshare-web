@@ -3,16 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  Users,
-  FolderOpen,
-  Settings,
-  LogOut,
-  Sun,
-  Moon,
-  User,
-} from "lucide-react";
+import { LayoutDashboard, Users, FolderOpen, Settings, LogOut, Sun, Moon, User } from "lucide-react";
 import { useTheme } from "@/providers/theme-provider";
 
 interface SidebarProps {
@@ -34,15 +25,9 @@ function isActive(pathname: string, href: string): boolean {
   return pathname.startsWith(href);
 }
 
-export function Sidebar({
-  displayName,
-  avatarUrl,
-  onSignOut,
-  isMobile = false,
-}: SidebarProps) {
+export function Sidebar({ displayName, avatarUrl, onSignOut, isMobile = false }: SidebarProps) {
   const pathname = usePathname();
   const { isDark, toggle } = useTheme();
-
   const initials = displayName
     ? displayName
         .split(" ")
@@ -63,10 +48,10 @@ export function Sidebar({
       {/* ── Logo ── */}
       <div>
         <Link href="/dashboard" className="flex items-center gap-3 px-2 mb-8">
-          <div className="w-8 h-8 rounded-lg bg-surface/10 flex items-center justify-center border border-white/10">
-            <span className="text-xs font-black text-white">FS</span>
+          <div className="w-8 h-8 rounded-lg bg-sidebar-logo-bg flex items-center justify-center border border-sidebar-border">
+            <span className="text-xs font-black text-sidebar-logo-text">FS</span>
           </div>
-          <span className="font-bold text-base tracking-tight text-white">
+          <span className="font-bold text-base tracking-tight text-sidebar-active">
             FairShare
           </span>
         </Link>
@@ -81,8 +66,8 @@ export function Sidebar({
                 href={href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                   active
-                    ? "bg-surface/10 text-white"
-                    : "text-sidebar-text hover:bg-surface/5 hover:text-white"
+                    ? "bg-sidebar-hover text-sidebar-active"
+                    : "text-sidebar-text hover:bg-sidebar-hover hover:text-sidebar-active"
                 }`}
               >
                 <Icon className="h-4 w-4 flex-shrink-0" />
@@ -100,8 +85,8 @@ export function Sidebar({
           href="/dashboard/profile"
           className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
             isActive(pathname, "/dashboard/profile")
-              ? "bg-surface/10 text-white"
-              : "text-sidebar-text hover:bg-surface/5 hover:text-white"
+              ? "bg-sidebar-hover text-sidebar-active"
+              : "text-sidebar-text hover:bg-sidebar-hover hover:text-sidebar-active"
           }`}
         >
           <User className="h-4 w-4 flex-shrink-0" />
@@ -111,7 +96,7 @@ export function Sidebar({
         {/* Theme toggle */}
         <button
           onClick={toggle}
-          className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-sidebar-text hover:bg-surface/5 hover:text-white transition-colors"
+          className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-sidebar-text hover:bg-sidebar-hover hover:text-sidebar-active transition-colors"
         >
           {isDark ? (
             <Sun className="h-4 w-4 flex-shrink-0" />
@@ -124,7 +109,7 @@ export function Sidebar({
         {/* Sign out */}
         <button
           onClick={onSignOut}
-          className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-sidebar-text hover:bg-red-500/10 hover:text-red-400 transition-colors"
+          className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-sidebar-text hover:bg-negative-bg hover:text-negative transition-colors"
         >
           <LogOut className="h-4 w-4 flex-shrink-0" />
           Sign out
