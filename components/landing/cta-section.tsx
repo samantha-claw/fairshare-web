@@ -13,34 +13,28 @@ export function CTASection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="relative rounded-3xl bg-surface dark:bg-text-primary p-8 sm:p-12 text-center overflow-hidden border border-border"
+          className="relative rounded-3xl bg-text-primary dark:bg-surface p-8 sm:p-12 text-center overflow-hidden border border-border"
         >
-          {/* Background decoration */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 left-0 w-40 h-40 rounded-full bg-surface blur-3xl" />
-            <div className="absolute bottom-0 right-0 w-60 h-60 rounded-full bg-surface blur-3xl" />
-          </div>
-
           {/* Content */}
           <div className="relative z-10">
-            <h2 className="text-2xl sm:text-3xl font-bold text-text-primary dark:text-surface mb-4">
+            <h2 className="text-2xl sm:text-3xl font-bold text-surface dark:text-text-primary mb-4">
               Ready to split expenses fairly?
             </h2>
-            <p className="text-text-secondary dark:text-surface/80 mb-8 max-w-lg mx-auto">
-              Join thousands of users who've simplified their group expenses. 
+            <p className="text-surface/80 dark:text-text-secondary mb-8 max-w-lg mx-auto">
+              Join thousands of users who&apos;ve simplified their group expenses. 
               Free forever, no credit card required.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/register"
-                className="inline-flex items-center gap-2 rounded-full bg-text-primary dark:bg-surface px-8 py-4 text-base font-medium text-surface dark:text-text-primary shadow-lg transition-all hover:opacity-90"
+                className="inline-flex items-center gap-2 rounded-full bg-surface dark:bg-text-primary px-8 py-4 text-base font-medium text-text-primary dark:text-surface shadow-lg transition-all hover:opacity-90"
               >
                 Get started free
                 <ArrowRight className="h-5 w-5" />
               </Link>
               <Link
                 href="/login"
-                className="inline-flex items-center justify-center rounded-full border border-border dark:border-surface/30 px-8 py-4 text-base font-medium text-text-primary dark:text-surface transition-colors hover:bg-surface-2 dark:hover:bg-surface/10"
+                className="inline-flex items-center justify-center rounded-full border border-surface/30 dark:border-border px-8 py-4 text-base font-medium text-surface dark:text-text-primary transition-colors hover:bg-surface/10 dark:hover:bg-surface-2"
               >
                 Sign in
               </Link>
