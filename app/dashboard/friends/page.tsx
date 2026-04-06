@@ -202,7 +202,7 @@ export default function FriendsPage() {
                   </div>
 
                   {/* Sort Dropdown */}
-                  <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+                  <Select value={sortBy} onValueChange={(v: string) => setSortBy(v as SortOption)}>
                     <SelectTrigger className="w-[130px]">
                       <SelectValue placeholder="Sort by..." />
                     </SelectTrigger>
