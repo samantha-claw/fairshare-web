@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Bell, Check, UserPlus, HandCoins, Receipt, Users, Loader2, ArrowLeft } from "lucide-react";
+import { Bell, Check, UserPlus, HandCoins, Receipt, Users, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { EmptyState, AgentSplitIllustration } from "@/components/ui/empty-states";
 
@@ -208,14 +207,6 @@ export default function NotificationsPage() {
           transition={{ delay: 0.1 }}
           className="mb-8"
         >
-          <Link
-            href="/dashboard"
-            className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
-          </Link>
-
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-text-primary shadow-lg">

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, FolderOpen, Settings, LogOut, Sun, Moon, User } from "lucide-react";
+import { LayoutDashboard, Users, FolderOpen, Settings, LogOut, Sun, Moon, User, Bell } from "lucide-react";
 import { useTheme } from "@/providers/theme-provider";
 
 interface SidebarProps {
@@ -17,6 +17,7 @@ const NAV_ITEMS = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Groups", href: "/dashboard/groups", icon: FolderOpen },
   { label: "Friends", href: "/dashboard/friends", icon: Users },
+  { label: "Notifications", href: "/dashboard/notifications", icon: Bell },
   { label: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
