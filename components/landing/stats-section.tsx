@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useSpring, useInView, useTransform, useScroll } from "framer-motion";
+import { motion, useSpring, useInView, useTransform } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { Users, Receipt, Globe, TrendingUp } from "lucide-react";
 
@@ -67,31 +67,9 @@ function StatCounter({
 }
 
 export function StatsSection() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"],
-  });
-
-  const y1 = useTransform(scrollYProgress, [0, 1], [0, -30]);
-  const y2 = useTransform(scrollYProgress, [0, 1], [0, 30]);
-
   return (
-    <section
-      ref={sectionRef}
-      className="py-24 px-4 sm:px-6 bg-surface relative overflow-hidden"
-    >
-      {/* Decorative elements */}
-      <motion.div
-        className="absolute top-20 left-10 w-64 h-64 rounded-full bg-border/30 blur-3xl"
-        style={{ y: y1 }}
-      />
-      <motion.div
-        className="absolute bottom-20 right-10 w-80 h-80 rounded-full bg-border/20 blur-3xl"
-        style={{ y: y2 }}
-      />
-
-      <div className="mx-auto max-w-6xl relative z-10">
+    <section className="py-24 px-4 sm:px-6 bg-surface">
+      <div className="mx-auto max-w-6xl">
         {/* Section header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

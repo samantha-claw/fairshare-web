@@ -20,20 +20,20 @@ export default function LandingPage() {
       {/* Scrolling feature marquee */}
       <FeatureMarquee />
 
-      {/* How it works */}
-      <HowItWorksSection />
-
       {/* Features grid */}
       <FeaturesSection />
+
+      {/* How it works */}
+      <HowItWorksSection />
 
       {/* Stats */}
       <StatsSection />
 
-      {/* Pricing */}
-      <PricingSection />
-
       {/* Testimonials */}
       <TestimonialsSection />
+
+      {/* Pricing */}
+      <PricingSection />
 
       {/* FAQ */}
       <FAQSection />
