@@ -1,6 +1,8 @@
 "use client";
 
-import { TrendingDown, Wallet, ArrowRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { TrendingDown, TrendingUp, Wallet, ArrowRight, Eye, EyeOff, DollarSign, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { motion, useSpring, useTransform, animate } from "framer-motion";
 import type { GroupBalance } from "@/types/dashboard";
 
 interface OverviewWidgetProps {
@@ -10,85 +12,215 @@ interface OverviewWidgetProps {
   groups: GroupBalance[];
 }
 
+// Animated Balance Card Component
+interface AnimatedBalanceCardProps {
+  title: string;
+  amount: number;
+  currency: string;
+  type: "owe" | "owed";
+  isVisible: boolean;
+  onToggleVisibility: () => void;
+}
+
+function AnimatedBalanceCard({
+  title,
+  amount,
+  currency,
+  type,
+  isVisible,
+  onToggleVisibility,
+}: AnimatedBalanceCardProps) {
+  const springValue = useSpring(0, { damping: 100, stiffness: 100 });
+  const displayValue = useTransform(springValue, (latest) => {
+    if (latest >= 1000) {
+      return `${(latest / 1000).toFixed(1)}k`;
+    }
+    return latest.toLocaleString();
+  });
+
+  useEffect(() => {
+    const controls = animate(springValue, amount, {
+      duration: 2,
+      ease: "easeOut",
+    });
+    return () => controls.stop();
+  }, [amount, springValue]);
+
+  const isOwe = type === "owe";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className={`rounded-3xl border p-6 shadow-lg relative overflow-hidden ${
+        isOwe
+          ? "bg-gradient-to-br from-negative/10 via-surface to-surface border-negative/20"
+          : "bg-gradient-to-br from-positive/10 via-surface to-surface border-positive/20"
+      }`}
+    >
+      {/* Animated background glow */}
+      <motion.div
+        className={`absolute w-32 h-32 rounded-full blur-3xl ${
+          isOwe ? "bg-negative/10" : "bg-positive/10"
+        }`}
+        animate={{
+          top: ["10%", "70%", "10%"],
+          left: ["10%", "80%", "10%"],
+        }}
+        transition={{
+          duration: 15,
+          repeat: Infinity,
+          ease: "linear",
+        }}
+      />
+
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div
+              className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                isOwe ? "bg-negative/10" : "bg-positive/10"
+              }`}
+            >
+              {isOwe ? (
+                <TrendingDown className="w-5 h-5 text-negative" />
+              ) : (
+                <TrendingUp className="w-5 h-5 text-positive" />
+              )}
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-text-primary">{title}</h2>
+              <p className="text-xs text-text-secondary">
+                {isOwe ? "Outstanding debts" : "Pending payments"}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onToggleVisibility}
+            className="flex items-center justify-center w-8 h-8 rounded-full bg-surface-2 hover:bg-surface-2/80 transition-colors"
+          >
+            {isVisible ? (
+              <Eye className="w-4 h-4 text-text-secondary" />
+            ) : (
+              <EyeOff className="w-4 h-4 text-text-secondary" />
+            )}
+          </button>
+        </div>
+
+        {/* Balance Amount */}
+        <div className="flex items-baseline gap-2">
+          {isVisible ? (
+            <>
+              <DollarSign className="w-5 h-5 text-text-secondary mt-1" />
+              <motion.span className={`text-4xl font-bold tracking-tight ${
+                isOwe ? "text-negative" : "text-positive"
+              }`}>
+                {displayValue}
+              </motion.span>
+            </>
+          ) : (
+            <span className="text-4xl font-bold tracking-tight text-text-primary">
+              ••••••
+            </span>
+          )}
+        </div>
+
+        {/* Status indicator */}
+        <div className="flex items-center gap-2 mt-3">
+          <span
+            className={`flex items-center justify-center rounded-full p-1 ${
+              isOwe ? "bg-negative/20" : "bg-positive/20"
+            }`}
+          >
+            {isOwe ? (
+              <ArrowDownRight className="w-3 h-3 text-negative" />
+            ) : (
+              <ArrowUpRight className="w-3 h-3 text-positive" />
+            )}
+          </span>
+          <p className="text-sm text-text-secondary">
+            <span className={`font-semibold ${
+              isOwe ? "text-negative" : "text-positive"
+            }`}>
+              {isOwe ? "You owe" : "You are owed"}
+            </span>
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export function OverviewWidget({
   totalNet,
   totalOwedToMe,
   totalIOwe,
   groups,
 }: OverviewWidgetProps) {
-  const currency = groups[0]?.currency ?? "";
+  const [showOwe, setShowOwe] = useState(true);
+  const [showOwed, setShowOwed] = useState(true);
+  const currency = groups[0]?.currency ?? "$";
 
   return (
-    <div className="bg-surface rounded-3xl p-6 border border-border">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-text-primary">Overview</h2>
-        <div className="relative">
-          <select className="appearance-none bg-surface-2 border-none rounded-xl pl-4 pr-10 py-2 text-sm font-medium text-text-secondary focus:ring-0 cursor-pointer">
-            <option>Last 7 days</option>
-            <option>Last 30 days</option>
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-            <svg className="h-4 w-4 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-        </div>
-      </div>
-
+    <div className="space-y-5">
       {/* Financial Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* You Owe Card */}
-        <div className="bg-surface-2 rounded-2xl p-5 border border-border">
-          <div className="flex items-center gap-2 text-text-secondary mb-3">
-            <TrendingDown className="h-4 w-4 text-negative" />
-            <span className="text-sm font-medium">You owe</span>
-          </div>
-          <div className="flex items-end gap-4">
-            <span className="text-3xl font-bold text-text-primary">
-              {currency} {totalIOwe.toLocaleString()}
-            </span>
-            {totalIOwe > 0 && (
-              <span className="text-xs text-text-tertiary mb-1">total outstanding</span>
-            )}
-          </div>
-        </div>
+        <AnimatedBalanceCard
+          title="You Owe"
+          amount={totalIOwe}
+          currency={currency}
+          type="owe"
+          isVisible={showOwe}
+          onToggleVisibility={() => setShowOwe(!showOwe)}
+        />
 
         {/* You Are Owed Card */}
-        <div className="bg-surface-2 rounded-2xl p-5 border border-border">
-          <div className="flex items-center gap-2 text-text-secondary mb-3">
-            <Wallet className="h-4 w-4 text-positive" />
-            <span className="text-sm font-medium">You are owed</span>
-          </div>
-          <div className="flex items-end gap-4">
-            <span className="text-3xl font-bold text-text-primary">
-              {currency} {totalOwedToMe > 1000 ? `${(totalOwedToMe / 1000).toFixed(1)}k` : totalOwedToMe.toLocaleString()}
-            </span>
-            {totalOwedToMe > 0 && (
-              <span className="text-xs text-text-tertiary mb-1">total outstanding</span>
-            )}
-          </div>
-        </div>
+        <AnimatedBalanceCard
+          title="You Are Owed"
+          amount={totalOwedToMe}
+          currency={currency}
+          type="owed"
+          isVisible={showOwed}
+          onToggleVisibility={() => setShowOwed(!showOwed)}
+        />
       </div>
 
-      {/* Friends Section */}
-      <div className="mt-4">
-        <h3 className="font-semibold text-base mb-1 text-text-primary">
-          {groups.length} active groups
-        </h3>
-        <p className="text-sm text-text-secondary mb-4">
-          View groups you&apos;ve interacted with recently
-        </p>
-        <div className="flex flex-wrap gap-4 items-center">
+      {/* Groups Preview */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="bg-surface rounded-3xl p-6 border border-border"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="font-semibold text-text-primary">
+              {groups.length} active groups
+            </h3>
+            <p className="text-sm text-text-secondary">
+              Groups you&apos;ve interacted with
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-3 items-center">
           {groups.slice(0, 5).map((group) => (
-            <div key={group.group_id} className="flex flex-col items-center gap-2">
+            <motion.div
+              key={group.group_id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex flex-col items-center gap-2"
+            >
               <div
-                className={`w-12 h-12 rounded-full flex items-center justify-center border-2 border-border ${
+                className={`w-12 h-12 rounded-full flex items-center justify-center border-2 ${
                   group.net_balance > 0
-                    ? "bg-positive-bg"
+                    ? "border-positive bg-positive/10"
                     : group.net_balance < 0
-                    ? "bg-negative-bg"
-                    : "bg-surface-2"
+                    ? "border-negative bg-negative/10"
+                    : "border-border bg-surface-2"
                 }`}
               >
                 <span className="text-sm font-bold text-text-primary">
@@ -98,10 +230,9 @@ export function OverviewWidget({
               <span className="text-xs text-text-secondary max-w-[60px] truncate text-center">
                 {group.group_name}
               </span>
-            </div>
+            </motion.div>
           ))}
 
-          {/* View All Button */}
           {groups.length > 5 && (
             <div className="flex flex-col items-center gap-2 ml-2">
               <button className="w-12 h-12 rounded-full border border-border flex items-center justify-center hover:bg-surface-2 transition-colors">
@@ -111,7 +242,7 @@ export function OverviewWidget({
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

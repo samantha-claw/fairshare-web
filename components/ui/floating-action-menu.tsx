@@ -25,7 +25,7 @@ export function FloatingActionMenu({
   };
 
   return (
-    <div className={cn("fixed bottom-8 right-8 z-50", className)}>
+    <div className={cn("fixed bottom-24 right-4 md:bottom-8 md:right-8 z-[60]", className)}>
       <button
         onClick={toggleMenu}
         className="flex h-14 w-14 items-center justify-center rounded-full bg-text-primary text-surface shadow-lg transition-all hover:opacity-90"
