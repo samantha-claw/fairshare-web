@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { TrendingDown, TrendingUp, Wallet, ArrowRight, Eye, EyeOff, DollarSign, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { TrendingDown, TrendingUp, Eye, EyeOff, DollarSign, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { motion, useSpring, useTransform, animate } from "framer-motion";
 import type { GroupBalance } from "@/types/dashboard";
 
@@ -12,7 +12,7 @@ interface OverviewWidgetProps {
   groups: GroupBalance[];
 }
 
-// Animated Balance Card Component
+// Simple Animated Balance Card Component
 interface AnimatedBalanceCardProps {
   title: string;
   amount: number;
@@ -53,31 +53,11 @@ function AnimatedBalanceCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className={`rounded-3xl border p-6 shadow-lg relative overflow-hidden ${
-        isOwe
-          ? "bg-gradient-to-br from-negative/10 via-surface to-surface border-negative/20"
-          : "bg-gradient-to-br from-positive/10 via-surface to-surface border-positive/20"
-      }`}
+      className="rounded-2xl border border-border bg-surface p-6"
     >
-      {/* Animated background glow */}
-      <motion.div
-        className={`absolute w-32 h-32 rounded-full blur-3xl ${
-          isOwe ? "bg-negative/10" : "bg-positive/10"
-        }`}
-        animate={{
-          top: ["10%", "70%", "10%"],
-          left: ["10%", "80%", "10%"],
-        }}
-        transition={{
-          duration: 15,
-          repeat: Infinity,
-          ease: "linear",
-        }}
-      />
-
       <div className="relative z-10">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div
               className={`w-10 h-10 rounded-xl flex items-center justify-center ${
@@ -110,7 +90,7 @@ function AnimatedBalanceCard({
         </div>
 
         {/* Balance Amount */}
-        <div className="flex items-baseline gap-2">
+        <div className="flex items-baseline gap-2 mb-2">
           {isVisible ? (
             <>
               <DollarSign className="w-5 h-5 text-text-secondary mt-1" />
@@ -128,7 +108,7 @@ function AnimatedBalanceCard({
         </div>
 
         {/* Status indicator */}
-        <div className="flex items-center gap-2 mt-3">
+        <div className="flex items-center gap-2">
           <span
             className={`flex items-center justify-center rounded-full p-1 ${
               isOwe ? "bg-negative/20" : "bg-positive/20"
@@ -193,7 +173,7 @@ export function OverviewWidget({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="bg-surface rounded-3xl p-6 border border-border"
+        className="bg-surface rounded-2xl p-6 border border-border"
       >
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -236,7 +216,7 @@ export function OverviewWidget({
           {groups.length > 5 && (
             <div className="flex flex-col items-center gap-2 ml-2">
               <button className="w-12 h-12 rounded-full border border-border flex items-center justify-center hover:bg-surface-2 transition-colors">
-                <ArrowRight className="h-4 w-4 text-text-secondary" />
+                <ArrowUpRight className="w-4 w-4 text-text-secondary" />
               </button>
               <span className="text-xs text-text-secondary">View all</span>
             </div>
