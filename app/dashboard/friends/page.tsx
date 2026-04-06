@@ -120,7 +120,7 @@ export default function FriendsPage() {
             </h1>
             <p className="text-sm text-text-secondary">
               {hasFriends ? `${f.friends.length} connection${f.friends.length !== 1 ? "s" : ""}` : "Manage your connections"}
-              {f.pendingReceived.length > 0 && ` · ${f.pendingReceived.length} pending`}
+              {f.pendingRequests.length > 0 && ` · ${f.pendingRequests.length} pending`}
             </p>
           </div>
         </motion.div>
