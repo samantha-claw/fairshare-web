@@ -327,11 +327,8 @@ export default function CreateGroupPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
       <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
-        {/* ── Back Button ──────────────────────────── */}
-        <button
-          type="button"
-          onClick={g.handleCancel}
-          disabled={g.saving}
+        {/* ── Main Form Card ───────────────────────── */}
+        <div className="relative overflow-hidden rounded-3xl border border-border bg-surface shadow-sm">
           <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-gradient-to-br from-surface-2/50 to-border/30 blur-3xl" />
           <div className="absolute -bottom-16 -left-16 h-40 w-40 rounded-full bg-gradient-to-tr from-surface-2/30 to-border/20 blur-2xl" />
 
