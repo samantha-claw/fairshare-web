@@ -1,43 +1,86 @@
 "use client";
 
-// ==========================================
-// 📦 IMPORTS
-// ==========================================
+import { useState } from "react";
 import Link from "next/link";
-import { Avatar } from "@/components/ui/avatar";
-import { ExpensesEmptyState } from "@/components/ui/empty-states";
+import { motion, AnimatePresence } from "framer-motion";
 import { formatCurrency } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { Avatar } from "@/components/ui/avatar";
+import { Receipt, Plus, Calendar, User, ChevronRight, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import type { Expense } from "@/types/group";
 
 // ==========================================
-// 🎨 AVATAR FALLBACK HELPERS
+// 🎨 AVATAR GROUP FOR SPLIT PARTICIPANTS
 // ==========================================
-const AVATAR_GRADIENTS = [
-  "bg-gradient-to-br from-blue-400 to-blue-600",
-  "bg-gradient-to-br from-emerald-400 to-emerald-600",
-  "bg-gradient-to-br from-purple-400 to-purple-600",
-  "bg-gradient-to-br from-pink-400 to-pink-600",
-  "bg-gradient-to-br from-indigo-400 to-indigo-600",
-  "bg-gradient-to-br from-teal-400 to-teal-600",
-  "bg-gradient-to-br from-amber-400 to-amber-600",
-  "bg-gradient-to-br from-cyan-400 to-cyan-600",
-  "bg-gradient-to-br from-rose-400 to-rose-600",
-  "bg-gradient-to-br from-violet-400 to-violet-600",
-];
-
-function getInitials(name: string): string {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-  return name.slice(0, 2).toUpperCase();
+interface AvatarGroupProps {
+  items: { id: string; name: string; avatar?: string }[];
+  maxVisible?: number;
+  size?: "sm" | "md";
 }
 
-function getAvatarColor(name: string): string {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return AVATAR_GRADIENTS[Math.abs(hash) % AVATAR_GRADIENTS.length];
+function ExpenseAvatarGroup({ items, maxVisible = 4, size = "sm" }: AvatarGroupProps) {
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const visibleItems = items.slice(0, maxVisible);
+  const remainingCount = items.length - maxVisible;
+
+  const sizeClasses = {
+    sm: "h-7 w-7 text-[10px]",
+    md: "h-9 w-9 text-xs",
+  };
+
+  return (
+    <div className="flex items-center">
+      {visibleItems.map((item, index) => (
+        <div
+          key={item.id}
+          className="relative"
+          style={{ marginLeft: index === 0 ? 0 : -8, zIndex: visibleItems.length - index }}
+          onMouseEnter={() => setHoveredId(item.id)}
+          onMouseLeave={() => setHoveredId(null)}
+        >
+          <AnimatePresence>
+            {hoveredId === item.id && (
+              <motion.div
+                initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-surface border border-border px-3 py-1.5 text-xs font-medium text-text-primary shadow-lg z-50"
+              >
+                {item.name}
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <motion.div
+            whileHover={{ scale: 1.1, zIndex: 100 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          >
+            <Avatar
+              src={item.avatar}
+              name={item.name}
+              size={size === "sm" ? "sm" : "md"}
+              className={cn(
+                "ring-2 ring-surface",
+                sizeClasses[size]
+              )}
+            />
+          </motion.div>
+        </div>
+      ))}
+      {remainingCount > 0 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className={cn(
+            "flex items-center justify-center rounded-full bg-surface-2 text-text-secondary font-medium ring-2 ring-surface",
+            sizeClasses[size]
+          )}
+          style={{ marginLeft: -8 }}
+        >
+          +{remainingCount}
+        </motion.div>
+      )}
+    </div>
+  );
 }
 
 // ==========================================
@@ -45,21 +88,17 @@ function getAvatarColor(name: string): string {
 // ==========================================
 function SplitBadge({ type }: { type?: string }) {
   const normalizedType = (type || "equal").toLowerCase();
-
-  const config: Record<string, { label: string; style: string; icon: string }> = {
-    equal:      { label: "Equal",   style: "bg-blue-50 text-blue-700 ring-blue-200",          icon: "⚖️" },
-    exact:      { label: "Exact",   style: "bg-emerald-50 text-emerald-700 ring-emerald-200", icon: "💰" },
-    percentage: { label: "Percent", style: "bg-purple-50 text-purple-700 ring-purple-200",    icon: "📊" },
-    shares:     { label: "Shares",  style: "bg-orange-50 text-orange-700 ring-orange-200",    icon: "🎯" },
+  const config: Record<string, { label: string; className: string }> = {
+    equal: { label: "Equal", className: "bg-surface-2 text-text-secondary" },
+    exact: { label: "Exact", className: "bg-surface-2 text-text-secondary" },
+    percentage: { label: "Percent", className: "bg-surface-2 text-text-secondary" },
+    shares: { label: "Shares", className: "bg-surface-2 text-text-secondary" },
   };
-
-  const { label, style, icon } = config[normalizedType] || config.equal;
+  const { label, className } = config[normalizedType] || config.equal;
 
   return (
-    <span
-      className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ring-1 ring-inset ${style}`}
-    >
-      <span>{icon}</span> {label}
+    <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium", className)}>
+      {label}
     </span>
   );
 }
@@ -91,151 +130,184 @@ export function ExpensesTab({
   onDeleteExpense,
   onViewAll,
 }: ExpensesTabProps) {
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+
   if (expenses.length === 0) {
-    return <ExpensesEmptyState onAddExpense={onAddExpense} />;
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col items-center justify-center py-16 px-4"
+      >
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-2 mb-4">
+          <Receipt className="h-8 w-8 text-text-tertiary" />
+        </div>
+        <h3 className="text-lg font-semibold text-text-primary mb-2">No expenses yet</h3>
+        <p className="text-sm text-text-secondary text-center mb-6">
+          Add your first expense to start tracking group spending.
+        </p>
+        <button
+          onClick={onAddExpense}
+          className="inline-flex items-center gap-2 rounded-xl bg-text-primary px-5 py-2.5 text-sm font-medium text-surface transition-all hover:opacity-90"
+        >
+          <Plus className="h-4 w-4" />
+          Add Expense
+        </button>
+      </motion.div>
+    );
   }
 
   const displayedExpenses = expenses.slice(0, 5);
   const hasMore = expenses.length > 5;
 
   return (
-    // ✅ FIX 1: Added overflow-hidden to the root wrapper
-    <div className="overflow-hidden">
-      {/* ── Expense Items ── */}
-      <div className="space-y-3">
-        {displayedExpenses.map((exp) => {
-          const payerName =
-            exp.profiles.display_name || exp.profiles.full_name || "Unknown";
-          const payerAvatar = (exp.profiles as any)?.avatar_url || null;
+    <div className="space-y-3">
+      {displayedExpenses.map((exp, index) => {
+        const payerName = exp.profiles.display_name || exp.profiles.full_name || "Unknown";
+        const payerAvatar = (exp.profiles as any)?.avatar_url || null;
+        const splits = (exp.expense_splits || []) as any[];
+        const splitParticipants = splits.map((s: any) => ({
+          id: s.user_id || s.id,
+          name: s?.profiles?.display_name || s?.profiles?.full_name || "Member",
+          avatar: s?.profiles?.avatar_url || undefined,
+        }));
 
-          const splits = (exp.expense_splits || []) as any[];
-          const visibleSplits = splits.slice(0, 3);
-          const remainingCount = Math.max(0, splits.length - 3);
-
-          return (
-            // ✅ FIX 2: Added overflow-hidden to each card
-            <div
-              key={exp.id}
-              className="flex items-start gap-3 overflow-hidden rounded-xl border border-border bg-surface-2/50 p-3 transition-all hover:border-border hover:shadow-sm sm:items-center sm:p-4"
-            >
-              {/* ── Left: Payer Avatar ── */}
+        return (
+          <motion.div
+            key={exp.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
+            className="group relative rounded-2xl border border-border bg-surface p-4 transition-all hover:border-border-2 hover:shadow-sm"
+          >
+            {/* Header Row */}
+            <div className="flex items-start gap-4">
+              {/* Payer Avatar */}
               <Link
                 href={`/dashboard/profile/${exp.paid_by}`}
-                className="mt-1 shrink-0 sm:mt-0"
+                className="shrink-0"
               >
-                <Avatar src={payerAvatar} name={payerName} size="md" />
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                >
+                  <Avatar src={payerAvatar} name={payerName} size="lg" />
+                </motion.div>
               </Link>
 
-              {/* ── Middle: Expense Info ── */}
-              <div className="min-w-0 flex-1">
-                {/* Name + SplitBadge */}
-                <div className="mb-0.5 flex items-center gap-2 overflow-hidden">
-                  <h3 className="truncate text-sm font-semibold text-text-primary sm:text-base">
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                {/* Title + Badge */}
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="font-semibold text-text-primary truncate">
                     {exp.name}
                   </h3>
                   <SplitBadge type={(exp as any).split_type} />
                 </div>
 
-                <div className="mt-0.5 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs text-text-secondary">
-                  <span>Paid by</span>
-                  <Link
-                    href={`/dashboard/profile/${exp.paid_by}`}
-                    className="max-w-[80px] truncate font-medium text-text-primary hover:text-text-primary hover:underline sm:max-w-[120px]"
-                    title={payerName}
-                  >
-                    {payerName}
-                  </Link>
+                {/* Meta */}
+                <div className="flex items-center gap-2 text-xs text-text-secondary">
+                  <div className="flex items-center gap-1">
+                    <User className="h-3 w-3" />
+                    <Link
+                      href={`/dashboard/profile/${exp.paid_by}`}
+                      className="hover:text-text-primary hover:underline"
+                    >
+                      {payerName}
+                    </Link>
+                  </div>
                   <span className="text-text-tertiary">·</span>
-                  <span className="whitespace-nowrap">
-                    {new Date(exp.created_at).toLocaleDateString()}
-                  </span>
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    <span>
+                      {new Date(exp.created_at).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              {/* ── Right: Amount + Mini Participant Avatars ── */}
-              <div className="flex shrink-0 flex-col items-end gap-1.5">
-                <p className="text-base font-bold text-text-primary sm:text-lg">
+              {/* Amount */}
+              <div className="text-right shrink-0">
+                <p className="text-lg font-bold text-text-primary">
                   {formatCurrency(exp.amount, currency)}
                 </p>
-
-                {/* Overlapping mini-avatars */}
-                <div className="flex items-center">
-                  {visibleSplits.map((split: any, i: number) => {
-                    const splitName =
-                      split?.profiles?.display_name ||
-                      split?.profiles?.full_name ||
-                      `M${i + 1}`;
-                    const splitAvatar = split?.profiles?.avatar_url || null;
-
-                    return (
-                      <div
-                        key={split?.id || i}
-                        className={`${
-                          i > 0 ? "-ml-1.5" : ""
-                        } rounded-full ring-2 ring-white`}
-                        title={splitName}
-                      >
-                        {splitAvatar ? (
-                          <img
-                            src={splitAvatar}
-                            alt={splitName}
-                            className="h-6 w-6 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div
-                            className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-white ${getAvatarColor(
-                              splitName
-                            )}`}
-                          >
-                            {getInitials(splitName).charAt(0)}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                  {remainingCount > 0 && (
-                    <div
-                      className="-ml-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-[10px] font-bold text-text-secondary ring-2 ring-white"
-                      title={`+${remainingCount} more`}
-                    >
-                      +{remainingCount}
-                    </div>
-                  )}
-                </div>
               </div>
             </div>
-          );
-        })}
-      </div>
 
-      {/* ── Seamless "View All" Button ── */}
+            {/* Footer: Participants + Actions */}
+            <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
+              {/* Avatar Group */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-text-tertiary">Split by</span>
+                <ExpenseAvatarGroup items={splitParticipants} maxVisible={4} size="sm" />
+              </div>
+
+              {/* Actions Menu */}
+              {(isOwner || exp.paid_by === currentUser) && (
+                <div className="relative">
+                  <button
+                    onClick={() => setMenuOpenId(menuOpenId === exp.id ? null : exp.id)}
+                    className="p-1.5 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-2 transition-colors"
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </button>
+                  <AnimatePresence>
+                    {menuOpenId === exp.id && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                        className="absolute right-0 top-full mt-1 z-50 min-w-[120px] rounded-xl border border-border bg-surface p-1 shadow-lg"
+                      >
+                        <button
+                          onClick={() => {
+                            onEditExpense(exp);
+                            setMenuOpenId(null);
+                          }}
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-text-secondary hover:bg-surface-2 transition-colors"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => {
+                            onDeleteExpense(exp.id, exp.name);
+                            setMenuOpenId(null);
+                          }}
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-negative hover:bg-negative/10 transition-colors"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          Delete
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        );
+      })}
+
+      {/* View All Button */}
       {onViewAll && (
-        <div className="-mx-4 -mb-4 mt-3 sm:-mx-6 sm:-mb-6">
-          <button
-            onClick={onViewAll}
-            className="flex w-full items-center justify-center gap-2 rounded-b-xl border-t border-border bg-surface-2 p-4 text-sm font-semibold text-text-primary transition-colors hover:bg-surface-2 active:scale-[0.99]"
-          >
-            View All Expenses
-            {hasMore && (
-              <span className="inline-flex items-center justify-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-text-primary">
-                {expenses.length}
-              </span>
-            )}
-            <svg
-              className="h-4 w-4 text-text-tertiary"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M8.25 4.5l7.5 7.5-7.5 7.5"
-              />
-            </svg>
-          </button>
-        </div>
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          onClick={onViewAll}
+          className="w-full flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface p-4 text-sm font-medium text-text-secondary transition-all hover:bg-surface-2 hover:text-text-primary"
+        >
+          View All Expenses
+          {hasMore && (
+            <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs font-bold text-text-primary">
+              {expenses.length}
+            </span>
+          )}
+          <ChevronRight className="h-4 w-4" />
+        </motion.button>
       )}
     </div>
   );
