@@ -202,7 +202,9 @@ export default function GroupDetailsPage() {
             <OverviewTab
               totalGroupExpenses={data.totalGroupExpenses}
               myNetBalance={data.myNetBalance}
+              balances={data.balances}
               currency={currency}
+              currentUserId={data.currentUser}
             />
           </TabsContent>
 
