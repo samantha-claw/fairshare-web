@@ -184,7 +184,7 @@ export default function GroupDetailsPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="mt-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="expenses" badge={data.expenses.length}>
+            <TabsTrigger value="expenses">
               Expenses
             </TabsTrigger>
             <TabsTrigger

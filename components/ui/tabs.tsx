@@ -25,8 +25,9 @@ const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger> & {
     badge?: number | string;
+    hasUnread?: boolean;
   }
->(({ className, badge, children, ...props }, ref) => (
+>(({ className, badge, hasUnread, children, ...props }, ref) => (
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
@@ -39,9 +40,16 @@ const TabsTrigger = React.forwardRef<
     {...props}
   >
     {children}
+    {/* Show count badge if provided and non-zero */}
     {badge !== undefined && badge !== null && badge !== 0 && (
       <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-text-primary px-1.5 text-xs font-semibold text-surface">
         {badge}
+      </span>
+    )}
+    {/* Show unread dot indicator if hasUnread is true and no badge count */}
+    {hasUnread && badge === undefined && (
+      <span className="flex h-2.5 w-2.5 items-center justify-center rounded-full bg-positive">
+        <span className="sr-only">Has unread items</span>
       </span>
     )}
   </TabsPrimitive.Trigger>
