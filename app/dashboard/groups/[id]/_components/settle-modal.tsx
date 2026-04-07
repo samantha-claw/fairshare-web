@@ -97,7 +97,7 @@ export function SettleModal({
                     step="0.01"
                     min="0.01"
                     placeholder="0.00"
-                    className="w-full rounded-xl border border-gray-300 p-3 pl-14 font-mono text-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-xl border border-border p-3 pl-14 font-mono text-lg focus:border-border-2 focus:outline-none focus:ring-1 focus:ring-border/30"
                     value={settleAmount}
                     onChange={(e) => onAmountChange(e.target.value)}
                   />

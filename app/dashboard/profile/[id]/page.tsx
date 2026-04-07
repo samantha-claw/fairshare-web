@@ -60,11 +60,6 @@ export default function UserProfilePage() {
     );
   }
 
-  const profileQRUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/dashboard/profile/${p.profile.username}`
-      : "";
-
   const profileDisplayName =
     p.profile.display_name || p.profile.full_name || p.profile.username;
 
@@ -131,7 +126,7 @@ export default function UserProfilePage() {
       <QRShareModal
         isOpen={isQRModalOpen}
         onClose={() => setIsQRModalOpen(false)}
-        value={profileQRUrl}
+        value={p.profileUrl}
         title={profileDisplayName}
         subtitle={`@${p.profile.username}`}
         type="profile"

@@ -119,12 +119,12 @@ export function BalancesCard({
 
                     {/* AMOUNT badge + arrow */}
                     <div className="flex items-center justify-center gap-2 py-1">
-                      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
+                      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border-light dark:via-border-dark to-transparent" />
                       <div className="flex items-center gap-1.5 rounded-full bg-orange-100 px-3 py-1 text-sm font-black text-orange-700 ring-1 ring-inset ring-orange-200">
                         {formatCurrency(debt.amount, currency)}
                         <ArrowDown className="h-3.5 w-3.5" />
                       </div>
-                      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
+                      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border-light dark:via-border-dark to-transparent" />
                     </div>
 
                     {/* TO person */}
@@ -170,7 +170,7 @@ export function BalancesCard({
                 </p>
               </div>
             ) : (
-              <ul className="divide-y divide-gray-100">
+              <ul className="divide-y divide-border-light dark:divide-border-dark">
                 {balances.map((bal) => {
                   const isPositive = bal.net_balance > 0;
                   const isNegative = bal.net_balance < 0;
