@@ -66,6 +66,7 @@ export function MobileNav() {
                   href={item.href}
                   className="relative flex flex-col items-center gap-1"
                   aria-label={item.label}
+                  aria-current={active ? "page" : undefined}
                 >
                   <motion.div
                     onMouseEnter={() => setHoveredIndex(i)}
