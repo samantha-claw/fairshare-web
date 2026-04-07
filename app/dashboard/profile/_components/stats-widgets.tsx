@@ -120,7 +120,7 @@ export function StatsWidgets({
               <Link
                 key={group.group_id}
                 href={`/dashboard/groups/${group.group_id}`}
-                className="group flex items-center justify-between rounded-2xl border border-gray-50 bg-surface-2/50 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-100 hover:bg-surface hover:shadow-md"
+                className="group flex items-center justify-between rounded-2xl border border-border bg-surface-2/50 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:bg-surface hover:shadow-md"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-sm font-bold text-white shadow-sm">

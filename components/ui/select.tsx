@@ -175,21 +175,22 @@ function SelectItem({
       )}
       {...props}
     >
-      {indicatorVisibility &&
-        (indicator && isValidElement(indicator) ? (
-          indicator
-        ) : (
-          <span
-            className={cn(
-              'absolute flex h-3.5 w-3.5 items-center justify-center',
-              indicatorPosition === 'left' ? 'start-2' : 'end-2'
-            )}
-          >
-            <SelectPrimitive.ItemIndicator>
+      {indicatorVisibility && (
+        <span
+          className={cn(
+            'absolute flex h-3.5 w-3.5 items-center justify-center',
+            indicatorPosition === 'left' ? 'start-2' : 'end-2'
+          )}
+        >
+          <SelectPrimitive.ItemIndicator>
+            {indicator && isValidElement(indicator) ? (
+              indicator
+            ) : (
               <Check className="h-4 w-4 text-positive" />
-            </SelectPrimitive.ItemIndicator>
-          </span>
-        ))}
+            )}
+          </SelectPrimitive.ItemIndicator>
+        </span>
+      )}
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
   );

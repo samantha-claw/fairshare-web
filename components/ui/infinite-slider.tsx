@@ -44,14 +44,14 @@ export function InfiniteSlider({
             },
           },
         }}
-        style={{ gap: `${gap}px` }}
+        style={{}}
       >
         {/* First set */}
-        <div className="flex" style={{ gap: `${gap}px` }}>
+        <div className="flex" style={{ gap: `${gap}px`, paddingRight: `${gap}px` }}>
           {children}
         </div>
         {/* Duplicate for seamless loop */}
-        <div className="flex" style={{ gap: `${gap}px` }}>
+        <div className="flex" style={{ gap: `${gap}px`, paddingRight: `${gap}px` }}>
           {children}
         </div>
       </motion.div>
