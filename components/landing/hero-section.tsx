@@ -21,8 +21,9 @@ export function HeroSection() {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const scrollOptions: AddEventListenerOptions = { passive: true };
+    window.addEventListener("scroll", handleScroll, scrollOptions);
+    return () => window.removeEventListener("scroll", handleScroll, scrollOptions);
   }, []);
 
   return (
@@ -106,7 +107,7 @@ export function HeroSection() {
               </div>
 
               {/* Mobile menu content */}
-              <div id="mobile-menu" className="bg-surface group-data-[state=active]:block mb-6 hidden w-full flex-wrap items-center justify-end space-y-4 rounded-2xl border border-border p-6 shadow-xl lg:hidden lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none">
+              <div id="mobile-menu" className="bg-surface group-data-[state=active]:block mb-6 hidden w-full flex-wrap items-center justify-end space-y-4 rounded-2xl border border-border p-6 shadow-xl lg:hidden">
                 <div className="lg:hidden">
                   <ul className="space-y-4 text-base">
                     {menuItems.map((item, index) => (

@@ -3,7 +3,6 @@
 // ==========================================
 // 📦 IMPORTS
 // ==========================================
-import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useFriends } from "@/hooks/use-friends";
@@ -195,31 +194,10 @@ function SearchUserCard({
 export default function AddFriendsPage() {
   const router = useRouter();
   const f = useFriends();
-  
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // Filter out already-friends from search results
-  const filteredResults = useMemo(() => {
-    if (!searchTerm.trim() || !f.searchResults.length) return [];
-    const friendIds = new Set(f.friends.map(fr => fr.friend_id));
-    return f.searchResults.filter(user => !friendIds.has(user.id));
-  }, [f.searchResults, f.friends, searchTerm]);
-
-  // Handle search input change
-  const handleSearchChange = (term: string) => {
-    setSearchTerm(term);
-    f.setSearchTerm(term);
-  };
-
-  // Clear search
-  const clearSearch = () => {
-    setSearchTerm("");
-    f.clearSearch();
-  };
 
   if (f.loading) return <PageSkeleton />;
 
-  const hasQuery = searchTerm.trim().length > 0;
+  const hasQuery = f.searchTerm.trim().length > 0;
 
   return (
     <div className="min-h-screen bg-surface pb-20 md:pb-10">
@@ -265,16 +243,18 @@ export default function AddFriendsPage() {
             <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text-secondary" />
             <input
               type="text"
-              value={searchTerm}
-              onChange={(e) => handleSearchChange(e.target.value)}
+              value={f.searchTerm}
+              onChange={(e) => f.setSearchTerm(e.target.value)}
               placeholder="Search by username..."
+              aria-label="Search users"
               autoFocus
               className="block w-full rounded-2xl border border-border bg-surface py-4 pl-12 pr-12 text-base text-text-primary placeholder:text-text-tertiary transition-all duration-200 focus:border-border-2 focus:outline-none focus:ring-2 focus:ring-border/30"
             />
             {hasQuery && (
               <button
                 type="button"
-                onClick={clearSearch}
+                onClick={f.clearSearch}
+                aria-label="Clear search"
                 className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-text-secondary transition-colors hover:bg-surface-2 hover:text-text-primary"
               >
                 <X className="h-5 w-5" />
@@ -298,7 +278,7 @@ export default function AddFriendsPage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            {filteredResults.length === 0 ? (
+            {f.searchResults.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-surface-2">
                   <Search className="h-8 w-8 text-text-tertiary" />
@@ -314,12 +294,12 @@ export default function AddFriendsPage() {
               <>
                 {/* Results Count */}
                 <p className="mb-4 text-sm font-medium text-text-secondary">
-                  {filteredResults.length} result{filteredResults.length !== 1 ? "s" : ""}
+                  {f.searchResults.length} result{f.searchResults.length !== 1 ? "s" : ""}
                 </p>
 
                 {/* Results Grid */}
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {filteredResults.map((user) => {
+                  {f.searchResults.map((user) => {
                     const isPending = f.isOutgoingPending(user.id);
                     const outgoingId = f.getOutgoingRequestId(user.id);
                     const isSending = f.sendingToId === user.id;

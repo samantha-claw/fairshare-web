@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatCurrency } from "@/lib/utils";
@@ -37,6 +37,20 @@ function ExpenseAvatarGroup({ items, maxVisible = 4, size = "sm" }: AvatarGroupP
           style={{ marginLeft: index === 0 ? 0 : -8, zIndex: visibleItems.length - index }}
           onMouseEnter={() => setHoveredId(item.id)}
           onMouseLeave={() => setHoveredId(null)}
+          onFocus={() => setHoveredId(item.id)}
+          onBlur={() => setHoveredId(null)}
+          onClick={() => setHoveredId((prev) => (prev === item.id ? null : item.id))}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setHoveredId((prev) => (prev === item.id ? null : item.id));
+            }
+            if (e.key === "Escape") {
+              setHoveredId(null);
+            }
+          }}
+          tabIndex={0}
+          aria-label={`Participant: ${item.name}`}
         >
           <AnimatePresence>
             {hoveredId === item.id && (
@@ -131,6 +145,41 @@ export function ExpensesTab({
   onViewAll,
 }: ExpensesTabProps) {
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const menuTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const firstActionRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (!menuOpenId) {
+      return;
+    }
+
+    firstActionRef.current?.focus();
+
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as Node;
+      const clickedMenu = menuRef.current?.contains(target);
+      const clickedTrigger = menuTriggerRef.current?.contains(target);
+      if (!clickedMenu && !clickedTrigger) {
+        setMenuOpenId(null);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMenuOpenId(null);
+        menuTriggerRef.current?.focus();
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [menuOpenId]);
 
   if (expenses.length === 0) {
     return (
@@ -249,10 +298,12 @@ export function ExpensesTab({
               {(isOwner || exp.paid_by === currentUser) && (
                 <div className="relative">
                   <button
+                    ref={menuOpenId === exp.id ? menuTriggerRef : null}
                     type="button"
                     aria-label={`Open actions for ${exp.name}`}
                     aria-haspopup="menu"
                     aria-expanded={menuOpenId === exp.id}
+                    aria-controls={menuOpenId === exp.id ? `expense-menu-${exp.id}` : undefined}
                     onClick={() => setMenuOpenId(menuOpenId === exp.id ? null : exp.id)}
                     className="p-1.5 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-2 transition-colors"
                   >
@@ -261,12 +312,17 @@ export function ExpensesTab({
                   <AnimatePresence>
                     {menuOpenId === exp.id && (
                       <motion.div
+                        ref={menuRef}
+                        id={`expense-menu-${exp.id}`}
+                        role="menu"
                         initial={{ opacity: 0, scale: 0.95, y: -4 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: -4 }}
                         className="absolute right-0 top-full mt-1 z-50 min-w-[120px] rounded-xl border border-border bg-surface p-1 shadow-lg"
                       >
                         <button
+                          ref={firstActionRef}
+                          role="menuitem"
                           onClick={() => {
                             onEditExpense(exp);
                             setMenuOpenId(null);
@@ -277,6 +333,7 @@ export function ExpensesTab({
                           Edit
                         </button>
                         <button
+                          role="menuitem"
                           onClick={() => {
                             onDeleteExpense(exp.id, exp.name);
                             setMenuOpenId(null);

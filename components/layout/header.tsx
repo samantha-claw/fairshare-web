@@ -1,15 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
-import { Search, Menu, Wallet, QrCode, Sun, Moon, Bell } from "lucide-react";
+import { Menu, Wallet, QrCode, Sun, Moon, Bell } from "lucide-react";
 import { QRScannerModal } from "@/components/modals/qr/qr-scanner-modal";
 import { JoinGroupConfirmModal } from "@/components/modals/join-group-confirm-modal";
 import { useTheme } from "@/providers/theme-provider";
 import { createClient } from "@/lib/supabase/client";
-import { useState as useReactState, useEffect } from "react";
 
 interface HeaderProps {
   displayName: string;
@@ -18,13 +17,20 @@ interface HeaderProps {
   onMobileMenuToggle?: () => void;
 }
 
-function getPageSubtitle(pathname: string): string {
+function getPageSubtitle(pathname: string, userId: string): string {
   if (pathname === "/dashboard") return "Your financial overview";
   if (pathname.startsWith("/dashboard/notifications")) return "View all your updates";
   if (pathname.startsWith("/dashboard/friends/add")) return "Find and connect with friends";
   if (pathname.startsWith("/dashboard/friends")) return "Manage your connections";
   if (pathname.startsWith("/dashboard/profile/edit")) return "Update your information";
-  if (pathname.startsWith("/dashboard/profile")) return "Your account details";
+  if (pathname === "/dashboard/profile") return "Your account details";
+  if (pathname.startsWith("/dashboard/profile/")) {
+    const profileId = pathname.split("/")[3];
+    if (profileId && profileId === userId) {
+      return "Your account details";
+    }
+    return "Profile";
+  }
   if (pathname.startsWith("/dashboard/groups/new")) return "Create a new expense group";
   if (pathname.startsWith("/dashboard/groups")) return "Manage expenses & members";
   if (pathname.startsWith("/dashboard/settings")) return "Account preferences";
@@ -33,9 +39,10 @@ function getPageSubtitle(pathname: string): string {
 
 export function Header({ displayName, avatarUrl, userId, onMobileMenuToggle }: HeaderProps) {
   const pathname = usePathname();
-  const subtitle = getPageSubtitle(pathname);
+  const subtitle = getPageSubtitle(pathname, userId);
   const { isDark, toggle: toggleTheme } = useTheme();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
+  const unreadRefetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Modal states
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -55,6 +62,17 @@ export function Header({ displayName, avatarUrl, userId, onMobileMenuToggle }: H
         .eq("is_read", false);
       setUnreadCount(count ?? 0);
     }
+
+    const scheduleUnreadRefetch = () => {
+      if (unreadRefetchTimerRef.current) {
+        clearTimeout(unreadRefetchTimerRef.current);
+      }
+      unreadRefetchTimerRef.current = setTimeout(() => {
+        fetchUnread();
+        unreadRefetchTimerRef.current = null;
+      }, 250);
+    };
+
     fetchUnread();
 
     // Subscribe to realtime
@@ -81,13 +99,16 @@ export function Header({ displayName, avatarUrl, userId, onMobileMenuToggle }: H
           filter: `user_id=eq.${userId}`,
         },
         () => {
-          // Refetch on update (mark as read)
-          fetchUnread();
+          // Debounced refetch to avoid N identical queries during bulk updates
+          scheduleUnreadRefetch();
         }
       )
       .subscribe();
 
     return () => {
+      if (unreadRefetchTimerRef.current) {
+        clearTimeout(unreadRefetchTimerRef.current);
+      }
       supabase.removeChannel(channel);
     };
   }, [userId, supabase]);
@@ -109,6 +130,7 @@ export function Header({ displayName, avatarUrl, userId, onMobileMenuToggle }: H
         {/* Mobile Menu */}
         <button
           onClick={onMobileMenuToggle}
+          aria-label="Toggle mobile menu"
           className="flex h-8 w-8 items-center justify-center rounded-lg text-text-secondary hover:bg-surface-2 hover:text-text-primary transition-colors md:hidden"
         >
           <Menu className="h-5 w-5" />
@@ -132,20 +154,18 @@ export function Header({ displayName, avatarUrl, userId, onMobileMenuToggle }: H
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
+            aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+            aria-pressed={isDark}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-text-secondary hover:bg-surface-2 hover:text-text-primary transition-colors"
             title={isDark ? "Switch to light mode" : "Switch to dark mode"}
           >
             {isDark ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}
           </button>
 
-          {/* Search */}
-          <button className="hidden h-8 w-8 items-center justify-center rounded-lg text-text-secondary hover:bg-surface-2 hover:text-text-primary transition-colors sm:flex">
-            <Search className="h-[18px] w-[18px]" />
-          </button>
-
           {/* QR Scanner */}
           <button
             onClick={() => setIsScannerOpen(true)}
+            aria-label="Scan QR code"
             className="flex h-8 w-8 items-center justify-center rounded-lg text-text-secondary hover:bg-surface-2 hover:text-text-primary transition-colors"
             title="Scan QR Code"
           >
@@ -155,6 +175,7 @@ export function Header({ displayName, avatarUrl, userId, onMobileMenuToggle }: H
           {/* Notifications Link */}
           <Link
             href="/dashboard/notifications"
+            aria-label="View notifications"
             className="relative flex h-8 w-8 items-center justify-center rounded-lg text-text-secondary hover:bg-surface-2 hover:text-text-primary transition-colors"
             title="View notifications"
           >

@@ -82,6 +82,8 @@ function AnimatedBalanceCard({
     return "bg-surface-2";
   };
 
+  const visibilityLabel = isVisible ? "Hide financial data" : "Show financial data";
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -118,13 +120,13 @@ function AnimatedBalanceCard({
           <button
             onClick={onToggleVisibility}
             className="flex items-center justify-center w-8 h-8 rounded-full bg-surface-2 hover:bg-surface-2/80 transition-colors"
-            aria-label={isVisible ? "Hide financial data" : "Show financial data"}
+            aria-label={visibilityLabel}
             aria-pressed={isVisible}
           >
             {isVisible ? (
-              <Eye className="w-4 h-4 text-text-secondary" />
-            ) : (
               <EyeOff className="w-4 h-4 text-text-secondary" />
+            ) : (
+              <Eye className="w-4 h-4 text-text-secondary" />
             )}
           </button>
         </div>
@@ -184,7 +186,13 @@ export function OverviewTab({
   const [showGroupBalances, setShowGroupBalances] = useState(false);
 
   const isPositive = myNetBalance > 0;
-  const isNegative = myNetBalance < 0;
+
+  const getBalanceStatusText = (isPositiveBalance: boolean, isCurrentUser: boolean): string => {
+    if (isPositiveBalance) {
+      return isCurrentUser ? "You are owed" : "Is owed";
+    }
+    return isCurrentUser ? "You owe" : "Owes";
+  };
 
   return (
     <div className="space-y-6">
@@ -323,13 +331,7 @@ export function OverviewTab({
                               balIsPositive ? "text-positive" : "text-negative"
                             }`}
                           >
-                            {balIsPositive
-                              ? isCurrentUser
-                                ? "You are owed"
-                                : "Is owed"
-                              : isCurrentUser
-                              ? "You owe"
-                              : "Owes"}
+                            {getBalanceStatusText(balIsPositive, isCurrentUser)}
                           </span>
                         </div>
                       ) : (
