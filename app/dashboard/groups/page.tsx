@@ -49,14 +49,15 @@ export default function GroupsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const trimmedSearchQuery = searchQuery.trim();
 
   // Filter and sort groups
   const filteredAndSortedGroups = useMemo(() => {
     let result = [...groups];
     
     // Filter by search
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
+    if (trimmedSearchQuery) {
+      const query = trimmedSearchQuery.toLowerCase();
       result = result.filter(g => 
         g.group_name.toLowerCase().includes(query)
       );
@@ -88,7 +89,7 @@ export default function GroupsPage() {
     });
     
     return result;
-  }, [groups, searchQuery, sortBy, sortDirection]);
+  }, [groups, trimmedSearchQuery, sortBy, sortDirection]);
 
   // Toggle sort direction
   const toggleSortDirection = () => {
@@ -146,6 +147,7 @@ export default function GroupsPage() {
             placeholder="Search groups..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            aria-label="Search groups"
             className="w-full rounded-xl border border-border bg-surface py-2 pl-10 pr-4 text-sm text-text-primary placeholder:text-text-tertiary focus:border-border-2 focus:outline-none"
           />
         </div>
@@ -181,7 +183,7 @@ export default function GroupsPage() {
       </div>
 
       {/* ── Groups Grid ───────────────────────────── */}
-      {filteredAndSortedGroups.length === 0 && searchQuery ? (
+      {filteredAndSortedGroups.length === 0 && trimmedSearchQuery ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <Search className="h-12 w-12 text-text-tertiary mb-4" />
           <p className="text-lg font-semibold text-text-primary mb-1">
