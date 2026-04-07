@@ -38,3 +38,5 @@ yarn-error.log*
 **/public/worker-*.js.map
 **/public/precache-manifest-*.js
 **/public/precache-manifest-*.js.map
+
+tsconfig.tsbuildinfo

@@ -128,19 +128,26 @@ export function MembersTab({
                       e.preventDefault();
                       setMenuOpenId(menuOpenId === member.id ? null : member.id);
                     }}
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-surface/80 backdrop-blur-sm text-text-secondary opacity-0 group-hover:opacity-100 transition-opacity hover:text-negative hover:bg-surface"
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-surface/80 backdrop-blur-sm text-text-secondary opacity-0 group-hover:opacity-100 focus:opacity-100 sm:opacity-100 transition-opacity hover:text-negative hover:bg-surface"
+                    aria-label="Open member actions"
+                    aria-haspopup="menu"
+                    aria-expanded={menuOpenId === member.id}
+                    aria-controls={menuOpenId === member.id ? `member-menu-${member.id}` : undefined}
                   >
-                    <MoreHorizontal className="h-4 w-4" />
+                    <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                   </button>
 
                   {menuOpenId === member.id && (
                     <motion.div
+                      id={`member-menu-${member.id}`}
+                      role="menu"
                       initial={{ opacity: 0, scale: 0.95, y: -4 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: -4 }}
                       className="absolute right-0 top-full mt-1 z-50 min-w-[120px] rounded-xl border border-border bg-surface p-1 shadow-lg"
                     >
                       <button
+                        role="menuitem"
                         onClick={(e) => {
                           e.preventDefault();
                           onRemoveMember(member.id, member.display_name || member.username);

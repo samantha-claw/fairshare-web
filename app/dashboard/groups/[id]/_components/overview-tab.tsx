@@ -12,7 +12,6 @@ import {
   Users,
   ArrowUpRight,
   ArrowDownRight,
-  DollarSign,
 } from "lucide-react";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
@@ -119,6 +118,8 @@ function AnimatedBalanceCard({
           <button
             onClick={onToggleVisibility}
             className="flex items-center justify-center w-8 h-8 rounded-full bg-surface-2 hover:bg-surface-2/80 transition-colors"
+            aria-label={isVisible ? "Hide financial data" : "Show financial data"}
+            aria-pressed={isVisible}
           >
             {isVisible ? (
               <Eye className="w-4 h-4 text-text-secondary" />
@@ -131,12 +132,9 @@ function AnimatedBalanceCard({
         {/* Balance Amount */}
         <div className="flex items-baseline gap-2">
           {isVisible ? (
-            <>
-              <DollarSign className="w-5 h-5 text-text-secondary mt-1" />
-              <motion.span className="text-4xl font-bold tracking-tight text-text-primary">
-                {displayValue}
-              </motion.span>
-            </>
+            <motion.span className="text-4xl font-bold tracking-tight text-text-primary">
+              {displayValue}
+            </motion.span>
           ) : (
             <span className="text-4xl font-bold tracking-tight text-text-primary">
               ••••••
@@ -249,6 +247,8 @@ export function OverviewTab({
           <button
             onClick={() => setShowGroupBalances(!showGroupBalances)}
             className="flex items-center justify-center w-8 h-8 rounded-full bg-surface-2 hover:bg-surface-2/80 transition-colors"
+            aria-label={showGroupBalances ? "Hide financial data" : "Show financial data"}
+            aria-pressed={showGroupBalances}
           >
             {showGroupBalances ? (
               <EyeOff className="w-4 h-4 text-text-secondary" />

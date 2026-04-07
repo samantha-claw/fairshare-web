@@ -18,7 +18,7 @@ interface SettleTabProps {
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
   onDelete: (id: string) => void;
-  onSettleUp: () => void;
+  onSettleUp: (recipientId: string, amount: number) => void;
 }
 
 export function SettleTab({
@@ -292,7 +292,7 @@ export function SettleTab({
                     {isSender && (
                       <div className="mt-3 pt-3 border-t border-border">
                         <button
-                          onClick={onSettleUp}
+                          onClick={() => onSettleUp(debt.to.userId, debt.amount)}
                           className="w-full flex items-center justify-center gap-2 rounded-xl bg-text-primary px-4 py-3 text-sm font-medium text-surface transition-all hover:opacity-90"
                         >
                           <Handshake className="h-4 w-4" />
