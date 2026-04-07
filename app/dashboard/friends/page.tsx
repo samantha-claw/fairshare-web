@@ -70,16 +70,18 @@ export default function FriendsPage() {
       let comparison = 0;
       
       switch (sortBy) {
-        case "name":
+        case "name": {
           const aName = a.friend_display_name || a.friend_username || "";
           const bName = b.friend_display_name || b.friend_username || "";
           comparison = aName.localeCompare(bName);
           break;
-        case "recent":
+        }
+        case "recent": {
           const aDate = (a as any).created_at || "";
           const bDate = (b as any).created_at || "";
           comparison = new Date(bDate).getTime() - new Date(aDate).getTime();
           break;
+        }
       }
       
       return sortDirection === "asc" ? comparison : -comparison;

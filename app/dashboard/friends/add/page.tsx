@@ -132,13 +132,13 @@ function SearchUserCard({
             href={`/dashboard/profile/${user.id}`}
             className="flex-1"
           >
-            <motion.button
+            <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="w-full cursor-pointer py-2.5 px-4 rounded-xl font-semibold text-sm transition-all duration-200 border border-border/20 shadow-sm bg-surface-2 text-text-secondary hover:bg-surface hover:text-text-primary flex items-center justify-center gap-2"
             >
               View Profile
-            </motion.button>
+            </motion.div>
           </Link>
 
           {isPending ? (
