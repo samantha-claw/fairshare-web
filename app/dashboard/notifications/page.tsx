@@ -118,9 +118,10 @@ export default function NotificationsPage() {
     async function init() {
       const {
         data: { user },
+        error: authError,
       } = await supabase.auth.getUser();
 
-      if (!user) {
+      if (authError || !user) {
         router.replace("/login");
         return;
       }
@@ -135,7 +136,11 @@ export default function NotificationsPage() {
         .order("created_at", { ascending: false })
         .limit(50);
 
-      if (!cancelled && !error && data) {
+      if (cancelled) return;
+
+      if (error) {
+        console.error("Failed to fetch notifications:", error);
+      } else if (data) {
         setNotifications(data as Notification[]);
       }
 
@@ -176,21 +181,29 @@ export default function NotificationsPage() {
 
   // Mark single notification as read
   const markAsRead = async (id: string) => {
-    await supabase.from("notifications").update({ is_read: true }).eq("id", id);
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
-    );
+    const { error } = await supabase.from("notifications").update({ is_read: true }).eq("id", id);
+    if (!error) {
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
+      );
+    } else {
+      console.error("Failed to mark notification as read:", error);
+    }
   };
 
   // Mark all as read
   const markAllAsRead = async () => {
     if (!userId) return;
-    await supabase
+    const { error } = await supabase
       .from("notifications")
       .update({ is_read: true })
       .eq("user_id", userId)
       .eq("is_read", false);
-    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    if (!error) {
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    } else {
+      console.error("Failed to mark all notifications as read:", error);
+    }
   };
 
   if (loading) return <PageSkeleton />;

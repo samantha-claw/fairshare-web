@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { OverviewWidget } from "./_components/overview-widget";
 import { Receipt, HandCoins } from "lucide-react";
+import { useState } from "react";
 
 function DashboardSkeleton() {
   return (
@@ -33,11 +34,12 @@ function DashboardSkeleton() {
 
 export default function DashboardPage() {
   const d = useDashboard();
+  const [selectedRange, setSelectedRange] = useState("7");
 
   if (d.loading) return <DashboardSkeleton />;
 
-  // Calculate the max absolute balance for highlighting
-  const maxAbsBalance = Math.max(...d.groups.slice(0, 7).map(g => Math.abs(g.net_balance)));
+  const displayedGroups = selectedRange === "7" ? d.groups.slice(0, 7) : d.groups.slice(0, 30);
+  const maxAbsBalance = Math.max(...displayedGroups.map(g => Math.abs(g.net_balance)));
 
   return (
     <div className="flex-1 bg-background">
@@ -62,16 +64,20 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between mb-8">
                 <h2 className="text-lg font-bold text-text-primary">Financial view</h2>
                 <div className="relative">
-                  <select className="appearance-none bg-surface-2 border-none rounded-xl pl-4 pr-10 py-2 text-sm font-medium text-text-secondary focus:ring-0 cursor-pointer">
-                    <option>Last 7 days</option>
-                    <option>Last 30 days</option>
+                  <select
+                    value={selectedRange}
+                    onChange={(e) => setSelectedRange(e.target.value)}
+                    className="appearance-none bg-surface-2 border-none rounded-xl pl-4 pr-10 py-2 text-sm font-medium text-text-secondary focus:ring-0 cursor-pointer"
+                  >
+                    <option value="7">Last 7 days</option>
+                    <option value="30">Last 30 days</option>
                   </select>
                 </div>
               </div>
 
               {/* Bar Chart */}
               <div className="flex-1 flex items-end justify-end gap-3 pb-6 pr-4 mt-16">
-                {d.groups.slice(0, 7).map((group) => {
+                {displayedGroups.map((group) => {
                   const height = Math.abs(group.net_balance) > 0
                     ? Math.min(Math.abs(group.net_balance) / 100, 80) + 20
                     : 30;

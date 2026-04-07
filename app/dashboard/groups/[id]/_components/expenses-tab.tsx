@@ -249,6 +249,10 @@ export function ExpensesTab({
               {(isOwner || exp.paid_by === currentUser) && (
                 <div className="relative">
                   <button
+                    type="button"
+                    aria-label={`Open actions for ${exp.name}`}
+                    aria-haspopup="menu"
+                    aria-expanded={menuOpenId === exp.id}
                     onClick={() => setMenuOpenId(menuOpenId === exp.id ? null : exp.id)}
                     className="p-1.5 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-2 transition-colors"
                   >
