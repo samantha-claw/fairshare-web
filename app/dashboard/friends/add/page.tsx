@@ -45,11 +45,11 @@ function resolveDisplayName(user: SearchResultUser): string {
   return "Unknown User";
 }
 
-function resolveUsername(user: SearchResultUser): string {
+function resolveUsername(user: SearchResultUser): string | null {
   if (user.username && user.username.trim().length > 0) {
     return user.username.trim();
   }
-  return "unknown";
+  return null;
 }
 
 // ==========================================
@@ -76,6 +76,7 @@ function SearchUserCard({
 }: SearchUserCardProps) {
   const displayName = resolveDisplayName(user);
   const username = resolveUsername(user);
+  const hasValidUsername = Boolean(username);
   const avatarUrl = user.avatar_url;
 
   return (
@@ -122,7 +123,7 @@ function SearchUserCard({
 
         {/* Username */}
         <p className="text-text-secondary text-sm leading-relaxed line-clamp-1">
-          @{username}
+          {hasValidUsername ? `@${username}` : "Username unavailable"}
         </p>
 
         {/* Action Button */}
@@ -165,8 +166,13 @@ function SearchUserCard({
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => onSendRequest(username, user.id)}
-              disabled={isSending}
+              onClick={() => {
+                if (!username) {
+                  return;
+                }
+                onSendRequest(username, user.id);
+              }}
+              disabled={isSending || !hasValidUsername}
               className="cursor-pointer py-2.5 px-4 rounded-xl font-semibold text-sm transition-all duration-200 shadow-sm bg-text-primary text-surface hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSending ? (
