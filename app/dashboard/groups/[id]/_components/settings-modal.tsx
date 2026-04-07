@@ -44,12 +44,12 @@ export function SettingsModal({
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Group Settings">
       {/* ── Header ── */}
-      <div className="border-b border-gray-100 px-6 pb-4 pt-6">
+      <div className="border-b border-border px-6 pb-4 pt-6">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-gray-900">Group Settings</h3>
+          <h3 className="text-lg font-bold text-text-primary">Group Settings</h3>
           <button
             onClick={handleClose}
-            className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-md p-1 text-text-tertiary hover:bg-surface-2 hover:text-text-secondary"
           >
             <svg
               className="h-5 w-5"
@@ -71,10 +71,10 @@ export function SettingsModal({
       {/* ── Body ── */}
       <div className="px-6 py-6">
         {/* Group Info */}
-        <div className="mb-6 rounded-lg border border-gray-100 bg-gray-50 p-4">
-          <p className="text-sm text-gray-500">Group Name</p>
-          <p className="text-lg font-semibold text-gray-900">{group.name}</p>
-          <p className="mt-1 text-xs text-gray-400">
+        <div className="mb-6 rounded-lg border border-border bg-surface-2 p-4">
+          <p className="text-sm text-text-secondary">Group Name</p>
+          <p className="text-lg font-semibold text-text-primary">{group.name}</p>
+          <p className="mt-1 text-xs text-text-tertiary">
             Created {new Date(group.created_at).toLocaleDateString()} ·{" "}
             {members.length} members
           </p>
@@ -111,7 +111,7 @@ export function SettingsModal({
               value={deleteConfirmText}
               onChange={(e) => onDeleteConfirmTextChange(e.target.value)}
               placeholder={group.name}
-              className="mb-3 w-full rounded-lg border border-red-300 bg-white p-2.5 text-sm text-red-900 placeholder-red-300 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+              className="mb-3 w-full rounded-lg border border-red-300 bg-surface p-2.5 text-sm text-red-900 placeholder-red-300 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
             />
             <button
               onClick={onDeleteGroup}
@@ -128,10 +128,10 @@ export function SettingsModal({
             </button>
           </div>
         ) : (
-          <div className="rounded-xl border border-gray-200 bg-gray-50/50 p-5">
+          <div className="rounded-xl border border-border bg-surface-2/50 p-5">
             <div className="mb-3 flex items-center gap-2">
               <svg
-                className="h-5 w-5 text-gray-600"
+                className="h-5 w-5 text-text-secondary"
                 fill="none"
                 viewBox="0 0 24 24"
                 strokeWidth={1.5}
@@ -143,7 +143,7 @@ export function SettingsModal({
                   d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
                 />
               </svg>
-              <h4 className="text-sm font-bold text-gray-800">Leave Group</h4>
+              <h4 className="text-sm font-bold text-text-primary">Leave Group</h4>
             </div>
 
             {!canLeave ? (
@@ -169,7 +169,7 @@ export function SettingsModal({
                 </p>
               </div>
             ) : (
-              <p className="mb-4 text-xs text-gray-600">
+              <p className="mb-4 text-xs text-text-secondary">
                 You can leave this group since your balance is settled. This
                 action cannot be undone.
               </p>
@@ -194,10 +194,10 @@ export function SettingsModal({
       </div>
 
       {/* ── Footer ── */}
-      <div className="border-t border-gray-100 bg-gray-50 px-6 py-3">
+      <div className="border-t border-border bg-surface-2 px-6 py-3">
         <button
           onClick={handleClose}
-          className="w-full rounded-lg py-2 text-sm font-medium text-gray-600 hover:text-gray-900"
+          className="w-full rounded-lg py-2 text-sm font-medium text-text-secondary hover:text-text-primary"
         >
           Close
         </button>

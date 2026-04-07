@@ -41,12 +41,12 @@ function CreateGroupSkeleton() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
       <div className="mx-auto max-w-2xl animate-pulse px-4 py-8 sm:px-6">
         <div className="mb-8 h-6 w-48 rounded-lg bg-gray-200" />
-        <div className="rounded-3xl border border-gray-100 bg-white p-8 shadow-sm">
+        <div className="rounded-3xl border border-border bg-surface p-8 shadow-sm">
           <div className="space-y-6">
-            <div className="h-12 rounded-2xl bg-gray-100" />
-            <div className="h-12 rounded-2xl bg-gray-100" />
-            <div className="h-24 rounded-2xl bg-gray-100" />
-            <div className="h-40 rounded-2xl bg-gray-100" />
+            <div className="h-12 rounded-2xl bg-surface-2" />
+            <div className="h-12 rounded-2xl bg-surface-2" />
+            <div className="h-24 rounded-2xl bg-surface-2" />
+            <div className="h-40 rounded-2xl bg-surface-2" />
           </div>
         </div>
       </div>
@@ -104,7 +104,7 @@ function CurrencyDropdown({
   return (
     <div className="relative" ref={dropdownRef}>
       <label className="mb-2 flex items-center gap-1.5">
-        <span className="text-sm font-semibold text-gray-700">
+        <span className="text-sm font-semibold text-text-primary">
           Group Currency
         </span>
       </label>
@@ -116,27 +116,27 @@ function CurrencyDropdown({
           setOpen(!open);
           setSearch("");
         }}
-        className={`flex w-full items-center gap-3 rounded-2xl border bg-gray-50/50 px-4 py-3 text-left text-sm transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 ${
+        className={`flex w-full items-center gap-3 rounded-2xl border bg-surface-2/50 px-4 py-3 text-left text-sm transition-all duration-200 focus:bg-surface focus:outline-none focus:ring-2 ${
           error
             ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
             : open
-              ? "border-indigo-300 bg-white ring-2 ring-indigo-100"
-              : "border-gray-200 hover:border-gray-300 focus:border-indigo-300 focus:ring-indigo-100"
+              ? "border-border-border-2 bg-surface ring-2 ring-border"
+              : "border-border hover:border-gray-300 focus:border-border-border-2 focus:ring-border"
         }`}
       >
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-50 text-lg">
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-surface-2 text-lg">
           {selectedCurrency.flag}
         </div>
         <div className="flex-1">
-          <p className="font-semibold text-gray-900">{selectedCurrency.code}</p>
-          <p className="text-xs text-gray-500">{selectedCurrency.label}</p>
+          <p className="font-semibold text-text-primary">{selectedCurrency.code}</p>
+          <p className="text-xs text-text-secondary">{selectedCurrency.label}</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="rounded-lg bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+          <span className="rounded-lg bg-surface-2 px-2 py-0.5 text-xs font-medium text-text-secondary">
             {selectedCurrency.symbol}
           </span>
           <ChevronDown
-            className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${
+            className={`h-4 w-4 text-text-tertiary transition-transform duration-200 ${
               open ? "rotate-180" : ""
             }`}
           />
@@ -145,17 +145,17 @@ function CurrencyDropdown({
 
       {/* Dropdown Panel */}
       {open && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl shadow-gray-200/50">
+        <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-border bg-surface shadow-xl shadow-gray-200/50">
           {/* Search inside dropdown */}
-          <div className="border-b border-gray-100 p-3">
+          <div className="border-b border-border p-3">
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary" />
               <input
                 type="text"
                 value={search}
                 onChange={(ev) => setSearch(ev.target.value)}
                 placeholder="Search currencies…"
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                className="w-full rounded-xl border border-border bg-surface-2 py-2 pl-9 pr-3 text-sm text-text-primary placeholder-gray-400 focus:border-border-border-2 focus:bg-surface focus:outline-none focus:ring-2 focus:ring-border"
                 autoFocus
               />
             </div>
@@ -164,7 +164,7 @@ function CurrencyDropdown({
           {/* Options */}
           <div className="max-h-64 overflow-y-auto p-2">
             {filtered.length === 0 ? (
-              <p className="px-3 py-4 text-center text-sm text-gray-400">
+              <p className="px-3 py-4 text-center text-sm text-text-tertiary">
                 No currencies found
               </p>
             ) : (
@@ -181,22 +181,22 @@ function CurrencyDropdown({
                     }}
                     className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-150 ${
                       isSelected
-                        ? "bg-indigo-50 text-indigo-700"
-                        : "text-gray-700 hover:bg-gray-50"
+                        ? "bg-surface-2 text-text-primary"
+                        : "text-text-primary hover:bg-surface-2"
                     }`}
                   >
                     <span className="text-lg">{c.flag}</span>
                     <div className="flex-1">
                       <p
                         className={`text-sm font-medium ${
-                          isSelected ? "text-indigo-700" : "text-gray-900"
+                          isSelected ? "text-text-primary" : "text-text-primary"
                         }`}
                       >
                         {c.code}
                       </p>
                       <p
                         className={`text-xs ${
-                          isSelected ? "text-indigo-500" : "text-gray-400"
+                          isSelected ? "text-text-primary" : "text-text-tertiary"
                         }`}
                       >
                         {c.label}
@@ -205,14 +205,14 @@ function CurrencyDropdown({
                     <span
                       className={`rounded-md px-1.5 py-0.5 text-xs font-medium ${
                         isSelected
-                          ? "bg-indigo-100 text-indigo-600"
-                          : "bg-gray-100 text-gray-500"
+                          ? "bg-border text-text-primary"
+                          : "bg-surface-2 text-text-secondary"
                       }`}
                     >
                       {c.symbol}
                     </span>
                     {isSelected && (
-                      <CheckCircle2 className="h-4 w-4 text-indigo-600" />
+                      <CheckCircle2 className="h-4 w-4 text-text-primary" />
                     )}
                   </button>
                 );
@@ -260,7 +260,7 @@ function FriendCard({ friend, isSelected, onToggle }: FriendCardProps) {
       className={`group relative flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all duration-200 ${
         isSelected
           ? "border-emerald-400 bg-emerald-50/50 shadow-md shadow-emerald-100/50"
-          : "border-transparent bg-gray-50/50 hover:border-gray-200 hover:bg-white hover:shadow-sm"
+          : "border-transparent bg-surface-2/50 hover:border-border hover:bg-surface hover:shadow-sm"
       }`}
     >
       {/* Selection indicator */}
@@ -271,7 +271,7 @@ function FriendCard({ friend, isSelected, onToggle }: FriendCardProps) {
             : "scale-0 bg-gray-300"
         }`}
       >
-        <Check className="h-3.5 w-3.5 text-white" />
+        <Check className="h-3.5 w-3.5 text-surface" />
       </div>
 
       {/* Avatar */}
@@ -298,14 +298,14 @@ function FriendCard({ friend, isSelected, onToggle }: FriendCardProps) {
       <div className="w-full text-center">
         <p
           className={`truncate text-xs font-semibold transition-colors ${
-            isSelected ? "text-emerald-700" : "text-gray-700"
+            isSelected ? "text-emerald-700" : "text-text-primary"
           }`}
         >
           {friend.display_name}
         </p>
         <p
           className={`truncate text-[10px] transition-colors ${
-            isSelected ? "text-emerald-500" : "text-gray-400"
+            isSelected ? "text-emerald-500" : "text-text-tertiary"
           }`}
         >
           @{friend.username}
@@ -327,38 +327,26 @@ export default function CreateGroupPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
       <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
-        {/* ── Back Button ──────────────────────────── */}
-        <button
-          type="button"
-          onClick={g.handleCancel}
-          disabled={g.saving}
-          className="mb-6 inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-medium text-gray-500 transition-all hover:bg-white hover:text-gray-900 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Dashboard
-        </button>
-
         {/* ── Main Form Card ───────────────────────── */}
-        <div className="relative overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
-          {/* Decorative Background */}
-          <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-gradient-to-br from-indigo-100/50 to-purple-100/30 blur-3xl" />
-          <div className="absolute -bottom-16 -left-16 h-40 w-40 rounded-full bg-gradient-to-tr from-blue-100/30 to-cyan-100/20 blur-2xl" />
+        <div className="relative overflow-hidden rounded-3xl border border-border bg-surface shadow-sm">
+          <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-gradient-to-br from-surface-2/50 to-border/30 blur-3xl" />
+          <div className="absolute -bottom-16 -left-16 h-40 w-40 rounded-full bg-gradient-to-tr from-surface-2/30 to-border/20 blur-2xl" />
 
           {/* Header Banner */}
-          <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 px-8 pb-8 pt-8">
+          <div className="relative bg-gradient-to-br from-text-primary via-text-secondary to-border px-8 pb-8 pt-8">
             {/* Decorative */}
-            <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
+            <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-surface/10 blur-xl" />
             <div className="absolute bottom-4 left-1/4 h-16 w-16 rounded-full bg-purple-400/15 blur-lg" />
 
             <div className="relative flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
-                <Sparkles className="h-5 w-5 text-white" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface/20 backdrop-blur-sm">
+                <Sparkles className="h-5 w-5 text-surface" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">
+                <h1 className="text-xl font-bold text-surface">
                   Create New Group
                 </h1>
-                <p className="text-sm text-indigo-200">
+                <p className="text-sm text-text-secondary">
                   Split expenses with your friends
                 </p>
               </div>
@@ -384,7 +372,7 @@ export default function CreateGroupPage() {
               {/* ── Group Name ────────────────────── */}
               <div>
                 <label className="mb-2 flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-sm font-semibold text-gray-700">
+                  <span className="flex items-center gap-1.5 text-sm font-semibold text-text-primary">
                     Group Name
                     <span className="text-rose-400">*</span>
                   </span>
@@ -392,7 +380,7 @@ export default function CreateGroupPage() {
                     className={`text-[10px] font-medium ${
                       g.name.length > 100
                         ? "text-rose-500"
-                        : "text-gray-400"
+                        : "text-text-tertiary"
                     }`}
                   >
                     {g.name.length}/100
@@ -402,7 +390,7 @@ export default function CreateGroupPage() {
                   <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2">
                     <Type
                       className={`h-4 w-4 ${
-                        g.errors.name ? "text-rose-400" : "text-gray-400"
+                        g.errors.name ? "text-rose-400" : "text-text-tertiary"
                       }`}
                     />
                   </div>
@@ -413,10 +401,10 @@ export default function CreateGroupPage() {
                     placeholder='e.g. "Europe Trip 2025"'
                     maxLength={100}
                     disabled={g.saving}
-                    className={`block w-full rounded-2xl border bg-gray-50/50 py-3 pl-11 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                    className={`block w-full rounded-2xl border bg-surface-2/50 py-3 pl-11 pr-4 text-sm text-text-primary placeholder-gray-400 transition-all duration-200 focus:bg-surface focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
                       g.errors.name
                         ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
-                        : "border-gray-200 focus:border-indigo-300 focus:ring-indigo-100"
+                        : "border-border focus:border-border-border-2 focus:ring-border"
                     }`}
                   />
                 </div>
@@ -427,7 +415,7 @@ export default function CreateGroupPage() {
                   </p>
                 )}
                 {!g.errors.name && (
-                  <p className="mt-1.5 text-xs text-gray-400">
+                  <p className="mt-1.5 text-xs text-text-tertiary">
                     Give your group a memorable name.
                   </p>
                 )}
@@ -436,14 +424,14 @@ export default function CreateGroupPage() {
               {/* ── Description ───────────────────── */}
               <div>
                 <label className="mb-2 flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-sm font-semibold text-gray-700">
+                  <span className="flex items-center gap-1.5 text-sm font-semibold text-text-primary">
                     Description
                   </span>
                   <span
                     className={`text-[10px] font-medium ${
                       g.description.length > 500
                         ? "text-rose-500"
-                        : "text-gray-400"
+                        : "text-text-tertiary"
                     }`}
                   >
                     {g.description.length}/500
@@ -455,7 +443,7 @@ export default function CreateGroupPage() {
                       className={`h-4 w-4 ${
                         g.errors.description
                           ? "text-rose-400"
-                          : "text-gray-400"
+                          : "text-text-tertiary"
                       }`}
                     />
                   </div>
@@ -466,10 +454,10 @@ export default function CreateGroupPage() {
                     rows={3}
                     maxLength={500}
                     disabled={g.saving}
-                    className={`block w-full resize-none rounded-2xl border bg-gray-50/50 py-3 pl-11 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                    className={`block w-full resize-none rounded-2xl border bg-surface-2/50 py-3 pl-11 pr-4 text-sm text-text-primary placeholder-gray-400 transition-all duration-200 focus:bg-surface focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
                       g.errors.description
                         ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
-                        : "border-gray-200 focus:border-indigo-300 focus:ring-indigo-100"
+                        : "border-border focus:border-border-border-2 focus:ring-border"
                     }`}
                   />
                 </div>
@@ -480,7 +468,7 @@ export default function CreateGroupPage() {
                   </p>
                 )}
                 {!g.errors.description && (
-                  <p className="mt-1.5 text-xs text-gray-400">
+                  <p className="mt-1.5 text-xs text-text-tertiary">
                     Optional. Describe what this group is about.
                   </p>
                 )}
@@ -496,20 +484,20 @@ export default function CreateGroupPage() {
               />
 
               {/* ── Divider ──────────────────────── */}
-              <div className="border-t border-gray-100" />
+              <div className="border-t border-border" />
 
               {/* ── Friend Selection ─────────────── */}
               <div>
                 <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50">
-                      <UserPlus className="h-3.5 w-3.5 text-indigo-600" />
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-surface-2">
+                      <UserPlus className="h-3.5 w-3.5 text-text-primary" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-gray-900">
+                      <h3 className="text-sm font-bold text-text-primary">
                         Add Friends
                       </h3>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-text-tertiary">
                         {g.selectedFriendIds.length > 0
                           ? `${g.selectedFriendIds.length} selected`
                           : "Optional — you can add members later"}
@@ -525,7 +513,7 @@ export default function CreateGroupPage() {
                           type="button"
                           onClick={g.selectAllFriends}
                           disabled={g.saving}
-                          className="rounded-lg px-2 py-1 text-[10px] font-semibold text-indigo-600 transition-all hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="rounded-lg px-2 py-1 text-[10px] font-semibold text-text-primary transition-all hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           Select All
                         </button>
@@ -534,7 +522,7 @@ export default function CreateGroupPage() {
                           type="button"
                           onClick={g.deselectAllFriends}
                           disabled={g.saving}
-                          className="rounded-lg px-2 py-1 text-[10px] font-semibold text-gray-500 transition-all hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="rounded-lg px-2 py-1 text-[10px] font-semibold text-text-secondary transition-all hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           Deselect All
                         </button>
@@ -581,33 +569,33 @@ export default function CreateGroupPage() {
                 {/* Search friends */}
                 {g.friends.length > 4 && (
                   <div className="relative mb-3">
-                    <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary" />
                     <input
                       type="text"
                       value={g.friendSearch}
                       onChange={(ev) => g.setFriendSearch(ev.target.value)}
                       placeholder="Search friends…"
                       disabled={g.saving}
-                      className="w-full rounded-xl border border-gray-200 bg-gray-50/50 py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all focus:border-indigo-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="w-full rounded-xl border border-border bg-surface-2/50 py-2.5 pl-10 pr-4 text-sm text-text-primary placeholder-gray-400 transition-all focus:border-border-border-2 focus:bg-surface focus:outline-none focus:ring-2 focus:ring-border disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
                 )}
 
                 {/* Friends Grid */}
                 {g.friends.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 px-6 py-8 text-center">
+                  <div className="rounded-2xl border border-dashed border-border bg-surface-2/50 px-6 py-8 text-center">
                     <Users className="mx-auto mb-2 h-8 w-8 text-gray-300" />
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm font-medium text-text-secondary">
                       No friends yet
                     </p>
-                    <p className="mt-1 text-xs text-gray-400">
+                    <p className="mt-1 text-xs text-text-tertiary">
                       Add friends first, then invite them to groups.
                     </p>
                   </div>
                 ) : g.filteredFriends.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 px-6 py-6 text-center">
+                  <div className="rounded-2xl border border-dashed border-border bg-surface-2/50 px-6 py-6 text-center">
                     <Search className="mx-auto mb-2 h-6 w-6 text-gray-300" />
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-text-secondary">
                       No friends match &quot;{g.friendSearch}&quot;
                     </p>
                   </div>
@@ -634,12 +622,12 @@ export default function CreateGroupPage() {
             </div>
 
             {/* ── Divider ────────────────────────── */}
-            <div className="my-6 border-t border-gray-100" />
+            <div className="my-6 border-t border-border" />
 
             {/* ── Summary Note ───────────────────── */}
-            <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-indigo-100 bg-indigo-50/50 px-4 py-3">
-              <Coins className="mt-0.5 h-4 w-4 flex-shrink-0 text-indigo-500" />
-              <p className="text-xs leading-relaxed text-indigo-700">
+            <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-border bg-surface-2/50 px-4 py-3">
+              <Coins className="mt-0.5 h-4 w-4 flex-shrink-0 text-text-primary" />
+              <p className="text-xs leading-relaxed text-text-primary">
                 All expenses in this group will be tracked in{" "}
                 <strong>
                   {g.selectedCurrency.code} ({g.selectedCurrency.symbol})
@@ -663,7 +651,7 @@ export default function CreateGroupPage() {
                 type="button"
                 onClick={g.handleCancel}
                 disabled={g.saving}
-                className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-600 transition-all duration-200 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-2xl border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-text-secondary transition-all duration-200 hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Cancel
@@ -673,7 +661,7 @@ export default function CreateGroupPage() {
               <button
                 type="submit"
                 disabled={g.saving}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-500/30 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r bg-text-primary px-6 py-2.5 text-sm font-semibold text-surface shadow-lg shadow-text-primary/10 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-text-primary/15 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
               >
                 {g.saving ? (
                   <>

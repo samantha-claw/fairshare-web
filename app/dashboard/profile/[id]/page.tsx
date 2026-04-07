@@ -29,7 +29,7 @@ export default function UserProfilePage() {
   if (p.loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="flex items-center gap-2 text-gray-500">
+        <div className="flex items-center gap-2 text-text-secondary">
           <Spinner className="h-5 w-5" />
           Loading Profile…
         </div>
@@ -41,17 +41,17 @@ export default function UserProfilePage() {
   if (p.error || !p.profile) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center p-4 text-center">
-        <div className="rounded-3xl border border-gray-100 bg-white p-8 shadow-sm">
+        <div className="rounded-3xl border border-border bg-surface p-8 shadow-sm">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50">
             <User className="h-7 w-7 text-red-400" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900">User Not Found</h2>
-          <p className="mt-2 max-w-xs text-sm text-gray-500">
+          <h2 className="text-xl font-bold text-text-primary">User Not Found</h2>
+          <p className="mt-2 max-w-xs text-sm text-text-secondary">
             {p.error || "This profile doesn't exist or is private."}
           </p>
           <button
             onClick={p.handleBack}
-            className="mt-6 rounded-2xl bg-gray-100 px-5 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-200"
+            className="mt-6 rounded-2xl bg-surface-2 px-5 py-2.5 text-sm font-semibold text-text-primary transition-colors hover:bg-gray-200"
           >
             Go Back
           </button>
@@ -59,11 +59,6 @@ export default function UserProfilePage() {
       </div>
     );
   }
-
-  const profileQRUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/dashboard/profile/${p.profile.username}`
-      : "";
 
   const profileDisplayName =
     p.profile.display_name || p.profile.full_name || p.profile.username;
@@ -131,7 +126,7 @@ export default function UserProfilePage() {
       <QRShareModal
         isOpen={isQRModalOpen}
         onClose={() => setIsQRModalOpen(false)}
-        value={profileQRUrl}
+        value={p.profileUrl}
         title={profileDisplayName}
         subtitle={`@${p.profile.username}`}
         type="profile"

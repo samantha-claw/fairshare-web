@@ -6,11 +6,12 @@
 import { useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { Spinner } from "@/components/ui/spinner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FloatingActionMenu } from "@/components/ui/floating-action-menu";
 import { createClient } from "@/lib/supabase/client";
-import { QrCode } from "lucide-react";
+import { QrCode, Settings, Receipt, Handshake, Plus } from "lucide-react";
 
-
-// ── Decomposed hooks ───────────────────────────────────
+// ── Hooks ─────────────────────────────────────────
 import {
   useGroupData,
   useGroupExpenses,
@@ -20,11 +21,13 @@ import {
   useGroupRealtime,
 } from "@/hooks/group";
 
-// ── Components ─────────────────────────────────────────
-import { SummaryCards } from "./_components/summary-cards";
-import { MembersCard } from "./_components/members-card";
-import { BalancesCard } from "./_components/balances-card";
-import { PendingSettlements } from "./_components/pending-settlements";
+// ── Tab Components ─────────────────────────────────
+import { OverviewTab } from "./_components/overview-tab";
+import { SettleTab } from "./_components/settle-tab";
+import { AnalysisTab } from "./_components/analysis-tab";
+import { MembersTab } from "./_components/members-tab";
+
+// ── Existing Components ────────────────────────────
 import { ExpensesTab } from "./_components/expenses-tab";
 import { ActivityTab } from "./_components/activity-tab";
 import { AddMemberModal } from "./_components/add-member-modal";
@@ -50,7 +53,6 @@ export default function GroupDetailsPage() {
     data.refetch,
     data.currentUser || ""
   );
-
   const settleCtl = useGroupSettlements(groupId, data.currentUser, data.refetch);
   const memberCtl = useGroupMembers(groupId, data.members, data.refetch);
   const settingsCtl = useGroupSettings(
@@ -62,7 +64,7 @@ export default function GroupDetailsPage() {
   useGroupRealtime(groupId, data.refetch);
 
   /* ── Page-local UI state ─────────────────────────────── */
-  const [activeTab, setActiveTab] = useState<"expenses" | "activity">("expenses");
+  const [activeTab, setActiveTab] = useState("overview");
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isAllExpensesModalOpen, setIsAllExpensesModalOpen] = useState(false);
   const [localToken, setLocalToken] = useState<string | null>(null);
@@ -73,14 +75,11 @@ export default function GroupDetailsPage() {
       "reset_group_invite_token",
       { p_group_id: data.group!.id }
     );
-
     if (error) {
       console.error("Reset token RPC error:", error);
       throw new Error(error.message);
     }
-
     const newToken = typeof rpcData === "string" ? rpcData : rpcData?.token;
-
     if (newToken) {
       setLocalToken(newToken);
     } else {
@@ -91,8 +90,8 @@ export default function GroupDetailsPage() {
   /* ── Loading ─────────────────────────────────────────── */
   if (data.loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="flex items-center gap-2 text-gray-500">
+      <div className="flex min-h-screen items-center justify-center bg-surface-2">
+        <div className="flex items-center gap-2 text-text-secondary">
           <Spinner className="h-5 w-5" />
           Loading Group…
         </div>
@@ -103,14 +102,14 @@ export default function GroupDetailsPage() {
   /* ── Error ───────────────────────────────────────────── */
   if (data.error || !data.group) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="rounded-2xl bg-white p-8 text-center shadow-lg">
-          <h2 className="text-xl font-semibold text-red-600">
+      <div className="flex min-h-screen items-center justify-center bg-surface-2">
+        <div className="rounded-2xl bg-surface p-8 text-center shadow-lg">
+          <h2 className="text-xl font-semibold text-negative">
             {data.error || "Group not found"}
           </h2>
           <button
             onClick={data.goBack}
-            className="mt-4 text-blue-600 hover:underline"
+            className="mt-4 text-text-primary hover:underline"
           >
             Go Back
           </button>
@@ -121,10 +120,7 @@ export default function GroupDetailsPage() {
 
   /* ── Derived constants ───────────────────────────────── */
   const currency = data.group.currency || "USD";
-
-  const activeToken =
-    localToken || (data.group as any).invite_token || null;
-
+  const activeToken = localToken || (data.group as any).invite_token || null;
   const shareUrl =
     typeof window !== "undefined"
       ? activeToken
@@ -132,17 +128,31 @@ export default function GroupDetailsPage() {
         : `${window.location.origin}/join?id=${data.group.id}`
       : "";
 
+  /* ── FAB Options ─────────────────────────────────────── */
+  const fabOptions = [
+    {
+      label: "Add Expense",
+      onClick: expenseCtl.openAddExpenseModal,
+      Icon: <Receipt className="h-4 w-4" />,
+    },
+    {
+      label: "Settle Up",
+      onClick: settleCtl.openSettleUpModal,
+      Icon: <Handshake className="h-4 w-4" />,
+    },
+  ];
+
   /* ── Render ──────────────────────────────────────────── */
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-surface-2 pb-24">
       {/* ── Header ───────────────────────────────────── */}
-      <div className="border-b border-gray-200 bg-white px-4 py-5 sm:px-6 sm:py-6">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
+      <header className="sticky top-0 z-40 border-b border-border bg-surface px-4 py-4">
+        <div className="mx-auto flex max-w-4xl items-center justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-xl font-bold tracking-tight text-gray-900 sm:text-2xl">
+            <h1 className="truncate text-xl font-bold text-text-primary">
               {data.group.name}
             </h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="text-sm text-text-secondary">
               {data.members.length} member{data.members.length !== 1 && "s"} ·{" "}
               {currency}
             </p>
@@ -151,148 +161,105 @@ export default function GroupDetailsPage() {
           <div className="flex shrink-0 items-center gap-2">
             <button
               onClick={() => setIsShareModalOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 shadow-sm transition-all duration-200 hover:bg-indigo-100 active:scale-95"
+              className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-text-primary transition-all hover:bg-surface-2"
               title="Share Group via QR"
             >
               <QrCode className="h-4 w-4" />
               <span className="hidden sm:inline">Share</span>
             </button>
-
             <button
               onClick={() => settingsCtl.setIsSettingsModalOpen(true)}
-              className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 shadow-sm transition-all duration-200 hover:bg-gray-50 active:scale-95"
+              className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-text-secondary transition-all hover:bg-surface-2"
               title="Group Settings"
             >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
+              <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">Settings</span>
             </button>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* ── Main Content ─────────────────────────────── */}
-      <main className="mx-auto w-full max-w-6xl space-y-6 overflow-hidden px-4 py-6 sm:px-6">
-        <SummaryCards
-          totalGroupExpenses={data.totalGroupExpenses}
-          myNetBalance={data.myNetBalance}
-          pendingCount={data.pendingSettlements.length}
-          currency={currency}
-        />
+      {/* ── Tabs ─────────────────────────────────────── */}
+      <div className="mx-auto max-w-4xl px-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="mt-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="expenses">
+              Expenses
+            </TabsTrigger>
+            <TabsTrigger
+              value="settle"
+              badge={data.pendingSettlements.length || undefined}
+            >
+              Settle
+            </TabsTrigger>
+            <TabsTrigger value="activity">Activity</TabsTrigger>
+            <TabsTrigger value="analysis">Analysis</TabsTrigger>
+            <TabsTrigger value="members">Members</TabsTrigger>
+          </TabsList>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* ✅ FIX 1: Added min-w-0 overflow-hidden to left column */}
-          <div className="min-w-0 space-y-6 overflow-hidden lg:col-span-2">
-            <PendingSettlements
-              settlements={data.pendingSettlements}
+          <TabsContent value="overview">
+            <OverviewTab
+              totalGroupExpenses={data.totalGroupExpenses}
+              myNetBalance={data.myNetBalance}
+              balances={data.balances}
+              currency={currency}
+              currentUserId={data.currentUser}
+            />
+          </TabsContent>
+
+          <TabsContent value="expenses">
+            <ExpensesTab
+              expenses={data.expenses}
+              onAddExpense={expenseCtl.openAddExpenseModal}
+              currency={currency}
+              currentUser={data.currentUser}
+              isOwner={data.isOwner}
+              onEditExpense={expenseCtl.openEditExpenseModal}
+              onDeleteExpense={expenseCtl.handleDeleteExpense}
+              onViewAll={() => setIsAllExpensesModalOpen(true)}
+            />
+          </TabsContent>
+
+          <TabsContent value="settle">
+            <SettleTab
+              balances={data.balances}
+              pendingSettlements={data.pendingSettlements}
               currentUser={data.currentUser}
               currency={currency}
               processingSettlementId={settleCtl.processingSettlementId}
               onApprove={settleCtl.handleApproveSettlement}
               onReject={settleCtl.handleRejectSettlement}
               onDelete={settleCtl.handleDeleteSettlement}
+              onSettleUp={settleCtl.openSettleUpModal}
             />
+          </TabsContent>
 
-            <section className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-              {/* ── Tabs + Action Buttons ── */}
-              <div className="flex flex-col border-b border-gray-200 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex">
-                  <button
-                    onClick={() => setActiveTab("expenses")}
-                    className={`flex-1 px-4 py-3 text-sm font-semibold transition-all duration-200 sm:flex-initial sm:px-6 ${
-                      activeTab === "expenses"
-                        ? "border-b-2 border-blue-600 text-blue-600"
-                        : "text-gray-500 hover:text-gray-700"
-                    }`}
-                  >
-                    💸 Expenses ({data.expenses.length})
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("activity")}
-                    className={`flex-1 px-4 py-3 text-sm font-semibold transition-all duration-200 sm:flex-initial sm:px-6 ${
-                      activeTab === "activity"
-                        ? "border-b-2 border-blue-600 text-blue-600"
-                        : "text-gray-500 hover:text-gray-700"
-                    }`}
-                  >
-                    📋 Activity ({data.allActivities.length})
-                  </button>
-                </div>
+          <TabsContent value="activity">
+            <div className="rounded-2xl border border-border bg-surface p-6">
+              <ActivityTab allActivities={data.allActivities} currency={currency} />
+            </div>
+          </TabsContent>
 
-                <div className="mb-5 mt-4 flex w-full items-center justify-center gap-3 sm:justify-end">
-                  <button
-                    onClick={settleCtl.openSettleUpModal}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-50 active:scale-[0.98] sm:flex-none"
-                  >
-                    <span>🤝</span> Settle Up
-                  </button>
-                  <button
-                    onClick={expenseCtl.openAddExpenseModal}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-green-700 active:scale-[0.98] sm:flex-none"
-                  >
-                    <span>💸</span> Add Expense
-                  </button>
-                </div>
-              </div>
+          <TabsContent value="analysis">
+            <AnalysisTab />
+          </TabsContent>
 
-              {/* ── Tab Content ── */}
-              <div className="p-4 sm:p-6">
-                {activeTab === "expenses" && (
-                  <ExpensesTab
-                    expenses={data.expenses}
-                    onAddExpense={expenseCtl.openAddExpenseModal}
-                    currency={currency}
-                    currentUser={data.currentUser}
-                    isOwner={data.isOwner}
-                    onEditExpense={expenseCtl.openEditExpenseModal}
-                    onDeleteExpense={expenseCtl.handleDeleteExpense}
-                    onViewAll={() => setIsAllExpensesModalOpen(true)}
-                  />
-                )}
-
-                {activeTab === "activity" && (
-                  <ActivityTab
-                    allActivities={data.allActivities}
-                    currency={currency}
-                  />
-                )}
-              </div>
-            </section>
-          </div>
-
-          {/* ✅ FIX 2: Added min-w-0 overflow-hidden to right column (Members + Balances) */}
-          <div className="min-w-0 space-y-6 overflow-hidden">
-            <MembersCard
+          <TabsContent value="members">
+            <MembersTab
               members={data.members}
               group={data.group}
               isOwner={data.isOwner}
               onOpenAddModal={memberCtl.openMemberModal}
               onRemoveMember={memberCtl.handleRemoveMember}
+              onOpenQRModal={() => setIsShareModalOpen(true)}
             />
-            <BalancesCard
-              balances={data.balances}
-              currency={currency}
-              currentUserId={data.currentUser}
-            />
-          </div>
-        </div>
-      </main>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* ── Floating Action Button ─────────────────────── */}
+      <FloatingActionMenu options={fabOptions} />
 
       {/* ── Modals ───────────────────────────────────── */}
       <AddMemberModal
@@ -331,10 +298,10 @@ export default function GroupDetailsPage() {
           expenseCtl.splitType === "equal"
             ? "equal"
             : expenseCtl.splitType === "percentage"
-              ? "percentage"
-              : expenseCtl.splitType === "shares"
-                ? "shares"
-                : "exact"
+            ? "percentage"
+            : expenseCtl.splitType === "shares"
+            ? "shares"
+            : "exact"
         }
         initialSplits={expenseCtl.computedSplits}
       />

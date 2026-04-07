@@ -209,6 +209,11 @@ export function useFriends() {
   /* ── Send Friend Request ─────────────────────────────── */
 
   async function handleSendRequest(targetUsername: string, targetId: string) {
+    if (!targetUsername || !targetUsername.trim()) {
+      toast.error("Username is required to send a request.");
+      return;
+    }
+
     setSendingToId(targetId);
     try {
       const { error } = await supabase.rpc("send_friend_request", {

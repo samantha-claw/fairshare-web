@@ -1,27 +1,10 @@
 "use client";
 
-// ==========================================
-// 📦 IMPORTS
-// ==========================================
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-} from "recharts";
-import { formatCurrency } from "@/lib/utils";
-import { TrendingUp, TrendingDown, Wallet, Activity } from "lucide-react";
+import { useState, useEffect } from "react";
+import { TrendingDown, TrendingUp, Eye, EyeOff, DollarSign, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { motion, useSpring, useTransform, animate } from "framer-motion";
 import type { GroupBalance } from "@/types/dashboard";
 
-// ==========================================
-// 🧩 TYPES
-// ==========================================
 interface OverviewWidgetProps {
   totalNet: number;
   totalOwedToMe: number;
@@ -29,210 +12,217 @@ interface OverviewWidgetProps {
   groups: GroupBalance[];
 }
 
-// ==========================================
-// 🎨 UI RENDER
-// ==========================================
+// Simple Animated Balance Card Component
+interface AnimatedBalanceCardProps {
+  title: string;
+  amount: number;
+  currency: string;
+  type: "owe" | "owed";
+  isVisible: boolean;
+  onToggleVisibility: () => void;
+}
+
+function AnimatedBalanceCard({
+  title,
+  amount,
+  currency,
+  type,
+  isVisible,
+  onToggleVisibility,
+}: AnimatedBalanceCardProps) {
+  const springValue = useSpring(0, { damping: 100, stiffness: 100 });
+  const displayValue = useTransform(springValue, (latest) => {
+    if (latest >= 1000) {
+      return `${(latest / 1000).toFixed(1)}k`;
+    }
+    return latest.toLocaleString();
+  });
+
+  useEffect(() => {
+    const controls = animate(springValue, amount, {
+      duration: 2,
+      ease: "easeOut",
+    });
+    return () => controls.stop();
+  }, [amount, springValue]);
+
+  const isOwe = type === "owe";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="rounded-2xl border border-border bg-surface p-6"
+    >
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div
+              className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                isOwe ? "bg-negative/10" : "bg-positive/10"
+              }`}
+            >
+              {isOwe ? (
+                <TrendingDown className="w-5 h-5 text-negative" />
+              ) : (
+                <TrendingUp className="w-5 h-5 text-positive" />
+              )}
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-text-primary">{title}</h2>
+              <p className="text-xs text-text-secondary">
+                {isOwe ? "Outstanding debts" : "Pending payments"}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onToggleVisibility}
+            className="flex items-center justify-center w-8 h-8 rounded-full bg-surface-2 hover:bg-surface-2/80 transition-colors"
+          >
+            {isVisible ? (
+              <Eye className="w-4 h-4 text-text-secondary" />
+            ) : (
+              <EyeOff className="w-4 h-4 text-text-secondary" />
+            )}
+          </button>
+        </div>
+
+        {/* Balance Amount */}
+        <div className="flex items-baseline gap-2 mb-2">
+          {isVisible ? (
+            <>
+              <DollarSign className="w-5 h-5 text-text-secondary mt-1" />
+              <motion.span className={`text-4xl font-bold tracking-tight ${
+                isOwe ? "text-negative" : "text-positive"
+              }`}>
+                {displayValue}
+              </motion.span>
+            </>
+          ) : (
+            <span className="text-4xl font-bold tracking-tight text-text-primary">
+              ••••••
+            </span>
+          )}
+        </div>
+
+        {/* Status indicator */}
+        <div className="flex items-center gap-2">
+          <span
+            className={`flex items-center justify-center rounded-full p-1 ${
+              isOwe ? "bg-negative/20" : "bg-positive/20"
+            }`}
+          >
+            {isOwe ? (
+              <ArrowDownRight className="w-3 h-3 text-negative" />
+            ) : (
+              <ArrowUpRight className="w-3 h-3 text-positive" />
+            )}
+          </span>
+          <p className="text-sm text-text-secondary">
+            <span className={`font-semibold ${
+              isOwe ? "text-negative" : "text-positive"
+            }`}>
+              {isOwe ? "You owe" : "You are owed"}
+            </span>
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export function OverviewWidget({
   totalNet,
   totalOwedToMe,
   totalIOwe,
   groups,
 }: OverviewWidgetProps) {
-  const hasData = totalOwedToMe > 0 || totalIOwe > 0;
-
-  const pieData = hasData
-    ? [
-        { name: "Owed to you", value: totalOwedToMe },
-        { name: "You owe", value: totalIOwe },
-      ]
-    : [{ name: "No data", value: 1 }];
-
-  const PIE_COLORS = hasData ? ["#34d399", "#fb7185"] : ["#334155"];
-
-  const barData = groups
-    .filter((g) => g.net_balance !== 0)
-    .slice(0, 6)
-    .map((g) => ({
-      name: g.group_name.length > 10 ? g.group_name.slice(0, 10) + "…" : g.group_name,
-      balance: g.net_balance,
-      fill: g.net_balance > 0 ? "#34d399" : "#fb7185",
-    }));
+  const [showOwe, setShowOwe] = useState(true);
+  const [showOwed, setShowOwed] = useState(true);
+  const currency = groups[0]?.currency ?? "$";
 
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-1">
-      {/* Decorative Elements */}
-      <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl" />
-      <div className="absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-purple-500/10 blur-3xl" />
-      <div className="absolute right-1/3 top-1/2 h-40 w-40 rounded-full bg-blue-500/5 blur-2xl" />
+    <div className="space-y-5">
+      {/* Financial Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* You Owe Card */}
+        <AnimatedBalanceCard
+          title="You Owe"
+          amount={totalIOwe}
+          currency={currency}
+          type="owe"
+          isVisible={showOwe}
+          onToggleVisibility={() => setShowOwe(!showOwe)}
+        />
 
-      <div className="relative rounded-[22px] bg-gradient-to-br from-white/[0.06] to-white/[0.02] p-6 backdrop-blur-xl sm:p-8">
-        <div className="grid gap-8 lg:grid-cols-5">
-          {/* ── Left: Balance Hero ────────────────────── */}
-          <div className="lg:col-span-3">
-            <div className="mb-1 flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10">
-                <Activity className="h-4 w-4 text-indigo-300" />
-              </div>
-              <span className="text-xs font-semibold uppercase tracking-widest text-indigo-300/80">
-                Financial Overview
-              </span>
-            </div>
+        {/* You Are Owed Card */}
+        <AnimatedBalanceCard
+          title="You Are Owed"
+          amount={totalOwedToMe}
+          currency={currency}
+          type="owed"
+          isVisible={showOwed}
+          onToggleVisibility={() => setShowOwed(!showOwed)}
+        />
+      </div>
 
-            <div className="mb-6 mt-4">
-              <p className="mb-1 text-sm text-slate-400">Total Balance</p>
-              <p
-                className={`font-mono text-5xl font-black tracking-tight sm:text-6xl ${
-                  totalNet > 0
-                    ? "text-emerald-400"
-                    : totalNet < 0
-                    ? "text-rose-400"
-                    : "text-white"
-                }`}
-              >
-                {totalNet > 0 && "+"}
-                {totalNet < 0 && "−"}
-                {formatCurrency(totalNet)}
-              </p>
-            </div>
-
-            {/* Owed / Owe Cards */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="group rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.08] p-4 transition-all hover:border-emerald-500/40 hover:bg-emerald-500/[0.12]">
-                <div className="mb-2 flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/20">
-                    <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
-                  </div>
-                  <span className="text-xs font-medium text-emerald-300/70">You are owed</span>
-                </div>
-                <p className="font-mono text-2xl font-bold text-emerald-400">
-                  +{formatCurrency(totalOwedToMe)}
-                </p>
-              </div>
-
-              <div className="group rounded-2xl border border-rose-500/20 bg-rose-500/[0.08] p-4 transition-all hover:border-rose-500/40 hover:bg-rose-500/[0.12]">
-                <div className="mb-2 flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-500/20">
-                    <TrendingDown className="h-3.5 w-3.5 text-rose-400" />
-                  </div>
-                  <span className="text-xs font-medium text-rose-300/70">You owe</span>
-                </div>
-                <p className="font-mono text-2xl font-bold text-rose-400">
-                  −{formatCurrency(totalIOwe)}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Right: Charts ────────────────────────── */}
-          <div className="flex flex-col items-center justify-center lg:col-span-2">
-            {/* Donut Chart */}
-            <div className="relative h-48 w-48">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={55}
-                    outerRadius={78}
-                    paddingAngle={hasData ? 6 : 0}
-                    dataKey="value"
-                    strokeWidth={0}
-                  >
-                    {pieData.map((_entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={PIE_COLORS[index % PIE_COLORS.length]}
-                        className="transition-opacity hover:opacity-80"
-                      />
-                    ))}
-                  </Pie>
-                  {hasData && (
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#1e293b",
-                        border: "1px solid #334155",
-                        borderRadius: "12px",
-                        fontSize: "12px",
-                        color: "#e2e8f0",
-                      }}
-                      formatter={(value: any) => {
-                        const numValue = Number(value) || 0;
-                        const formatted = formatCurrency(numValue);
-                        return `${numValue > 0 ? "+" : ""}${formatted}`;
-                      }}
-                    />
-                  )}
-                </PieChart>
-              </ResponsiveContainer>
-              {/* Center Label */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <Wallet className="mb-1 h-4 w-4 text-slate-500" />
-                <span className="text-[10px] font-medium uppercase tracking-wider text-slate-500">
-                  {hasData ? "Balance" : "No Data"}
-                </span>
-              </div>
-            </div>
-
-            {/* Legend */}
-            {hasData && (
-              <div className="mt-3 flex items-center gap-4">
-                <div className="flex items-center gap-1.5">
-                  <div className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-                  <span className="text-[11px] text-slate-400">Owed</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="h-2.5 w-2.5 rounded-full bg-rose-400" />
-                  <span className="text-[11px] text-slate-400">Owe</span>
-                </div>
-              </div>
-            )}
+      {/* Groups Preview */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="bg-surface rounded-2xl p-6 border border-border"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="font-semibold text-text-primary">
+              {groups.length} active groups
+            </h3>
+            <p className="text-sm text-text-secondary">
+              Groups you&apos;ve interacted with
+            </p>
           </div>
         </div>
 
-        {/* ── Bottom: Per-Group Bar Chart ───────────── */}
-        {barData.length > 0 && (
-          <div className="mt-6 rounded-2xl border border-white/5 bg-white/[0.03] p-4">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-500">
-              Balance by Group
-            </p>
-            <div className="h-32">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={barData} barCategoryGap="20%">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                  <XAxis
-                    dataKey="name"
-                    tick={{ fill: "#64748b", fontSize: 10 }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis hide />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#1e293b",
-                      border: "1px solid #334155",
-                      borderRadius: "12px",
-                      fontSize: "12px",
-                      color: "#e2e8f0",
-                    }}
-    formatter={(value: any) => {
-      const numValue = Number(value) || 0;
-      const formatted = formatCurrency(numValue);
-      return `${numValue > 0 ? "+" : ""}${formatted}`;
-    }}
+        <div className="flex flex-wrap gap-3 items-center">
+          {groups.slice(0, 5).map((group) => (
+            <motion.div
+              key={group.group_id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex flex-col items-center gap-2"
+            >
+              <div
+                className={`w-12 h-12 rounded-full flex items-center justify-center border-2 ${
+                  group.net_balance > 0
+                    ? "border-positive bg-positive/10"
+                    : group.net_balance < 0
+                    ? "border-negative bg-negative/10"
+                    : "border-border bg-surface-2"
+                }`}
+              >
+                <span className="text-sm font-bold text-text-primary">
+                  {group.group_name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <span className="text-xs text-text-secondary max-w-[60px] truncate text-center">
+                {group.group_name}
+              </span>
+            </motion.div>
+          ))}
 
-                  />
-                  <Bar dataKey="balance" radius={[6, 6, 0, 0]}>
-                    {barData.map((entry, index) => (
-                      <Cell key={`bar-${index}`} fill={entry.fill} fillOpacity={0.85} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+          {groups.length > 5 && (
+            <div className="flex flex-col items-center gap-2 ml-2">
+              <button className="w-12 h-12 rounded-full border border-border flex items-center justify-center hover:bg-surface-2 transition-colors">
+                <ArrowUpRight className="w-4 w-4 text-text-secondary" />
+              </button>
+              <span className="text-xs text-text-secondary">View all</span>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      </motion.div>
     </div>
   );
 }

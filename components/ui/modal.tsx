@@ -86,7 +86,7 @@ export function Modal({
           aria-modal="true"
           aria-label={title}
           tabIndex={-1}
-          className={`relative w-full ${MAX_WIDTH_MAP[maxWidth]} transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl outline-none sm:my-8`}
+          className={`relative w-full ${MAX_WIDTH_MAP[maxWidth]} transform overflow-hidden rounded-2xl bg-surface text-left shadow-2xl outline-none sm:my-8`}
         >
           {children}
         </div>

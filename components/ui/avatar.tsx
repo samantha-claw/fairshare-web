@@ -2,6 +2,7 @@
 // 📦 IMPORTS
 // ==========================================
 import { getAvatarFallback } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 // ==========================================
 // 🧩 TYPES
@@ -10,6 +11,7 @@ interface AvatarProps {
   src?: string;
   name: string;
   size?: "sm" | "md" | "lg";
+  className?: string;
 }
 
 // ==========================================
@@ -21,12 +23,15 @@ const sizeMap = {
   lg: "h-12 w-12 text-base",
 };
 
-export function Avatar({ src, name, size = "md" }: AvatarProps) {
+export function Avatar({ src, name, size = "md", className }: AvatarProps) {
   return (
     <img
       src={src || getAvatarFallback(name)}
       alt={name}
-      className={`${sizeMap[size]} rounded-full object-cover ring-1 ring-gray-200`}
+      className={cn(
+        `${sizeMap[size]} rounded-full object-cover ring-1 ring-gray-200`,
+        className
+      )}
     />
   );
 }

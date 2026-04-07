@@ -23,57 +23,57 @@ interface ProfileInfoCardProps {
 // ==========================================
 export function ProfileInfoCard({ profile }: ProfileInfoCardProps) {
   return (
-    <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+    <div className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
       <div className="mb-5 flex items-center gap-2">
         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50">
-          <FileText className="h-3.5 w-3.5 text-indigo-600" />
+          <FileText className="h-3.5 w-3.5 text-text-primary" />
         </div>
-        <h3 className="text-sm font-bold text-gray-900">
+        <h3 className="text-sm font-bold text-text-primary">
           Profile Information
         </h3>
       </div>
 
       <div className="space-y-4">
         {/* Full Name */}
-        <div className="flex items-center gap-3 rounded-2xl bg-gray-50/50 p-3.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+        <div className="flex items-center gap-3 rounded-2xl bg-surface-2/50 p-3.5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-text-primary">
             <User className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+            <p className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
               Full Name
             </p>
-            <p className="text-sm font-medium text-gray-900">
+            <p className="text-sm font-medium text-text-primary">
               {profile.full_name || "Not provided"}
             </p>
           </div>
         </div>
 
         {/* Username */}
-        <div className="flex items-center gap-3 rounded-2xl bg-gray-50/50 p-3.5">
+        <div className="flex items-center gap-3 rounded-2xl bg-surface-2/50 p-3.5">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
             <AtSign className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+            <p className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
               Username
             </p>
-            <p className="text-sm font-medium text-gray-900">
+            <p className="text-sm font-medium text-text-primary">
               @{profile.username}
             </p>
           </div>
         </div>
 
         {/* Joined Date */}
-        <div className="flex items-center gap-3 rounded-2xl bg-gray-50/50 p-3.5">
+        <div className="flex items-center gap-3 rounded-2xl bg-surface-2/50 p-3.5">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
             <CalendarDays className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+            <p className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
               Joined FairShare
             </p>
-            <p className="text-sm font-medium text-gray-900">
+            <p className="text-sm font-medium text-text-primary">
               {new Date(profile.created_at).toLocaleDateString("en-US", {
                 month: "long",
                 day: "numeric",
@@ -85,15 +85,15 @@ export function ProfileInfoCard({ profile }: ProfileInfoCardProps) {
 
         {/* Bio */}
         {profile.bio && profile.bio.trim().length > 0 && (
-          <div className="flex items-start gap-3 rounded-2xl bg-gray-50/50 p-3.5">
+          <div className="flex items-start gap-3 rounded-2xl bg-surface-2/50 p-3.5">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-50 text-cyan-600">
               <FileText className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+              <p className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
                 Bio
               </p>
-              <p className="mt-0.5 text-sm leading-relaxed text-gray-700">
+              <p className="mt-0.5 text-sm leading-relaxed text-text-primary">
                 {profile.bio}
               </p>
             </div>

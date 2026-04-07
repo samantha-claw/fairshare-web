@@ -46,26 +46,26 @@ export function SettleModal({
       <div className="flex min-h-screen items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose} />
 
-        <div className="relative mb-20 w-full max-w-md transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl sm:my-8">
+        <div className="relative mb-20 w-full max-w-md transform overflow-hidden rounded-2xl bg-surface text-left shadow-2xl sm:my-8">
   <div className="px-6 pb-6 pt-6">
             <div className="mb-1 flex items-center gap-2">
               <span className="text-2xl">🤝</span>
-              <h3 className="text-xl font-bold text-gray-900">Settle Up</h3>
+              <h3 className="text-xl font-bold text-text-primary">Settle Up</h3>
             </div>
-            <p className="text-sm text-gray-500">Record a payment to a group member. They will need to approve it.</p>
+            <p className="text-sm text-text-secondary">Record a payment to a group member. They will need to approve it.</p>
 
             <form onSubmit={onSubmit} className="mt-6 space-y-5">
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">Who are you paying?</label>
-                <div className="max-h-48 space-y-1 overflow-y-auto rounded-xl border border-gray-200 bg-gray-50 p-2">
+                <label className="mb-2 block text-sm font-medium text-text-primary">Who are you paying?</label>
+                <div className="max-h-48 space-y-1 overflow-y-auto rounded-xl border border-border bg-surface-2 p-2">
                   {otherMembers.length === 0 ? (
-                    <p className="p-3 text-center text-sm text-gray-400">No other members in this group.</p>
+                    <p className="p-3 text-center text-sm text-text-tertiary">No other members in this group.</p>
                   ) : (
                     otherMembers.map((m) => (
                       <label
                         key={m.id}
                         className={`flex cursor-pointer items-center gap-3 rounded-lg p-2.5 transition-colors ${
-                          settleReceiver === m.id ? "bg-blue-50 ring-1 ring-blue-300" : "hover:bg-gray-100"
+                          settleReceiver === m.id ? "bg-blue-50 ring-1 ring-blue-300" : "hover:bg-surface-2"
                         }`}
                       >
                         <input
@@ -74,12 +74,12 @@ export function SettleModal({
                           value={m.id}
                           checked={settleReceiver === m.id}
                           onChange={() => onReceiverChange(m.id)}
-                          className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                          className="h-4 w-4 border-gray-300 text-text-primary focus:ring-blue-500"
                         />
                         <Avatar src={m.avatar_url} name={m.display_name || m.username} size="sm" />
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-gray-900">{m.display_name || m.full_name || m.username}</p>
-                          <p className="truncate text-xs text-gray-500">@{m.username}</p>
+                          <p className="truncate text-sm font-medium text-text-primary">{m.display_name || m.full_name || m.username}</p>
+                          <p className="truncate text-xs text-text-secondary">@{m.username}</p>
                         </div>
                       </label>
                     ))
@@ -88,16 +88,16 @@ export function SettleModal({
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Amount</label>
+                <label className="mb-1 block text-sm font-medium text-text-primary">Amount</label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">{currency}</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-text-tertiary">{currency}</span>
                   <input
                     type="number"
                     required
                     step="0.01"
                     min="0.01"
                     placeholder="0.00"
-                    className="w-full rounded-xl border border-gray-300 p-3 pl-14 font-mono text-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-xl border border-border p-3 pl-14 font-mono text-lg focus:border-border-2 focus:outline-none focus:ring-1 focus:ring-border/30"
                     value={settleAmount}
                     onChange={(e) => onAmountChange(e.target.value)}
                   />
@@ -113,8 +113,8 @@ export function SettleModal({
                 </p>
               </div>
 
-              <div className="flex gap-3 border-t border-gray-100 pt-4">
-                <button type="button" onClick={onClose} className="flex-1 rounded-xl bg-gray-100 py-3 text-sm font-medium text-gray-700 hover:bg-gray-200">Cancel</button>
+              <div className="flex gap-3 border-t border-border pt-4">
+                <button type="button" onClick={onClose} className="flex-1 rounded-xl bg-surface-2 py-3 text-sm font-medium text-text-primary hover:bg-gray-200">Cancel</button>
                 <button
                   type="submit"
                   disabled={submitting || !settleReceiver || !settleAmount}

@@ -123,7 +123,7 @@ export function EmptyState({
       className={`relative mx-auto w-full max-w-lg ${className}`}
     >
       {/* ── Outer Card ── */}
-      <div className="relative overflow-hidden rounded-2xl border-2 border-dashed border-gray-200 bg-white/70 px-6 py-10 text-center backdrop-blur-sm sm:px-10 sm:py-14">
+      <div className="relative overflow-hidden rounded-2xl border-2 border-dashed border-border bg-surface/70 px-6 py-10 text-center backdrop-blur-sm sm:px-10 sm:py-14">
         {/* Subtle gradient glow */}
         <div className="pointer-events-none absolute -top-24 left-1/2 -z-10 h-64 w-64 -translate-x-1/2 rounded-full bg-indigo-100/60 blur-3xl" />
 
@@ -147,7 +147,7 @@ export function EmptyState({
         {/* ── Title ── */}
         <motion.h3
           variants={item}
-          className="text-lg font-bold tracking-tight text-gray-900 sm:text-xl"
+          className="text-lg font-bold tracking-tight text-text-primary sm:text-xl"
         >
           {title}
         </motion.h3>
@@ -155,7 +155,7 @@ export function EmptyState({
         {/* ── Description ── */}
         <motion.p
           variants={item}
-          className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-gray-500 sm:text-[15px]"
+          className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-text-secondary sm:text-[15px]"
         >
           {description}
         </motion.p>
@@ -170,7 +170,7 @@ export function EmptyState({
               <button
                 type="button"
                 onClick={action.onClick}
-                className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-indigo-700 active:scale-[0.97]"
+                className="inline-flex items-center gap-2 rounded-xl bg-text-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-indigo-700 active:scale-[0.97]"
               >
                 {action.icon}
                 {action.label}
@@ -180,7 +180,7 @@ export function EmptyState({
               <button
                 type="button"
                 onClick={secondaryAction.onClick}
-                className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-2 hover:text-text-primary"
               >
                 {secondaryAction.label}
               </button>

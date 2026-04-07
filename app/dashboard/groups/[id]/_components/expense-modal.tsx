@@ -157,17 +157,17 @@ export function ExpenseModal({
         {/* ═══════════════════════════════════════════ */}
         <div className="shrink-0 px-5 pt-5 sm:px-6 sm:pt-6">
           <div className="mb-4">
-            <h3 className="text-lg font-bold text-gray-900 sm:text-xl">
+            <h3 className="text-lg font-bold text-text-primary sm:text-xl">
               {title}
             </h3>
-            <p className="mt-0.5 text-sm text-gray-500">
+            <p className="mt-0.5 text-sm text-text-secondary">
               Split among selected members.
             </p>
           </div>
 
           {/* ── Description ── */}
           <div className="mb-3">
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1 block text-sm font-medium text-text-primary">
               Description
             </label>
             <input
@@ -182,7 +182,7 @@ export function ExpenseModal({
 
           {/* ── Amount ── */}
           <div className="mb-3">
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1 block text-sm font-medium text-text-primary">
               Amount
             </label>
             <input
@@ -198,14 +198,14 @@ export function ExpenseModal({
 
           {/* ── Paid By ── */}
           <div className="mb-1">
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1 block text-sm font-medium text-text-primary">
               Paid by
             </label>
             <div className="relative">
               <select
                 value={paidBy}
                 onChange={(e) => onPaidByChange(e.target.value)}
-                className="w-full appearance-none rounded-xl border border-gray-300 bg-white px-3 py-2.5 pr-10 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full appearance-none rounded-xl border border-gray-300 bg-surface px-3 py-2.5 pr-10 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 {members.map((member) => (
                   <option key={member.id} value={member.id}>
@@ -221,7 +221,7 @@ export function ExpenseModal({
               {/* Custom dropdown chevron */}
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                 <svg
-                  className="h-4 w-4 text-gray-400"
+                  className="h-4 w-4 text-text-tertiary"
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth={2}
@@ -247,7 +247,7 @@ export function ExpenseModal({
 
 <div
 
-className={`pointer-events-none absolute inset-x-0 top-0 z-10 h-4 bg-gradient-to-b from-white to-transparent transition-opacity duration-200 ${
+className={`pointer-events-none absolute inset-x-0 top-0 z-10 h-4 bg-gradient-to-b from-surface to-transparent transition-opacity duration-200 ${
 
 showTopShadow ? "opacity-100" : "opacity-0"
 
@@ -264,7 +264,7 @@ className="flex-1 overflow-y-auto overscroll-contain px-5 py-3 sm:px-6 custom-sc
 
 >
 
-            <label className="mb-2 block text-sm font-medium text-gray-700">
+            <label className="mb-2 block text-sm font-medium text-text-primary">
               Split between
             </label>
 
@@ -293,7 +293,7 @@ className="flex-1 overflow-y-auto overscroll-contain px-5 py-3 sm:px-6 custom-sc
 
           {/* Bottom scroll shadow */}
           <div
-            className={`pointer-events-none absolute inset-x-0 bottom-0 z-10 h-4 bg-gradient-to-t from-white to-transparent transition-opacity duration-200 ${
+            className={`pointer-events-none absolute inset-x-0 bottom-0 z-10 h-4 bg-gradient-to-t from-surface to-transparent transition-opacity duration-200 ${
               showBottomShadow ? "opacity-100" : "opacity-0"
             }`}
           />
@@ -302,19 +302,19 @@ className="flex-1 overflow-y-auto overscroll-contain px-5 py-3 sm:px-6 custom-sc
         {/* ═══════════════════════════════════════════ */}
         {/* ██  FIXED BOTTOM — Action Buttons         ██ */}
         {/* ═══════════════════════════════════════════ */}
-        <div className="shrink-0 border-t border-gray-200 bg-gray-50/80 px-5 py-4 sm:px-6">
+        <div className="shrink-0 border-t border-border bg-surface-2/80 px-5 py-4 sm:px-6">
           <div className="flex gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-xl bg-gray-100 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 active:bg-gray-300"
+              className="flex-1 rounded-xl bg-surface-2 py-3 text-sm font-medium text-text-primary transition-colors hover:bg-gray-200 active:bg-gray-300"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting || !isValidSplit}
-              className="flex-1 rounded-xl bg-blue-600 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-700 active:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex-1 rounded-xl bg-text-primary py-3 text-sm font-medium text-white transition-colors hover:opacity-90 active:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {submitting
                 ? "Saving…"
