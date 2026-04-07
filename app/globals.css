@@ -1,42 +1,197 @@
 @import "tailwindcss";
 
+/* ==========================================
+   🎨 DESIGN TOKENS
+   ========================================== */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surfaces */
+  --background: #F2F2F2;
+  --surface: #FFFFFF;
+  --surface-2: #F7F7F7;
+
+  /* Borders */
+  --border: #E4E4E4;
+  --border-2: #D1D1D1;
+
+  /* Text */
+  --text-primary: #111111;
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+
+  /* Accent — used only for financial positive/negative */
+  --positive: #16A34A;
+  --positive-bg: rgba(22, 163, 74, 0.08);
+  --negative: #DC2626;
+  --negative-bg: rgba(220, 38, 38, 0.08);
+
+  /* Sidebar (theme-aware) */
+  --sidebar-bg: #F2F2F2;
+  --sidebar-border: #E4E4E4;
+  --sidebar-text: #666666;
+  --sidebar-active: #111111;
+  --sidebar-hover: rgba(0,0,0,0.05);
+  --sidebar-logo-text: #111111;
+  --sidebar-logo-bg: rgba(0,0,0,0.05);
 }
 
+html.dark {
+  --background: #141414;
+  --surface: #1C1C1C;
+  --surface-2: #222222;
+  --border: #2A2A2A;
+  --border-2: #333333;
+  --text-primary: #F0F0F0;
+  --text-secondary: #888888;
+  --text-tertiary: #555555;
+
+  /* Sidebar (dark mode) */
+  --sidebar-bg: #141414;
+  --sidebar-border: #2A2A2A;
+  --sidebar-text: #888888;
+  --sidebar-active: #F0F0F0;
+  --sidebar-hover: rgba(255,255,255,0.05);
+  --sidebar-logo-text: #F0F0F0;
+  --sidebar-logo-bg: rgba(255,255,255,0.05);
+}
+
+/* ==========================================
+   🎨 TAILWIND THEME BRIDGE
+   ========================================== */
 @theme inline {
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-2: var(--border-2);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-positive: var(--positive);
+  --color-positive-bg: var(--positive-bg);
+  --color-negative: var(--negative);
+  --color-negative-bg: var(--negative-bg);
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-text: var(--sidebar-text);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-hover: var(--sidebar-hover);
+  --color-sidebar-logo-text: var(--sidebar-logo-text);
+  --color-sidebar-logo-bg: var(--sidebar-logo-bg);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ==========================================
+   🎨 BASE
+   ========================================== */
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--background);
+  color: var(--text-primary);
+  font-family: 'Inter', Arial, Helvetica, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  -webkit-font-smoothing: antialiased;
 }
 
-
-@keyframes wave {
-  0% { transform: rotate(0deg); }
-  10% { transform: rotate(14deg); }
-  20% { transform: rotate(-8deg); }
-  30% { transform: rotate(14deg); }
-  40% { transform: rotate(-4deg); }
-  50% { transform: rotate(10deg); }
-  60%, 100% { transform: rotate(0deg); }
+/* ==========================================
+   🎨 FOCUS — neutral outline, NO green glow
+   ========================================== */
+*:focus-visible {
+  outline: 2px solid var(--border-2);
+  outline-offset: 2px;
 }
 
-@keyframes scanline {
-  0%, 100% { top: 0; }
-  50% { top: calc(100% - 2px); }
+/* ==========================================
+   🎨 SELECTION
+   ========================================== */
+::selection {
+  background: rgba(0, 0, 0, 0.12);
+  color: inherit;
+}
+
+html.dark ::selection {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ==========================================
+   🎨 SCROLLBAR
+   ========================================== */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-2);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* ==========================================
+   🎨 MATERIAL ICONS
+   ========================================== */
+.material-icons-outlined {
+  font-size: 20px;
+}
+
+/* ==========================================
+   🎨 ANIMATIONS
+   ========================================== */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.35s ease both;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s ease both;
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 25%,
+    var(--border) 50%,
+    var(--surface-2) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
 }

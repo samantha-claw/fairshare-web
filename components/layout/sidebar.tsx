@@ -1,46 +1,24 @@
 "use client";
 
-// ==========================================
-// 📦 IMPORTS
-// ==========================================
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Avatar } from "@/components/ui/avatar";
-import {
-  LayoutDashboard,
-  Users,
-  UserCircle,
-  PlusCircle,
-  LogOut,
-  ChevronRight,
-  Sparkles,
-  Settings,
-} from "lucide-react";
+import { LayoutDashboard, Users, FolderOpen, Settings, LogOut, Sun, Moon, User, Bell } from "lucide-react";
+import { useTheme } from "@/providers/theme-provider";
 
-// ==========================================
-// 🧩 TYPES
-// ==========================================
 interface SidebarProps {
   displayName: string;
   avatarUrl: string;
   onSignOut: () => void;
-  isMobile?: boolean; // 👈 ضفنا الخاصية دي هنا
+  isMobile?: boolean;
 }
 
-interface NavItem {
-  label: string;
-  href: string;
-  icon: React.ElementType;
-}
-
-// ==========================================
-// ⚙️ LOGIC
-// ==========================================
-const NAV_ITEMS: NavItem[] = [
+const NAV_ITEMS = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Groups", href: "/dashboard/groups", icon: FolderOpen },
   { label: "Friends", href: "/dashboard/friends", icon: Users },
-  { label: "Profile", href: "/dashboard/profile", icon: UserCircle },
-  { label: "Settings", href: "/dashboard/settings", icon: Settings, }
+  { label: "Notifications", href: "/dashboard/notifications", icon: Bell },
+  { label: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -48,121 +26,94 @@ function isActive(pathname: string, href: string): boolean {
   return pathname.startsWith(href);
 }
 
-// ==========================================
-// 🎨 UI RENDER
-// ==========================================
-export function Sidebar({
-  displayName,
-  avatarUrl,
-  onSignOut,
-  isMobile = false, // 👈 القيمة الافتراضية
-}: SidebarProps) {
+export function Sidebar({ displayName, avatarUrl, onSignOut, isMobile = false }: SidebarProps) {
   const pathname = usePathname();
+  const { isDark, toggle } = useTheme();
+  const initials = displayName
+    ? displayName
+        .split(" ")
+        .map((w) => w[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "U";
 
   return (
     <aside
       className={
         isMobile
-          ? "flex h-full w-full flex-col bg-slate-950" // كلاسات الموبايل (تخليه يملى الشاشة ويظهر دايماً)
-          : "fixed inset-y-0 left-0 z-40 hidden w-[260px] flex-col border-r border-slate-800/50 bg-slate-950 md:flex" // كلاسات الديسكتوب
+          ? "flex h-full w-full flex-col bg-sidebar-bg px-4 py-6"
+          : "hidden md:flex w-60 flex-shrink-0 flex-col justify-between rounded-2xl px-4 py-6 bg-sidebar-bg border border-sidebar-border"
       }
     >
-      {/* ── Logo (يظهر في الديسكتوب بس لأن الموبايل ليه هيدر خاص بيه) ── */}
-      {!isMobile && (
-        <div className="flex h-16 shrink-0 items-center gap-2.5 border-b border-slate-800/50 px-6">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/30">
-            <span className="text-sm font-black text-white">F</span>
+      {/* ── Logo ── */}
+      <div>
+        <Link href="/dashboard" className="flex items-center gap-3 px-2 mb-8">
+          <div className="w-8 h-8 rounded-lg bg-sidebar-logo-bg flex items-center justify-center border border-sidebar-border">
+            <span className="text-xs font-black text-sidebar-logo-text">FS</span>
           </div>
-          <span className="text-lg font-bold tracking-tight text-white">
-            Fair<span className="text-indigo-400">Share</span>
+          <span className="font-bold text-base tracking-tight text-sidebar-active">
+            FairShare
           </span>
-        </div>
-      )}
-
-      {/* ── Navigation ─────────────────────────────── */}
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5">
-        <p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500">
-          Menu
-        </p>
-
-        {NAV_ITEMS.map((item) => {
-          const active = isActive(pathname, item.href);
-          const Icon = item.icon;
-
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300 ${
-                active
-                  ? "bg-gradient-to-r from-indigo-600/90 to-purple-600/90 text-white shadow-lg shadow-indigo-500/25"
-                  : "text-slate-400 hover:bg-slate-800/60 hover:text-white"
-              }`}
-            >
-              {/* Active Indicator Bar */}
-              {active && (
-                <div className="absolute -left-3 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.6)]" />
-              )}
-
-              <Icon
-                className={`h-[18px] w-[18px] shrink-0 transition-transform duration-200 ${
-                  active
-                    ? "text-white"
-                    : "text-slate-500 group-hover:text-slate-300"
-                }`}
-              />
-              <span>{item.label}</span>
-
-              {active && (
-                <ChevronRight className="ml-auto h-4 w-4 text-white/50" />
-              )}
-            </Link>
-          );
-        })}
-
-        {/* ── Create Group CTA ─────────────────────── */}
-        <div className="pt-4">
-          <p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500">
-            Quick Actions
-          </p>
-          <Link
-            href="/dashboard/groups/new"
-            className="group flex items-center gap-3 rounded-xl border border-dashed border-slate-700 px-3 py-2.5 text-sm font-medium text-slate-400 transition-all duration-300 hover:border-indigo-500/50 hover:bg-indigo-500/10 hover:text-indigo-300"
-          >
-            <PlusCircle className="h-[18px] w-[18px] shrink-0 text-slate-600 transition-colors group-hover:text-indigo-400" />
-            <span>Create Group</span>
-            <Sparkles className="ml-auto h-3.5 w-3.5 text-slate-600 transition-all group-hover:rotate-12 group-hover:text-indigo-400" />
-          </Link>
-        </div>
-      </nav>
-
-      {/* ── Bottom Section: User + Sign Out ─────── */}
-      <div className="shrink-0 border-t border-slate-800/50 p-3">
-        {/* User Card */}
-        <Link
-          href="/dashboard/profile"
-          className="group mb-2 flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 hover:bg-slate-800/60"
-        >
-          <div className="relative shrink-0">
-            <Avatar src={avatarUrl} name={displayName} size="sm" />
-            <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-slate-950 bg-emerald-400" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-white">
-              {displayName}
-            </p>
-            <p className="truncate text-[11px] text-slate-500">View profile</p>
-          </div>
-          <ChevronRight className="h-4 w-4 shrink-0 text-slate-600 transition-transform group-hover:translate-x-0.5" />
         </Link>
 
-        {/* Sign Out */}
+        {/* ── Nav ── */}
+        <nav className="space-y-0.5">
+          {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
+            const active = isActive(pathname, href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                  active
+                    ? "bg-sidebar-hover text-sidebar-active"
+                    : "text-sidebar-text hover:bg-sidebar-hover hover:text-sidebar-active"
+                }`}
+              >
+                <Icon className="h-4 w-4 flex-shrink-0" />
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
+
+      {/* ── Bottom ── */}
+      <div className="space-y-1">
+        {/* Profile link */}
+        <Link
+          href="/dashboard/profile"
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+            isActive(pathname, "/dashboard/profile")
+              ? "bg-sidebar-hover text-sidebar-active"
+              : "text-sidebar-text hover:bg-sidebar-hover hover:text-sidebar-active"
+          }`}
+        >
+          <User className="h-4 w-4 flex-shrink-0" />
+          <span className="truncate">{displayName || "Profile"}</span>
+        </Link>
+
+        {/* Theme toggle */}
+        <button
+          onClick={toggle}
+          className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-sidebar-text hover:bg-sidebar-hover hover:text-sidebar-active transition-colors"
+        >
+          {isDark ? (
+            <Sun className="h-4 w-4 flex-shrink-0" />
+          ) : (
+            <Moon className="h-4 w-4 flex-shrink-0" />
+          )}
+          {isDark ? "Light mode" : "Dark mode"}
+        </button>
+
+        {/* Sign out */}
         <button
           onClick={onSignOut}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-500 transition-all duration-200 hover:bg-red-500/10 hover:text-red-400"
+          className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-sidebar-text hover:bg-negative-bg hover:text-negative transition-colors"
         >
-          <LogOut className="h-[18px] w-[18px] shrink-0" />
-          <span>Sign out</span>
+          <LogOut className="h-4 w-4 flex-shrink-0" />
+          Sign out
         </button>
       </div>
     </aside>

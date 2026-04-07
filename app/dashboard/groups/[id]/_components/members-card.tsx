@@ -29,13 +29,13 @@ export function MembersCard({
   onRemoveMember,
 }: MembersCardProps) {
   return (
-    <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+    <section className="rounded-xl border border-border bg-surface p-6 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-800">Members</h2>
+        <h2 className="text-sm font-semibold text-text-primary">Members</h2>
         {isOwner && (
           <button
             onClick={onOpenAddModal}
-            className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
+            className="inline-flex items-center gap-1 rounded-md bg-text-primary px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:opacity-90"
           >
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -49,7 +49,7 @@ export function MembersCard({
         {members.map((m) => (
           <div
             key={m.id}
-            className="group flex items-center gap-3 rounded-lg border border-gray-100 bg-gray-50/50 p-3 transition-all hover:border-blue-200 hover:shadow-sm"
+            className="group flex items-center gap-3 rounded-lg border border-border bg-surface-2/50 p-3 transition-all hover:border-blue-200 hover:shadow-sm"
           >
             <Link href={`/dashboard/profile/${m.id}`}>
               <Avatar src={m.avatar_url} name={m.display_name || m.full_name || m.username} size="md" />
@@ -57,11 +57,11 @@ export function MembersCard({
             <div className="min-w-0 flex-1">
               <Link
                 href={`/dashboard/profile/${m.id}`}
-                className="block truncate text-sm font-medium text-gray-900 hover:text-blue-600 hover:underline"
+                className="block truncate text-sm font-medium text-text-primary hover:text-text-primary hover:underline"
               >
                 {m.display_name || m.full_name}
               </Link>
-              <p className="truncate text-xs text-gray-500">@{m.username}</p>
+              <p className="truncate text-xs text-text-secondary">@{m.username}</p>
             </div>
             {m.id === group.owner_id && (
               <span className="shrink-0 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">

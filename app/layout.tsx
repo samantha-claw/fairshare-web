@@ -1,9 +1,8 @@
-// app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { ToastProvider } from "@/providers/toast-provider"; // 👈 1. ضفنا الاستيراد هنا
+import { ToastProvider } from "@/providers/toast-provider";
+import { ThemeProvider } from "@/providers/theme-provider";
 
-// 1. إعدادات الـ Metadata (الاسم، الوصف، الـ Manifest، وأيقونة الآيفون)
 export const metadata: Metadata = {
   title: "FairShare",
   description: "Financial collaboration made simple",
@@ -13,9 +12,8 @@ export const metadata: Metadata = {
   },
 };
 
-// 2. إعدادات شاشة الموبايل (لون شريط الهاتف من الأعلى) - خاص بـ Next.js 14
 export const viewport: Viewport = {
-  themeColor: "#2563eb",
+  themeColor: "#111111",
 };
 
 export default function RootLayout({
@@ -24,12 +22,27 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-gray-50 text-gray-900 antialiased">
-        {/* 👈 2. غلفنا التطبيق بتاعك كله بالمزود عشان الإشعارات تشتغل في كل مكان */}
-        <ToastProvider>
-          {children}
-        </ToastProvider>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* FOUC prevention script — runs before React hydrates. Reads localStorage and sets the correct class on <html> so there is never a flash of the wrong theme. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;if(t==='dark'||(t===null&&d)){document.documentElement.classList.add('dark');}}catch(e){}})();`,
+          }}
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+        <link
+          href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="min-h-screen bg-surface text-text-primary antialiased">
+        <ThemeProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

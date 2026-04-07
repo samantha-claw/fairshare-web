@@ -132,9 +132,10 @@ export function SplitTypeSelector({
         });
         const roundedSum = rounded.reduce((s, v) => s + v, 0);
         const remainder = +((totalAmount - roundedSum).toFixed(2));
+        const remainderIndex = memberIds.findIndex((id) => (allocations.get(id) ?? 0) > 0);
 
         memberIds.forEach((id, i) => {
-          results.set(id, i === 0 ? rounded[i] + remainder : rounded[i]);
+          results.set(id, i === remainderIndex ? rounded[i] + remainder : rounded[i]);
         });
         break;
       }
@@ -286,7 +287,7 @@ export function SplitTypeSelector({
 
   const barColors = {
     ok: "bg-emerald-500",
-    warn: "bg-indigo-500",
+    warn: "bg-text-primary",
     error: "bg-red-500",
   };
 
@@ -297,7 +298,7 @@ export function SplitTypeSelector({
     <div className="space-y-3">
 
       {/* ── 1) Split Type Tabs ── */}
-      <div className="flex gap-1 rounded-xl bg-gray-100 p-1">
+      <div className="flex gap-1 rounded-xl bg-surface-2 p-1">
         {SPLIT_TYPES.map((st) => (
           <button
             key={st.value}
@@ -306,8 +307,8 @@ export function SplitTypeSelector({
             title={st.hint}
             className={`flex-1 rounded-lg px-3 py-2 text-xs font-semibold transition-all ${
               splitType === st.value
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
+                ? "bg-surface text-text-primary shadow-sm"
+                : "text-text-secondary hover:text-text-primary"
             }`}
           >
             {st.icon} {st.label}
@@ -340,13 +341,13 @@ export function SplitTypeSelector({
       {/* ── 3) Select All Toggle (equal mode) ── */}
       {splitType === "equal" && (
         <div className="flex items-center justify-between px-1">
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-text-secondary">
             {selectedMembers.size}/{members.length} selected
           </span>
           <button
             type="button"
             onClick={toggleAll}
-            className="text-xs font-medium text-indigo-600 hover:text-indigo-700"
+            className="text-xs font-medium text-text-primary hover:text-indigo-700"
           >
             {selectedMembers.size === members.length
               ? "Deselect all"
@@ -356,7 +357,7 @@ export function SplitTypeSelector({
       )}
 
       {/* ── 4) Members List ── */}
-      <div className="space-y-1.5 rounded-xl border border-gray-100 p-2">
+      <div className="space-y-1.5 rounded-xl border border-border p-2">
         {members.map((m) => {
           const isSelected = selectedMembers.has(m.id);
           const memberAmount = computed.get(m.id) ?? 0;
@@ -368,8 +369,8 @@ export function SplitTypeSelector({
               onClick={() => toggleMember(m.id)}
               className={`flex items-center gap-3 rounded-xl p-3 transition-all ${
                 splitType === "equal"
-                  ? "cursor-pointer hover:bg-gray-50"
-                  : "bg-gray-50"
+                  ? "cursor-pointer hover:bg-surface-2"
+                  : "bg-surface-2"
               } ${
                 splitType === "equal" && isSelected
                   ? "bg-indigo-50/60 ring-1 ring-indigo-200"
@@ -384,7 +385,7 @@ export function SplitTypeSelector({
                   <div
                     className={`absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white text-[8px] transition-all ${
                       isSelected
-                        ? "bg-indigo-500 text-white"
+                        ? "bg-text-primary text-white"
                         : "bg-gray-200 text-transparent"
                     }`}
                   >
@@ -395,11 +396,11 @@ export function SplitTypeSelector({
 
               {/* Name + computed amount */}
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-gray-700">
+                <p className="truncate text-sm font-medium text-text-primary">
                   {name}
                 </p>
                 {memberAmount > 0 && totalAmount > 0 && (
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-text-tertiary">
                     {currency}{memberAmount.toFixed(2)}
                     {splitType !== "equal" && splitType !== "exact" && (
                       <span className="ml-1">
@@ -414,14 +415,14 @@ export function SplitTypeSelector({
               {splitType === "equal" ? (
                 isSelected &&
                 totalAmount > 0 && (
-                  <span className="text-sm font-semibold text-indigo-600">
+                  <span className="text-sm font-semibold text-text-primary">
                     {currency}{memberAmount.toFixed(2)}
                   </span>
                 )
               ) : (
                 <div className="flex items-center gap-1.5">
                   {splitType === "exact" && (
-                    <span className="text-xs text-gray-400">{currency}</span>
+                    <span className="text-xs text-text-tertiary">{currency}</span>
                   )}
                   <input
                     type="number"
@@ -439,15 +440,15 @@ export function SplitTypeSelector({
                     }
                     className={`w-24 rounded-lg border px-3 py-2 text-right text-sm font-mono outline-none transition-colors focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 ${
                       (allocations.get(m.id) ?? 0) > 0
-                        ? "border-indigo-300 bg-white"
-                        : "border-gray-200 bg-white"
+                        ? "border-indigo-300 bg-surface"
+                        : "border-border bg-surface"
                     }`}
                   />
                   {splitType === "percentage" && (
-                    <span className="text-xs text-gray-400">%</span>
+                    <span className="text-xs text-text-tertiary">%</span>
                   )}
                   {splitType === "shares" && (
-                    <span className="text-xs text-gray-400">×</span>
+                    <span className="text-xs text-text-tertiary">×</span>
                   )}
                 </div>
               )}
@@ -458,12 +459,12 @@ export function SplitTypeSelector({
 
       {/* ── 5) Summary Footer ── */}
       {totalAmount > 0 && (
-        <div className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-2.5 text-xs">
+        <div className="flex items-center justify-between rounded-xl bg-surface-2 px-4 py-2.5 text-xs">
           <div className="space-y-0.5">
-            <div className="text-gray-400">Allocated</div>
+            <div className="text-text-tertiary">Allocated</div>
             <div
               className={`font-semibold ${
-                validation.isValid ? "text-emerald-600" : "text-gray-600"
+                validation.isValid ? "text-emerald-600" : "text-text-secondary"
               }`}
             >
               {currency}{validation.allocated.toFixed(2)}
@@ -473,8 +474,8 @@ export function SplitTypeSelector({
           <div className="h-6 w-px bg-gray-200" />
 
           <div className="space-y-0.5 text-right">
-            <div className="text-gray-400">Total</div>
-            <div className="font-semibold text-gray-700">
+            <div className="text-text-tertiary">Total</div>
+            <div className="font-semibold text-text-primary">
               {currency}{totalAmount.toFixed(2)}
             </div>
           </div>
@@ -483,7 +484,7 @@ export function SplitTypeSelector({
             <>
               <div className="h-6 w-px bg-gray-200" />
               <div className="space-y-0.5 text-right">
-                <div className="text-gray-400">Remaining</div>
+                <div className="text-text-tertiary">Remaining</div>
                 <div className="font-semibold text-red-500">
                   {currency}{(totalAmount - validation.allocated).toFixed(2)}
                 </div>

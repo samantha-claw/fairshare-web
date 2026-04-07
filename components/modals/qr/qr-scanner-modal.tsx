@@ -209,19 +209,19 @@ export function QRScannerModal({
         {/* ── Header ── */}
         <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/20">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-text-primary/20">
               <QrCode className="h-5 w-5 text-indigo-400" />
             </div>
             <div>
               <h2 className="text-base font-bold text-white">Scan QR Code</h2>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-text-tertiary">
                 Point your camera at a FairShare QR
               </p>
             </div>
           </div>
           <button
             onClick={handleClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-gray-400 transition-colors hover:bg-white/20 hover:text-white"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-surface/10 text-text-tertiary transition-colors hover:bg-surface/20 hover:text-white"
           >
             <X className="h-4 w-4" />
           </button>
@@ -260,7 +260,7 @@ export function QRScannerModal({
           {state === "initializing" && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-950">
               <Loader2 className="mb-3 h-8 w-8 animate-spin text-indigo-400" />
-              <p className="text-sm text-gray-400">Starting camera…</p>
+              <p className="text-sm text-text-tertiary">Starting camera…</p>
             </div>
           )}
 
@@ -273,12 +273,12 @@ export function QRScannerModal({
               <h3 className="text-base font-bold text-white">
                 Camera Access Denied
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-gray-400">
+              <p className="mt-2 text-sm leading-relaxed text-text-tertiary">
                 {errorMessage}
               </p>
               <button
                 onClick={handleClose}
-                className="mt-5 rounded-xl bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/20"
+                className="mt-5 rounded-xl bg-surface/10 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-surface/20"
               >
                 Close
               </button>
@@ -294,10 +294,10 @@ export function QRScannerModal({
               <p className="text-sm font-semibold text-emerald-400">
                 QR Code detected!
               </p>
-              <p className="mt-1 max-w-[80%] truncate text-xs text-gray-500">
+              <p className="mt-1 max-w-[80%] truncate text-xs text-text-secondary">
                 {scannedValue}
               </p>
-              <Loader2 className="mt-3 h-5 w-5 animate-spin text-gray-500" />
+              <Loader2 className="mt-3 h-5 w-5 animate-spin text-text-secondary" />
             </div>
           )}
 
@@ -312,7 +312,7 @@ export function QRScannerModal({
 
         {/* ── Footer ── */}
         <div className="border-t border-white/10 px-5 py-4">
-          <p className="text-center text-xs text-gray-500">
+          <p className="text-center text-xs text-text-secondary">
             Scan a FairShare group invite or profile QR code
           </p>
         </div>
