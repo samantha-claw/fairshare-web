@@ -132,9 +132,10 @@ export function SplitTypeSelector({
         });
         const roundedSum = rounded.reduce((s, v) => s + v, 0);
         const remainder = +((totalAmount - roundedSum).toFixed(2));
+        const remainderIndex = memberIds.findIndex((id) => (allocations.get(id) ?? 0) > 0);
 
         memberIds.forEach((id, i) => {
-          results.set(id, i === 0 ? rounded[i] + remainder : rounded[i]);
+          results.set(id, i === remainderIndex ? rounded[i] + remainder : rounded[i]);
         });
         break;
       }

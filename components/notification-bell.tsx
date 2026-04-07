@@ -44,7 +44,7 @@ export function NotificationBell({ userId }: { userId: string }) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId, supabase]);
+  }, [userId]);
 
   // إغلاق القائمة لما تدوس بره
   useEffect(() => {

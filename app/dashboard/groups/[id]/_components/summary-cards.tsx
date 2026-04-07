@@ -70,7 +70,7 @@ export function SummaryCards({
             >
               {myNetBalance > 0 && "+"}
               {myNetBalance < 0 && "-"}
-              {formatCurrency(myNetBalance, currency)}
+              {formatCurrency(Math.abs(myNetBalance), currency)}
             </p>
           </div>
         </div>
