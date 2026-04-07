@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   LayoutDashboard,
   Users,
@@ -67,10 +67,10 @@ export function MobileNav() {
                   className="relative flex flex-col items-center gap-1"
                   aria-label={item.label}
                   aria-current={active ? "page" : undefined}
+                  onMouseEnter={() => setHoveredIndex(i)}
+                  onMouseLeave={() => setHoveredIndex(null)}
                 >
                   <motion.div
-                    onMouseEnter={() => setHoveredIndex(i)}
-                    onMouseLeave={() => setHoveredIndex(null)}
                     whileHover={{ scale: 1.1, y: -4 }}
                     whileTap={{ scale: 0.95 }}
                     className="flex h-12 w-12 items-center justify-center rounded-xl bg-text-primary text-surface shadow-md transition-all"
@@ -116,17 +116,7 @@ export function MobileNav() {
                 >
                   {item.label}
                 </span>
-                <AnimatePresence>
-                  {active && (
-                    <motion.div
-                      layoutId="activeDot"
-                      className="w-1.5 h-1.5 rounded-full bg-positive"
-                      initial={{ opacity: 0, scale: 0 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0 }}
-                    />
-                  )}
-                </AnimatePresence>
+                {active && <motion.div layoutId="activeDot" className="w-1.5 h-1.5 rounded-full bg-positive" />}
               </Link>
             );
           })}

@@ -6,6 +6,18 @@ import { OverviewWidget } from "./_components/overview-widget";
 import { Receipt, HandCoins } from "lucide-react";
 import { useState } from "react";
 
+function parseGroupDate(value?: string): number {
+  if (!value) return 0;
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function getGroupsInRange<T extends { created_at?: string }>(range: string, groups: T[]): T[] {
+  const days = range === "30" ? 30 : 7;
+  const startDate = Date.now() - days * 24 * 60 * 60 * 1000;
+  return groups.filter((group) => parseGroupDate(group.created_at) >= startDate);
+}
+
 function DashboardSkeleton() {
   return (
     <div className="flex-1 flex flex-col min-w-0 overflow-hidden animate-pulse">
@@ -38,8 +50,11 @@ export default function DashboardPage() {
 
   if (d.loading) return <DashboardSkeleton />;
 
-  const displayedGroups = selectedRange === "7" ? d.groups.slice(0, 7) : d.groups.slice(0, 30);
-  const maxAbsBalance = Math.max(...displayedGroups.map(g => Math.abs(g.net_balance)));
+  const displayedGroups = getGroupsInRange(selectedRange, d.groups);
+  const maxAbsBalance = Math.max(0, ...displayedGroups.map((g) => Math.abs(g.net_balance)));
+  const denom = d.totalOwedToMe + d.totalIOwe || 1;
+  const pctOwedToMe = Math.round((d.totalOwedToMe / denom) * 100);
+  const pctIOwe = 100 - pctOwedToMe;
 
   return (
     <div className="flex-1 bg-background">
@@ -76,42 +91,52 @@ export default function DashboardPage() {
               </div>
 
               {/* Bar Chart */}
-              <div className="flex-1 flex items-end justify-end gap-3 pb-6 pr-4 mt-16">
-                {displayedGroups.map((group) => {
-                  const height = Math.abs(group.net_balance) > 0
-                    ? Math.min(Math.abs(group.net_balance) / 100, 80) + 20
-                    : 30;
-                  const isActive = Math.abs(group.net_balance) === maxAbsBalance && maxAbsBalance > 0;
+              <div className="mt-16 flex-1 overflow-x-auto pb-2" style={{ WebkitOverflowScrolling: "touch" }}>
+                <div className="flex min-w-max items-end justify-end gap-1 sm:gap-2 md:gap-3 pb-6 pr-4">
+                  {displayedGroups.map((group) => {
+                    const height = Math.abs(group.net_balance) > 0
+                      ? Math.min(Math.abs(group.net_balance) / 100, 80) + 20
+                      : 30;
+                    const isActive = Math.abs(group.net_balance) === maxAbsBalance && maxAbsBalance > 0;
 
-                  return (
-                    <div
-                      key={group.group_id}
-                      className={`w-12 rounded-t-lg relative group transition-all ${
-                        isActive ? "bg-text-primary" : "bg-surface-2"
-                      }`}
-                      style={{ height: `${height}%` }}
-                    >
-                      {isActive && (
-                        <>
+                    return (
+                      <div
+                        key={group.group_id}
+                        className={`relative w-10 rounded-t-lg transition-all group sm:w-12 ${
+                          isActive ? "bg-text-primary" : "bg-surface-2"
+                        }`}
+                        style={{ height: `${height}%` }}
+                      >
+                        {isActive && (
                           <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-surface text-text-primary px-3 py-1 rounded-lg text-xs font-bold shadow-md whitespace-nowrap">
                             {group.net_balance > 0 ? "+" : ""}{group.net_balance.toFixed(0)}
                             <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-surface rotate-45" />
                           </div>
-                        </>
-                      )}
-                      <div className="absolute -bottom-6 w-full text-center text-xs text-text-secondary truncate px-1">
-                        {group.group_name.slice(0, 3)}
+                        )}
+                        <div className="absolute -bottom-6 w-full truncate px-1 text-center text-xs text-text-secondary">
+                          {group.group_name.slice(0, 3)}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Total amount */}
               <div className="absolute bottom-6 left-6 flex flex-col">
                 <div className="text-3xl font-bold leading-none tracking-tight flex items-baseline">
                   <span className="text-text-secondary text-lg mr-1">$</span>
-                  <span className="text-text-primary">{Math.abs(d.totalNet).toLocaleString()}</span>
+                  <span
+                    className={
+                      d.totalNet > 0
+                        ? "text-positive"
+                        : d.totalNet < 0
+                        ? "text-negative"
+                        : "text-text-primary"
+                    }
+                  >
+                    {d.totalNet.toLocaleString()}
+                  </span>
                 </div>
                 <span className="text-xs text-text-tertiary mt-1">net balance</span>
               </div>
@@ -141,14 +166,14 @@ export default function DashboardPage() {
                     cy="18"
                     fill="transparent"
                     r="15.91549430918954"
-                    strokeDasharray={`${Math.min(d.totalOwedToMe / (d.totalOwedToMe + d.totalIOwe || 1) * 100, 100)} 100`}
+                    strokeDasharray={`${pctOwedToMe} 100`}
                     strokeDashoffset="0"
                     strokeWidth="3"
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <span className="text-3xl font-bold text-text-primary">
-                    {d.totalIOwe > 0 ? Math.round(d.totalOwedToMe / (d.totalOwedToMe + d.totalIOwe) * 100) : 0}%
+                    {pctOwedToMe}%
                   </span>
                   <span className="text-xs text-text-secondary mt-1">of total</span>
                 </div>
@@ -162,7 +187,7 @@ export default function DashboardPage() {
                     Owed to you
                   </div>
                   <span className="font-bold text-sm text-text-primary">
-                    {d.totalOwedToMe > 0 ? Math.round(d.totalOwedToMe / (d.totalOwedToMe + d.totalIOwe) * 100) : 0}%
+                    {pctOwedToMe}%
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
@@ -171,7 +196,7 @@ export default function DashboardPage() {
                     You owe
                   </div>
                   <span className="font-bold text-sm text-text-primary">
-                    {d.totalIOwe > 0 ? Math.round(d.totalIOwe / (d.totalOwedToMe + d.totalIOwe) * 100) : 0}%
+                    {pctIOwe}%
                   </span>
                 </div>
               </div>

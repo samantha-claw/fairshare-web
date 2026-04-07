@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Avatar } from "@/components/ui/avatar";
 import { QrCode, UserPlus, Crown, MoreHorizontal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -26,12 +26,44 @@ export function MembersTab({
 }: MembersTabProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const triggerRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const removeActionButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     if (menuOpenId) {
       removeActionButtonRef.current?.focus();
     }
+  }, [menuOpenId]);
+
+  useEffect(() => {
+    if (!menuOpenId) {
+      return;
+    }
+
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as Node;
+      const clickedMenu = menuRef.current?.contains(target);
+      const clickedTrigger = triggerRefs.current[menuOpenId]?.contains(target);
+      if (!clickedMenu && !clickedTrigger) {
+        setMenuOpenId(null);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMenuOpenId(null);
+        triggerRefs.current[menuOpenId]?.focus();
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, [menuOpenId]);
 
   return (
@@ -115,7 +147,7 @@ export function MembersTab({
                 <div className="p-4">
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-semibold text-text-primary truncate">
-                      {member.display_name || member.full_name}
+                      {member.display_name || member.full_name || member.username || "Unknown user"}
                     </h3>
                     {isGroupOwner && (
                       <Crown className="h-4 w-4 text-amber-500 shrink-0" />
@@ -131,6 +163,9 @@ export function MembersTab({
               {isOwner && !isGroupOwner && (
                 <div className="absolute top-2 right-2 z-10">
                   <button
+                    ref={(el) => {
+                      triggerRefs.current[member.id] = el;
+                    }}
                     onClick={(e) => {
                       e.preventDefault();
                       setMenuOpenId(menuOpenId === member.id ? null : member.id);
@@ -144,30 +179,39 @@ export function MembersTab({
                     <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                   </button>
 
-                  {menuOpenId === member.id && (
-                    <motion.div
-                      id={`member-menu-${member.id}`}
-                      role="menu"
-                      initial={{ opacity: 0, scale: 0.95, y: -4 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, y: -4 }}
-                      className="absolute right-0 top-full mt-1 z-50 min-w-[120px] rounded-xl border border-border bg-surface p-1 shadow-lg"
-                    >
-                      <button
-                        ref={menuOpenId === member.id ? removeActionButtonRef : null}
-                        autoFocus
-                        role="menuitem"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          onRemoveMember(member.id, member.display_name || member.username);
-                          setMenuOpenId(null);
+                  <AnimatePresence>
+                    {menuOpenId === member.id && (
+                      <motion.div
+                        ref={menuRef}
+                        id={`member-menu-${member.id}`}
+                        role="menu"
+                        initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                        onBlur={(e) => {
+                          const nextFocus = e.relatedTarget as Node | null;
+                          if (!nextFocus || !menuRef.current?.contains(nextFocus)) {
+                            setMenuOpenId(null);
+                          }
                         }}
-                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-negative hover:bg-negative/10 transition-colors"
+                        className="absolute right-0 top-full mt-1 z-50 min-w-[120px] rounded-xl border border-border bg-surface p-1 shadow-lg"
                       >
-                        Remove
-                      </button>
-                    </motion.div>
-                  )}
+                        <button
+                          ref={menuOpenId === member.id ? removeActionButtonRef : null}
+                          autoFocus
+                          role="menuitem"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            onRemoveMember(member.id, member.display_name || member.username);
+                            setMenuOpenId(null);
+                          }}
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-negative hover:bg-negative/10 transition-colors"
+                        >
+                          Remove
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               )}
             </motion.div>

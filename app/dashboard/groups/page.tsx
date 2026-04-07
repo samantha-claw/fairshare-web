@@ -16,6 +16,18 @@ import {
 
 type SortOption = "name" | "activity" | "cashflow";
 type SortDirection = "asc" | "desc";
+type SortableGroup = {
+  group_name: string;
+  net_balance: number;
+  updated_at?: string;
+  created_at?: string;
+};
+
+function parseTimestamp(value?: string): number {
+  if (!value) return 0;
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
 
 function GroupsPageSkeleton() {
   return (
@@ -60,9 +72,11 @@ export default function GroupsPage() {
           break;
         case "activity": {
           // Use updated_at if available, otherwise fall back to created_at
-          const aDate = (a as any).updated_at || (a as any).created_at || "";
-          const bDate = (b as any).updated_at || (b as any).created_at || "";
-          comparison = new Date(aDate).getTime() - new Date(bDate).getTime();
+          const aGroup = a as SortableGroup;
+          const bGroup = b as SortableGroup;
+          const aDate = aGroup.updated_at ?? aGroup.created_at;
+          const bDate = bGroup.updated_at ?? bGroup.created_at;
+          comparison = parseTimestamp(aDate) - parseTimestamp(bDate);
           break;
         }
         case "cashflow":

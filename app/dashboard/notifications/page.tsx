@@ -194,14 +194,17 @@ export default function NotificationsPage() {
   // Mark all as read
   const markAllAsRead = async () => {
     if (!userId) return;
+    const previous = notifications;
+    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+
     const { error } = await supabase
       .from("notifications")
       .update({ is_read: true })
       .eq("user_id", userId)
       .eq("is_read", false);
-    if (!error) {
-      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-    } else {
+
+    if (error) {
+      setNotifications(previous);
       console.error("Failed to mark all notifications as read:", error);
     }
   };
