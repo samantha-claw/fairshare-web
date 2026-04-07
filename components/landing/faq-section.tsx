@@ -75,7 +75,10 @@ export function FAQSection() {
               className="border border-border rounded-2xl bg-background overflow-hidden"
             >
               <button
+                id={`faq-button-${index}`}
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                aria-expanded={openIndex === index}
+                aria-controls={`faq-panel-${index}`}
                 className="w-full flex items-center justify-between p-6 text-left"
               >
                 <span className="font-medium text-text-primary pr-4">
@@ -89,6 +92,9 @@ export function FAQSection() {
                 />
               </button>
               <div
+                id={`faq-panel-${index}`}
+                aria-labelledby={`faq-button-${index}`}
+                role="region"
                 className={cn(
                   "overflow-hidden transition-all duration-300",
                   openIndex === index ? "max-h-96 pb-6" : "max-h-0"

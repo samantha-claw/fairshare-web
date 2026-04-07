@@ -10,7 +10,6 @@ import {
   FolderOpen,
   Plus,
   UserCircle,
-  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -65,7 +64,9 @@ export function MobileNav() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="relative flex flex-col items-center"
+                  className="relative flex flex-col items-center gap-1"
+                  aria-label={item.label}
+                  aria-current={active ? "page" : undefined}
                 >
                   <motion.div
                     onMouseEnter={() => setHoveredIndex(i)}
@@ -74,20 +75,11 @@ export function MobileNav() {
                     whileTap={{ scale: 0.95 }}
                     className="flex h-12 w-12 items-center justify-center rounded-xl bg-text-primary text-surface shadow-md transition-all"
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-5 w-5" aria-hidden="true" />
                   </motion.div>
-                  <AnimatePresence>
-                    {isHovered && (
-                      <motion.span
-                        initial={{ opacity: 0, y: 4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 4 }}
-                        className="absolute -top-7 text-[10px] font-semibold text-text-secondary bg-surface px-2 py-0.5 rounded-md shadow-sm"
-                      >
-                        Create
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
+                  <span className="text-[10px] font-semibold text-text-secondary">
+                    {item.label}
+                  </span>
                 </Link>
               );
             }
@@ -96,7 +88,8 @@ export function MobileNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="relative flex flex-col items-center"
+                className="relative flex flex-col items-center gap-1"
+                aria-current={active ? "page" : undefined}
                 onMouseEnter={() => setHoveredIndex(i)}
                 onMouseLeave={() => setHoveredIndex(null)}
               >
@@ -113,29 +106,25 @@ export function MobileNav() {
                       : "text-text-tertiary"
                   )}
                 >
-                  <Icon className="h-5 w-5" />
+                  <Icon className="h-5 w-5" aria-hidden="true" />
                 </motion.div>
+                <span
+                  className={cn(
+                    "text-[10px] font-semibold",
+                    active ? "text-text-primary" : "text-text-tertiary"
+                  )}
+                >
+                  {item.label}
+                </span>
                 <AnimatePresence>
                   {active && (
                     <motion.div
                       layoutId="activeDot"
-                      className="w-1.5 h-1.5 rounded-full bg-positive mt-1"
+                      className="w-1.5 h-1.5 rounded-full bg-positive"
                       initial={{ opacity: 0, scale: 0 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0 }}
                     />
-                  )}
-                </AnimatePresence>
-                <AnimatePresence>
-                  {isHovered && !active && (
-                    <motion.span
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 4 }}
-                      className="absolute -top-7 text-[10px] font-semibold text-text-secondary bg-surface px-2 py-0.5 rounded-md shadow-sm whitespace-nowrap"
-                    >
-                      {item.label}
-                    </motion.span>
                   )}
                 </AnimatePresence>
               </Link>

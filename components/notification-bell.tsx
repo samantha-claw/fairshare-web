@@ -136,10 +136,11 @@ export function NotificationBell({ userId }: { userId: string }) {
             ) : (
               <div className="divide-y divide-border-light dark:divide-border-dark">
                 {notifications.map((notif) => (
-                  <div
+                  <button
                     key={notif.id}
+                    type="button"
                     onClick={() => setIsOpen(false)}
-                    className={`flex items-start gap-3 p-4 transition-colors hover:bg-surface-2 dark:hover:bg-gray-800 cursor-pointer ${
+                    className={`flex w-full items-start gap-3 p-4 text-left transition-colors hover:bg-surface-2 dark:hover:bg-gray-800 ${
                       !notif.is_read ? "bg-text-primary/5 dark:bg-text-primary/10" : ""
                     }`}
                   >
@@ -157,7 +158,7 @@ export function NotificationBell({ userId }: { userId: string }) {
                         {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true })}
                       </p>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             )}

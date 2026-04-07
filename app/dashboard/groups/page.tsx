@@ -58,14 +58,15 @@ export default function GroupsPage() {
         case "name":
           comparison = a.group_name.localeCompare(b.group_name);
           break;
-        case "activity":
+        case "activity": {
           // Use updated_at if available, otherwise fall back to created_at
           const aDate = (a as any).updated_at || (a as any).created_at || "";
           const bDate = (b as any).updated_at || (b as any).created_at || "";
-          comparison = new Date(bDate).getTime() - new Date(aDate).getTime();
+          comparison = new Date(aDate).getTime() - new Date(bDate).getTime();
           break;
+        }
         case "cashflow":
-          comparison = Math.abs(b.net_balance) - Math.abs(a.net_balance);
+          comparison = Math.abs(a.net_balance) - Math.abs(b.net_balance);
           break;
       }
       

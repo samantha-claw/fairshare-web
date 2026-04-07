@@ -64,6 +64,8 @@ export function HeroSection() {
               <button
                 onClick={() => setMenuState(!menuState)}
                 aria-label={menuState ? "Close Menu" : "Open Menu"}
+                aria-expanded={menuState}
+                aria-controls="mobile-menu"
                 className="relative z-20 -m-2.5 -mr-4 block cursor-pointer p-2.5 lg:hidden"
               >
                 <Menu className="m-auto size-6 duration-200 group-data-[state=active]:rotate-180 group-data-[state=active]:scale-0 group-data-[state=active]:opacity-0" />
@@ -104,7 +106,7 @@ export function HeroSection() {
               </div>
 
               {/* Mobile menu content */}
-              <div className="bg-surface group-data-[state=active]:block mb-6 hidden w-full flex-wrap items-center justify-end space-y-4 rounded-2xl border border-border p-6 shadow-xl lg:hidden lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none">
+              <div id="mobile-menu" className="bg-surface group-data-[state=active]:block mb-6 hidden w-full flex-wrap items-center justify-end space-y-4 rounded-2xl border border-border p-6 shadow-xl lg:hidden lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none">
                 <div className="lg:hidden">
                   <ul className="space-y-4 text-base">
                     {menuItems.map((item, index) => (

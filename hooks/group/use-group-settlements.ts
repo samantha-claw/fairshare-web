@@ -27,9 +27,9 @@ export function useGroupSettlements(
     string | null
   >(null);
 
-  const openSettleUpModal = useCallback(() => {
-    setSettleReceiver("");
-    setSettleAmount("");
+  const openSettleUpModal = useCallback((recipientId?: string, amount?: number) => {
+    setSettleReceiver(recipientId ?? "");
+    setSettleAmount(amount != null ? String(amount) : "");
     setIsSettleModalOpen(true);
   }, []);
 
