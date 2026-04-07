@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Avatar } from "@/components/ui/avatar";
 import { QrCode, UserPlus, Crown, MoreHorizontal } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Member, Group } from "@/types/group";
 
 interface MembersTabProps {
@@ -26,6 +26,13 @@ export function MembersTab({
 }: MembersTabProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const removeActionButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (menuOpenId) {
+      removeActionButtonRef.current?.focus();
+    }
+  }, [menuOpenId]);
 
   return (
     <div className="space-y-4">
@@ -128,7 +135,7 @@ export function MembersTab({
                       e.preventDefault();
                       setMenuOpenId(menuOpenId === member.id ? null : member.id);
                     }}
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-surface/80 backdrop-blur-sm text-text-secondary opacity-0 group-hover:opacity-100 focus:opacity-100 sm:opacity-100 transition-opacity hover:text-negative hover:bg-surface"
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-surface/80 backdrop-blur-sm text-text-secondary opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100 transition-opacity hover:text-negative hover:bg-surface"
                     aria-label="Open member actions"
                     aria-haspopup="menu"
                     aria-expanded={menuOpenId === member.id}
@@ -147,6 +154,8 @@ export function MembersTab({
                       className="absolute right-0 top-full mt-1 z-50 min-w-[120px] rounded-xl border border-border bg-surface p-1 shadow-lg"
                     >
                       <button
+                        ref={menuOpenId === member.id ? removeActionButtonRef : null}
+                        autoFocus
                         role="menuitem"
                         onClick={(e) => {
                           e.preventDefault();
