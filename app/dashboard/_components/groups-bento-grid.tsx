@@ -98,14 +98,14 @@ function GlassGroupCard({ group, status, isFeatured, isOwner }: GlassGroupCardPr
           
           {/* Hover Overlay Action */}
           <div className="absolute inset-0 flex items-center justify-center bg-surface/20 backdrop-blur-[2px] opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-            <motion.button
+            <motion.span
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="flex items-center gap-2 rounded-full bg-text-primary px-6 py-2.5 text-sm font-medium text-text-primary-foreground shadow-lg shadow-primary/25"
             >
               <Users className="h-4 w-4" />
               View Group
-            </motion.button>
+            </motion.span>
           </div>
         </div>
         
