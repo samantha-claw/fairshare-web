@@ -36,6 +36,7 @@ export interface Expense {
   amount: number;
   created_at: string;
   paid_by: string;
+ category?: string;
   profiles: { full_name: string; username: string; display_name: string };
   expense_splits?: { user_id: string }[];
 }

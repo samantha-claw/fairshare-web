@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef, type FormEvent } from "react";
 import { Modal } from "@/components/ui/modal";
 import type { Member } from "@/types/group";
+import type { ExpenseCategory } from "@/lib/constants/expense-categories";
+import { CategorySelector } from "@/components/ui/category-selector";
 import {
   SplitTypeSelector,
   type SplitType as SelectorSplitType,
@@ -12,6 +14,8 @@ import type { SplitType } from "@/hooks/group/use-group-expenses";
 
 // ─── Props Interface ───
 interface ExpenseModalProps {
+  expenseCategory: ExpenseCategory;
+  onExpenseCategoryChange: (category: ExpenseCategory) => void;
   isOpen: boolean;
   onClose: () => void;
   editingExpenseId: string | null;
@@ -51,6 +55,8 @@ export function ExpenseModal({
   currentUserId,
   initialSplitType = "equal",
   initialSplits = [],
+  expenseCategory,
+  onExpenseCategoryChange,
 }: ExpenseModalProps) {
   const title = editingExpenseId ? "Edit Expense" : "Add Expense";
 
@@ -196,6 +202,13 @@ export function ExpenseModal({
             />
           </div>
 
+          {/* ── Category ── */}
+          <div className="mb-3">
+            <CategorySelector
+              value={expenseCategory}
+              onChange={onExpenseCategoryChange}
+            />
+          </div>
           {/* ── Paid By ── */}
           <div className="mb-1">
             <label className="mb-1 block text-sm font-medium text-text-primary">

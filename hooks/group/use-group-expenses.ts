@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { validate } from "@/lib/validate";
 import { expenseSchema } from "@/lib/validations";
 import type { Member, Expense } from "@/types/group";
+import type { ExpenseCategory } from "@/lib/constants/expense-categories";
 
 export type SplitType = "equal" | "exact" | "custom" | "percentage" | "shares";
 
@@ -31,6 +32,9 @@ export function useGroupExpenses(
   /* ── Who Paid State (الجديد) ─────────────────────────── */
   const [paidBy, setPaidBy] = useState<string>("");
 
+  /* ── Category State ──────────────────────────────────── */
+  const [expenseCategory, setExpenseCategory] = useState<ExpenseCategory>("other");
+
   /* ── Custom Splits State ─────────────────────────────── */
   const [computedSplits, setComputedSplits] = useState<any[]>([]);
   const [isValidSplit, setIsValidSplit] = useState(false);
@@ -41,6 +45,7 @@ export function useGroupExpenses(
     setExpenseName("");
     setExpenseAmount("");
     setPaidBy(currentUserId);
+    setExpenseCategory("other");
     setComputedSplits([]);
     setIsValidSplit(false);
     setIsExpenseModalOpen(true);
@@ -78,6 +83,7 @@ export function useGroupExpenses(
     setExpenseName(exp.name);
     setExpenseAmount(exp.amount.toString());
     setPaidBy(exp.paid_by);
+    setExpenseCategory((exp as any).category || "other");
     const rawDbSplit = ((exp as any).split_type as string)?.toLowerCase();
     const validSplitType = ["equal", "exact", "custom", "percentage", "shares"].includes(rawDbSplit)
       ? (rawDbSplit as SplitType)
@@ -162,6 +168,7 @@ export function useGroupExpenses(
           setExpenseName("");
           setExpenseAmount("");
           setPaidBy("");
+        setExpenseCategory("other");
           setComputedSplits([]);
           refetch();
         }
@@ -236,5 +243,7 @@ export function useGroupExpenses(
     handleDeleteExpense,
     splitType,
     setSplitType,
+    expenseCategory,
+    setExpenseCategory,
   };
 }
