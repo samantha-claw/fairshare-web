@@ -319,7 +319,7 @@ export function SplitTypeSelector({
       {/* ── 2) Progress Bar + Status Message ── */}
       {totalAmount > 0 && (
         <div className="space-y-1.5">
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-border">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
                 barColors[validation.status]
@@ -383,10 +383,10 @@ export function SplitTypeSelector({
            <Avatar src={m.avatar_url} name={name} size="md" />
                 {splitType === "equal" && (
                   <div
-                    className={`absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white text-[8px] transition-all ${
+                    className={`absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full border-2 border-surface text-[8px] transition-all ${
                       isSelected
-                        ? "bg-text-primary text-white"
-                        : "bg-gray-200 text-transparent"
+                        ? "bg-[#111111] text-white dark:bg-[#F0F0F0] dark:text-[#111111]"
+                        : "bg-border text-transparent"
                     }`}
                   >
                     ✓
@@ -471,7 +471,7 @@ export function SplitTypeSelector({
             </div>
           </div>
 
-          <div className="h-6 w-px bg-gray-200" />
+          <div className="h-6 w-px bg-border" />
 
           <div className="space-y-0.5 text-right">
             <div className="text-text-tertiary">Total</div>
@@ -482,7 +482,7 @@ export function SplitTypeSelector({
 
           {validation.allocated < totalAmount - 0.01 && (
             <>
-              <div className="h-6 w-px bg-gray-200" />
+              <div className="h-6 w-px bg-border" />
               <div className="space-y-0.5 text-right">
                 <div className="text-text-tertiary">Remaining</div>
                 <div className="font-semibold text-red-500">

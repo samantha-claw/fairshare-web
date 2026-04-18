@@ -98,8 +98,8 @@ export function ExpenseModal({
         setComputedSplits(initialSplits);
         setIsValidSplit(true);
       } else {
-        // Adding new expense — reset to defaults
-        setSelectedMembers(new Set(members.map((m) => m.id)));
+        // Adding new expense — start with no members selected so user chooses deliberately
+        setSelectedMembers(new Set());
         setAllocations(new Map());
         setComputedSplits([]);
         setIsValidSplit(false);
@@ -174,7 +174,7 @@ export function ExpenseModal({
               type="text"
               required
               placeholder="e.g. Dinner"
-              className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-text-primary focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               value={expenseName}
               onChange={(e) => onExpenseNameChange(e.target.value)}
             />
@@ -190,7 +190,7 @@ export function ExpenseModal({
               required
               step="0.01"
               placeholder="0.00"
-              className="w-full rounded-xl border border-gray-300 px-3 py-2.5 font-mono text-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 font-mono text-lg text-text-primary focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               value={expenseAmount}
               onChange={(e) => onExpenseAmountChange(e.target.value)}
             />
@@ -205,7 +205,7 @@ export function ExpenseModal({
               <select
                 value={paidBy}
                 onChange={(e) => onPaidByChange(e.target.value)}
-                className="w-full appearance-none rounded-xl border border-gray-300 bg-surface px-3 py-2.5 pr-10 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full appearance-none rounded-xl border border-border bg-surface px-3 py-2.5 pr-10 text-sm text-text-primary focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 {members.map((member) => (
                   <option key={member.id} value={member.id}>
@@ -307,14 +307,14 @@ className="flex-1 overflow-y-auto overscroll-contain px-5 py-3 sm:px-6 custom-sc
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-xl bg-surface-2 py-3 text-sm font-medium text-text-primary transition-colors hover:bg-gray-200 active:bg-gray-300"
+              className="flex-1 rounded-xl bg-surface-2 py-3 text-sm font-medium text-text-primary transition-colors hover:bg-border active:bg-border-2"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting || !isValidSplit}
-              className="flex-1 rounded-xl bg-text-primary py-3 text-sm font-medium text-white transition-colors hover:opacity-90 active:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex-1 rounded-xl bg-[#111111] py-3 text-sm font-medium text-white transition-colors hover:bg-[#333333] active:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#F0F0F0] dark:text-[#111111] dark:hover:bg-[#D0D0D0]"
             >
               {submitting
                 ? "Saving…"
