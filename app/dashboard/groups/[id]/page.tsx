@@ -242,7 +242,7 @@ export default function GroupDetailsPage() {
           </TabsContent>
 
           <TabsContent value="analysis">
-            <AnalysisTab />
+            <AnalysisTab expenses={data.expenses} balances={data.balances} currency={currency} currentUserId={data.currentUser} />
           </TabsContent>
 
           <TabsContent value="members">
@@ -304,6 +304,8 @@ export default function GroupDetailsPage() {
             : "exact"
         }
         initialSplits={expenseCtl.computedSplits}
+        category={expenseCtl.category}
+        onCategoryChange={expenseCtl.setCategory}
       />
 
       <SettleModal

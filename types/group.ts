@@ -30,12 +30,52 @@ export interface Member {
   };
 }
 
+export type ExpenseCategory =
+  | "food"
+  | "transport"
+  | "housing"
+  | "entertainment"
+  | "shopping"
+  | "health"
+  | "education"
+  | "travel"
+  | "utilities"
+  | "other";
+
+export const EXPENSE_CATEGORIES: {
+  value: ExpenseCategory;
+  label: string;
+  emoji: string;
+}[] = [
+  { value: "food", label: "Food & Drinks", emoji: "🍽️" },
+  { value: "transport", label: "Transport", emoji: "🚗" },
+  { value: "housing", label: "Housing", emoji: "🏠" },
+  { value: "entertainment", label: "Entertainment", emoji: "🎬" },
+  { value: "shopping", label: "Shopping", emoji: "🛒" },
+  { value: "health", label: "Health", emoji: "💊" },
+  { value: "education", label: "Education", emoji: "📚" },
+  { value: "travel", label: "Travel", emoji: "✈️" },
+  { value: "utilities", label: "Utilities", emoji: "💡" },
+  { value: "other", label: "Other", emoji: "📦" },
+];
+
+export function getCategoryInfo(category: string | undefined | null): {
+  value: ExpenseCategory;
+  label: string;
+  emoji: string;
+} {
+  const found = EXPENSE_CATEGORIES.find((c) => c.value === category);
+  return found || EXPENSE_CATEGORIES[EXPENSE_CATEGORIES.length - 1]; // "other"
+}
+
 export interface Expense {
   id: string;
   name: string;
   amount: number;
   created_at: string;
   paid_by: string;
+  category?: ExpenseCategory;
+  split_type?: string;
   profiles: { full_name: string; username: string; display_name: string };
   expense_splits?: { user_id: string }[];
 }

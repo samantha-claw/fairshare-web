@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef, type FormEvent } from "react";
 import { Modal } from "@/components/ui/modal";
-import type { Member } from "@/types/group";
+import type { Member, ExpenseCategory } from "@/types/group";
+import { EXPENSE_CATEGORIES, getCategoryInfo } from "@/types/group";
 import {
   SplitTypeSelector,
   type SplitType as SelectorSplitType,
@@ -32,6 +33,8 @@ interface ExpenseModalProps {
   currentUserId: string;
   initialSplitType?: SelectorSplitType;
   initialSplits?: ComputedSplit[];
+  category: ExpenseCategory;
+  onCategoryChange: (cat: ExpenseCategory) => void;
 }
 
 export function ExpenseModal({
@@ -51,6 +54,8 @@ export function ExpenseModal({
   currentUserId,
   initialSplitType = "equal",
   initialSplits = [],
+  category,
+  onCategoryChange,
 }: ExpenseModalProps) {
   const title = editingExpenseId ? "Edit Expense" : "Add Expense";
 
@@ -196,7 +201,31 @@ export function ExpenseModal({
             />
           </div>
 
-          {/* ── Paid By ── */}
+          {/* ── Category ── */}
+      <div className="mb-3">
+        <label className="mb-1 block text-sm font-medium text-text-primary">
+          Category
+        </label>
+        <div className="flex flex-wrap gap-1.5">
+          {EXPENSE_CATEGORIES.map((cat) => (
+            <button
+              key={cat.value}
+              type="button"
+              onClick={() => onCategoryChange(cat.value)}
+              className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-all ${
+                category === cat.value
+                  ? "border-border-2 bg-surface-2 text-text-primary"
+                  : "border-border bg-surface text-text-secondary hover:border-border-2 hover:text-text-primary"
+              }`}
+            >
+              <span>{cat.emoji}</span>
+              <span>{cat.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Paid By ── */}
           <div className="mb-1">
             <label className="mb-1 block text-sm font-medium text-text-primary">
               Paid by

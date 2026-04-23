@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { validate } from "@/lib/validate";
 import { expenseSchema } from "@/lib/validations";
-import type { Member, Expense } from "@/types/group";
+import type { Member, Expense, ExpenseCategory } from "@/types/group";
 
 export type SplitType = "equal" | "exact" | "custom" | "percentage" | "shares";
 
@@ -28,8 +28,11 @@ export function useGroupExpenses(
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
   const [submittingExpense, setSubmittingExpense] = useState(false);
 
-  /* ── Who Paid State (الجديد) ─────────────────────────── */
+  /* ── Who Paid State ─────────────────────────────── */
   const [paidBy, setPaidBy] = useState<string>("");
+
+  /* ── Category State ─────────────────────────────── */
+  const [category, setCategory] = useState<ExpenseCategory>("other");
 
   /* ── Custom Splits State ─────────────────────────────── */
   const [computedSplits, setComputedSplits] = useState<any[]>([]);
@@ -41,57 +44,71 @@ export function useGroupExpenses(
     setExpenseName("");
     setExpenseAmount("");
     setPaidBy(currentUserId);
+    setCategory("other");
     setComputedSplits([]);
     setIsValidSplit(false);
     setIsExpenseModalOpen(true);
   }, [currentUserId]);
 
-  const openEditExpenseModal = useCallback((exp: Expense) => {
-    const rawSplits = ((exp as any).expense_splits || []) as any[];
-    const splitMemberIds = rawSplits
-      .map((s) => s?.user_id)
-      .filter((id): id is string => typeof id === "string" && id.length > 0);
-    const fallbackIds = splitMemberIds.length > 0
-      ? splitMemberIds
-      : members.map((m) => m.id);
+  const openEditExpenseModal = useCallback(
+    (exp: Expense) => {
+      const rawSplits = ((exp as any).expense_splits || []) as any[];
+      const splitMemberIds = rawSplits
+        .map((s) => s?.user_id)
+        .filter((id): id is string => typeof id === "string" && id.length > 0);
 
-    const evenAmount = fallbackIds.length > 0 ? exp.amount / fallbackIds.length : 0;
+      const fallbackIds =
+        splitMemberIds.length > 0 ? splitMemberIds : members.map((m) => m.id);
+      const evenAmount =
+        fallbackIds.length > 0 ? exp.amount / fallbackIds.length : 0;
 
-    const derivedSplits = fallbackIds.map((userId) => {
-      const split = rawSplits.find((s) => s?.user_id === userId);
-      const directAmount = Number(
-        split?.amount ?? split?.split_amount ?? split?.owed_amount
-      );
-      const amount = Number.isFinite(directAmount) && directAmount > 0
-        ? directAmount
-        : evenAmount;
+      const derivedSplits = fallbackIds.map((userId) => {
+        const split = rawSplits.find((s) => s?.user_id === userId);
+        const directAmount = Number(
+          split?.amount ?? split?.split_amount ?? split?.owed_amount
+        );
+        const amount =
+          Number.isFinite(directAmount) && directAmount > 0
+            ? directAmount
+            : evenAmount;
+        return {
+          userId,
+          amount,
+          percentage:
+            exp.amount > 0
+              ? +((amount / exp.amount) * 100).toFixed(2)
+              : 0,
+          shares: Number(split?.shares ?? 1),
+        };
+      });
 
-      return {
-        userId,
-        amount,
-        percentage: exp.amount > 0 ? +((amount / exp.amount) * 100).toFixed(2) : 0,
-        shares: Number(split?.shares ?? 1),
-      };
-    });
+      setEditingExpenseId(exp.id);
+      setExpenseName(exp.name);
+      setExpenseAmount(exp.amount.toString());
+      setPaidBy(exp.paid_by);
+      setCategory((exp.category as ExpenseCategory) || "other");
 
-    setEditingExpenseId(exp.id);
-    setExpenseName(exp.name);
-    setExpenseAmount(exp.amount.toString());
-    setPaidBy(exp.paid_by);
-    const rawDbSplit = ((exp as any).split_type as string)?.toLowerCase();
-    const validSplitType = ["equal", "exact", "custom", "percentage", "shares"].includes(rawDbSplit)
-      ? (rawDbSplit as SplitType)
-      : "equal";
-    setSplitType(validSplitType);
-    setComputedSplits(derivedSplits);
-    setIsValidSplit(derivedSplits.length > 0);
-    setIsExpenseModalOpen(true);
-  }, [members]);
+      const rawDbSplit = ((exp as any).split_type as string)?.toLowerCase();
+      const validSplitType = [
+        "equal",
+        "exact",
+        "custom",
+        "percentage",
+        "shares",
+      ].includes(rawDbSplit)
+        ? (rawDbSplit as SplitType)
+        : "equal";
+      setSplitType(validSplitType);
+      setComputedSplits(derivedSplits);
+      setIsValidSplit(derivedSplits.length > 0);
+      setIsExpenseModalOpen(true);
+    },
+    [members]
+  );
 
   const handleSaveExpense = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
-
       const trimmedName = expenseName.trim();
       const amount = parseFloat(expenseAmount);
 
@@ -113,15 +130,16 @@ export function useGroupExpenses(
         amount,
         paid_by: paidBy,
         split_type: splitType,
+        category,
         splits: splitsForValidation,
       });
+
       if (!validation.success) {
         toast.error(Object.values(validation.errors)[0]);
         return;
       }
 
       const validatedExpense = validation.data;
-
       setSubmittingExpense(true);
 
       const rpcName = editingExpenseId
@@ -136,6 +154,7 @@ export function useGroupExpenses(
             _paid_by: validatedExpense.paid_by,
             _splits: splitsPayload,
             _split_type: validatedExpense.split_type,
+            _category: category,
           }
         : {
             _group_id: groupId,
@@ -144,6 +163,7 @@ export function useGroupExpenses(
             _paid_by: validatedExpense.paid_by,
             _splits: splitsPayload,
             _split_type: validatedExpense.split_type,
+            _category: category,
           };
 
       try {
@@ -162,6 +182,7 @@ export function useGroupExpenses(
           setExpenseName("");
           setExpenseAmount("");
           setPaidBy("");
+          setCategory("other");
           setComputedSplits([]);
           refetch();
         }
@@ -181,6 +202,7 @@ export function useGroupExpenses(
       expenseName,
       expenseAmount,
       paidBy,
+      category,
       computedSplits,
       splitType,
       editingExpenseId,
@@ -194,10 +216,7 @@ export function useGroupExpenses(
     async (expenseId: string, name: string) => {
       const confirmed = await toast.confirm(
         `Delete "${name}"? This will recalculate all balances.`,
-        {
-          confirmLabel: "Delete",
-          cancelLabel: "Cancel"
-        }
+        { confirmLabel: "Delete", cancelLabel: "Cancel" }
       );
       if (!confirmed) return;
 
@@ -224,6 +243,8 @@ export function useGroupExpenses(
     setExpenseAmount,
     paidBy,
     setPaidBy,
+    category,
+    setCategory,
     computedSplits,
     setComputedSplits,
     isValidSplit,
