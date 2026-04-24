@@ -155,7 +155,7 @@ export function ExpenseModal({
       */}
       <form
         onSubmit={onSubmit}
-        className="flex max-h-[85vh] flex-col overflow-hidden sm:max-h-[80vh]"
+        className="flex max-h-[85dvh] flex-col sm:max-h-[80dvh]"
       >
         {/* ═══════════════════════════════════════════ */}
         {/* ██  FIXED TOP — Header + Inputs           ██ */}
@@ -276,7 +276,7 @@ export function ExpenseModal({
 
 <div
 
-className={`pointer-events-none absolute inset-x-0 top-0 z-10 h-4 bg-gradient-to-b from-surface to-transparent transition-opacity duration-200 ${
+className={`pointer-events-none absolute inset-x-0 top-0 z-0 h-4 bg-gradient-to-b from-surface to-transparent transition-opacity duration-200 ${
 
 showTopShadow ? "opacity-100" : "opacity-0"
 
@@ -290,6 +290,7 @@ showTopShadow ? "opacity-100" : "opacity-0"
 ref={scrollRef}
 
 className="flex-1 overflow-y-auto overscroll-contain px-5 py-3 sm:px-6 custom-scrollbar"
+            style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
 
 >
 
@@ -322,7 +323,7 @@ className="flex-1 overflow-y-auto overscroll-contain px-5 py-3 sm:px-6 custom-sc
 
           {/* Bottom scroll shadow */}
           <div
-            className={`pointer-events-none absolute inset-x-0 bottom-0 z-10 h-4 bg-gradient-to-t from-surface to-transparent transition-opacity duration-200 ${
+            className={`pointer-events-none absolute inset-x-0 bottom-0 z-0 h-4 bg-gradient-to-t from-surface to-transparent transition-opacity duration-200 ${
               showBottomShadow ? "opacity-100" : "opacity-0"
             }`}
           />
