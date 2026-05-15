@@ -135,7 +135,7 @@ export const expenseSchema = z.object({
     .max(1_000_000, "Amount seems too large."),
   paid_by: z.string().uuid("Invalid payer."),
   split_type: z.enum(["equal", "exact", "custom", "percentage", "shares"]),
-  category: z.string().optional(),
+  category: z.string().trim().min(1, "Please select a category."),
   notes: z
     .string()
     .max(500, "Notes must be under 500 characters.")
