@@ -32,7 +32,7 @@ export function useGroupExpenses(
   const [paidBy, setPaidBy] = useState<string>("");
 
   /* ── Category State ─────────────────────────────── */
-  const [category, setCategory] = useState<ExpenseCategory>("other");
+  const [category, setCategory] = useState<ExpenseCategory | null>(null);
 
   /* ── Custom Splits State ─────────────────────────────── */
   const [computedSplits, setComputedSplits] = useState<any[]>([]);
@@ -44,7 +44,7 @@ export function useGroupExpenses(
     setExpenseName("");
     setExpenseAmount("");
     setPaidBy(currentUserId);
-    setCategory("other");
+    setCategory(null);
     setComputedSplits([]);
     setIsValidSplit(false);
     setIsExpenseModalOpen(true);
@@ -86,7 +86,7 @@ export function useGroupExpenses(
       setExpenseName(exp.name);
       setExpenseAmount(exp.amount.toString());
       setPaidBy(exp.paid_by);
-      setCategory((exp.category as ExpenseCategory) || "other");
+      setCategory((exp.category as ExpenseCategory) ?? "other");
 
       const rawDbSplit = ((exp as any).split_type as string)?.toLowerCase();
       const validSplitType = [
@@ -182,7 +182,7 @@ export function useGroupExpenses(
           setExpenseName("");
           setExpenseAmount("");
           setPaidBy("");
-          setCategory("other");
+          setCategory(null);
           setComputedSplits([]);
           refetch();
         }

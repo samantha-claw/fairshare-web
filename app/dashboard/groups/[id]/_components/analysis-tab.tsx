@@ -318,7 +318,7 @@ export function AnalysisTab({
       map.set(cat, (map.get(cat) || 0) + Number(e.amount));
     });
     return EXPENSE_CATEGORIES.filter((c) => (map.get(c.value) || 0) > 0)
-      .sort((a, b) => (map.get(b.value) || 0) - (map.get(a.value) || 0))
+      .toSorted((a, b) => (map.get(b.value) || 0) - (map.get(a.value) || 0))
       .map((c) => ({
         name: c.value,
         label: `${c.emoji} ${c.label}`,
@@ -342,7 +342,7 @@ export function AnalysisTab({
     });
     return Array.from(map.entries())
       .map(([id, data]) => ({ id, ...data }))
-      .sort((a, b) => b.amount - a.amount)
+      .toSorted((a, b) => b.amount - a.amount)
       .slice(0, 6);
   }, [filteredExpenses]);
 
@@ -365,7 +365,7 @@ export function AnalysisTab({
       }
     });
     return Array.from(map.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
+      .toSorted(([a], [b]) => a.localeCompare(b))
       .map(([period, total]) => ({
         period,
         total,
@@ -401,7 +401,7 @@ export function AnalysisTab({
         dayData[cat] = (dayData[cat] || 0) + Number(e.amount);
       });
       return Array.from(dayMap.entries())
-        .sort(([a], [b]) => a.localeCompare(b))
+        .toSorted(([a], [b]) => a.localeCompare(b))
         .map(([day, catData]) => ({
           label: day,
           ...Object.fromEntries(
@@ -425,7 +425,7 @@ export function AnalysisTab({
         monthData[cat] = (monthData[cat] || 0) + Number(e.amount);
       });
       return Array.from(monthMap.entries())
-        .sort(([a], [b]) => a.localeCompare(b))
+        .toSorted(([a], [b]) => a.localeCompare(b))
         .map(([month, catData]) => ({
           label: new Date(month + "-01").toLocaleDateString("en-US", {
             month: "short",
@@ -453,7 +453,7 @@ export function AnalysisTab({
       shares: "#ec4899",
     };
     return Array.from(map.entries())
-      .sort(([, a], [, b]) => b - a)
+      .toSorted(([, a], [, b]) => b - a)
       .map(([name, value]) => ({
         name,
         label: name.charAt(0).toUpperCase() + name.slice(1),
@@ -484,13 +484,13 @@ export function AnalysisTab({
           owed: data.owed,
         };
       })
-      .sort((a, b) => b.paid - a.paid);
+      .toSorted((a, b) => b.paid - a.paid);
   }, [balances, currentUserId]);
 
   // ── Top Expenses ──
   const topExpenses = useMemo(() => {
     return [...filteredExpenses]
-      .sort((a, b) => Number(b.amount) - Number(a.amount))
+      .toSorted((a, b) => Number(b.amount) - Number(a.amount))
       .slice(0, 5);
   }, [filteredExpenses]);
 
@@ -509,7 +509,7 @@ export function AnalysisTab({
       dayMap.set(day, (dayMap.get(day) || 0) + Number(e.amount));
     });
     return Array.from(dayMap.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
+      .toSorted(([a], [b]) => a.localeCompare(b))
       .map(([day, total]) => ({ day, total }));
   }, [filteredExpenses, timeRange]);
 
@@ -540,7 +540,6 @@ export function AnalysisTab({
   }
 
   const maxSpenderAmount = topSpenders[0]?.amount || 1;
-  const maxMemberPaid = memberComparison[0]?.paid || 1;
 
   return (
     <div className="space-y-5">
