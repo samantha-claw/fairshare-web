@@ -318,8 +318,8 @@ export function AnalysisTab({
       const cat = (e.category as ExpenseCategory) || "other";
       map.set(cat, (map.get(cat) || 0) + Number(e.amount));
     });
-    return EXPENSE_CATEGORIES.filter((c) => (map.get(c.value) || 0) > 0)
-      .toSorted((a, b) => (map.get(b.value) || 0) - (map.get(a.value) || 0))
+    return [...EXPENSE_CATEGORIES.filter((c) => (map.get(c.value) || 0) > 0)]
+      .sort((a, b) => (map.get(b.value) || 0) - (map.get(a.value) || 0))
       .map((c) => ({
         name: c.value,
         label: `${c.emoji} ${c.label}`,
@@ -343,7 +343,7 @@ export function AnalysisTab({
     });
     return Array.from(map.entries())
       .map(([id, data]) => ({ id, ...data }))
-      .toSorted((a, b) => b.amount - a.amount)
+      .sort((a, b) => b.amount - a.amount)
       .slice(0, 6);
   }, [filteredExpenses]);
 
@@ -354,25 +354,25 @@ export function AnalysisTab({
       const d = new Date(e.created_at);
       if (timeRange === "week" || timeRange === "2weeks") {
         // Daily for short ranges
-        const day = d.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        });
-        map.set(day, (map.get(day) || 0) + Number(e.amount));
+        const dayKey = d.toISOString().slice(0, 10);
+        map.set(dayKey, (map.get(dayKey) || 0) + Number(e.amount));
       } else {
         // Monthly for longer ranges
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
         map.set(key, (map.get(key) || 0) + Number(e.amount));
       }
     });
-    return Array.from(map.entries())
-      .toSorted(([a], [b]) => a.localeCompare(b))
+    return [...Array.from(map.entries())]
+      .sort(([a], [b]) => a.localeCompare(b))
       .map(([period, total]) => ({
         period,
         total,
         label:
           timeRange === "week" || timeRange === "2weeks"
-            ? period
+            ? new Date(period + "T00:00:00").toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              })
             : new Date(period + "-01").toLocaleDateString("en-US", {
                 month: "short",
                 year: "2-digit",
@@ -390,10 +390,7 @@ export function AnalysisTab({
       >();
       filteredExpenses.forEach((e) => {
         const d = new Date(e.created_at);
-        const day = d.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        });
+        const day = d.toISOString().slice(0, 10);
         const cat = (e.category as ExpenseCategory) || "other";
         if (!dayMap.has(day)) {
           dayMap.set(day, {} as Record<ExpenseCategory, number>);
@@ -401,10 +398,13 @@ export function AnalysisTab({
         const dayData = dayMap.get(day)!;
         dayData[cat] = (dayData[cat] || 0) + Number(e.amount);
       });
-      return Array.from(dayMap.entries())
-        .toSorted(([a], [b]) => a.localeCompare(b))
+      return [...Array.from(dayMap.entries())]
+        .sort(([a], [b]) => a.localeCompare(b))
         .map(([day, catData]) => ({
-          label: day,
+          label: new Date(day + "T00:00:00").toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          }),
           ...Object.fromEntries(
             EXPENSE_CATEGORIES.map((c) => [c.value, catData[c.value] || 0])
           ),
@@ -425,8 +425,8 @@ export function AnalysisTab({
         const monthData = monthMap.get(month)!;
         monthData[cat] = (monthData[cat] || 0) + Number(e.amount);
       });
-      return Array.from(monthMap.entries())
-        .toSorted(([a], [b]) => a.localeCompare(b))
+      return [...Array.from(monthMap.entries())]
+        .sort(([a], [b]) => a.localeCompare(b))
         .map(([month, catData]) => ({
           label: new Date(month + "-01").toLocaleDateString("en-US", {
             month: "short",
@@ -453,8 +453,8 @@ export function AnalysisTab({
       percentage: "#14b8a6",
       shares: "#ec4899",
     };
-    return Array.from(map.entries())
-      .toSorted(([, a], [, b]) => b - a)
+    return [...Array.from(map.entries())]
+      .sort(([, a], [, b]) => b - a)
       .map(([name, value]) => ({
         name,
         label: name.charAt(0).toUpperCase() + name.slice(1),
@@ -485,13 +485,13 @@ export function AnalysisTab({
           owed: data.owed,
         };
       })
-      .toSorted((a, b) => b.paid - a.paid);
+      .sort((a, b) => b.paid - a.paid);
   }, [balances, currentUserId]);
 
   // ── Top Expenses ──
   const topExpenses = useMemo(() => {
     return [...filteredExpenses]
-      .toSorted((a, b) => Number(b.amount) - Number(a.amount))
+      .sort((a, b) => Number(b.amount) - Number(a.amount))
       .slice(0, 5);
   }, [filteredExpenses]);
 
@@ -508,8 +508,8 @@ export function AnalysisTab({
       });
       hourMap.set(hour, (hourMap.get(hour) || 0) + Number(e.amount));
     });
-    return Array.from(hourMap.entries())
-      .toSorted(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
+    return [...Array.from(hourMap.entries())]
+      .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
       .map(([hour, total]) => ({ hour, total }));
   }, [filteredExpenses, timeRange]);
 
