@@ -690,7 +690,7 @@ export function AnalysisTab({
         )}
 
         {/* Spending Trend */}
-        {trendChartData.length > 1 && (
+        {trendChartData.length > 0 && (
           <Card delay={0.3}>
             <CardHeader
               icon={<TrendingUp className="h-5 w-5 text-purple-500" />}
