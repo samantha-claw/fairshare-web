@@ -33,7 +33,7 @@ interface ExpenseModalProps {
   currentUserId: string;
   initialSplitType?: SelectorSplitType;
   initialSplits?: ComputedSplit[];
-  category: ExpenseCategory;
+  category: ExpenseCategory | null;
   onCategoryChange: (cat: ExpenseCategory) => void;
 }
 
@@ -223,6 +223,11 @@ export function ExpenseModal({
               <div className="mb-3">
                 <label className="mb-1 block text-sm font-medium text-text-primary">
                   Category
+                  {category === null && (
+                    <span className="ml-1.5 text-xs font-normal text-negative">
+                      (required)
+                    </span>
+                  )}
                 </label>
                 <div className="flex flex-wrap gap-1.5">
                   {EXPENSE_CATEGORIES.map((cat) => (
@@ -339,7 +344,7 @@ export function ExpenseModal({
             </button>
             <button
               type="submit"
-              disabled={submitting || !isValidSplit}
+              disabled={submitting || !isValidSplit || category === null}
               className="flex-1 rounded-xl bg-[#111111] py-3 text-sm font-medium text-white transition-colors hover:bg-[#333333] active:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#F0F0F0] dark:text-[#111111] dark:hover:bg-[#D0D0D0]"
             >
               {submitting
