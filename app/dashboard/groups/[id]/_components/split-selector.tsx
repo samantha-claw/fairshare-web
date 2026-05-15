@@ -298,14 +298,14 @@ export function SplitTypeSelector({
     <div className="space-y-3">
 
       {/* ── 1) Split Type Tabs ── */}
-      <div className="flex gap-1 rounded-xl bg-surface-2 p-1">
+      <div className="flex gap-1 rounded-xl bg-surface-2 p-1 overflow-x-auto">
         {SPLIT_TYPES.map((st) => (
           <button
             key={st.value}
             type="button"
             onClick={() => handleTypeChange(st.value)}
             title={st.hint}
-            className={`flex-1 rounded-lg px-3 py-2 text-xs font-semibold transition-all ${
+            className={`flex-1 rounded-lg px-2 py-2 text-xs font-semibold transition-all whitespace-nowrap min-w-0 ${
               splitType === st.value
                 ? "bg-surface text-text-primary shadow-sm"
                 : "text-text-secondary hover:text-text-primary"
@@ -438,7 +438,7 @@ export function SplitTypeSelector({
                         ? "1"
                         : "0.00"
                     }
-                    className={`w-24 rounded-lg border px-3 py-2 text-right text-sm font-mono outline-none transition-colors focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 ${
+                    className={`w-20 sm:w-24 rounded-lg border px-2 sm:px-3 py-2 text-right text-sm font-mono outline-none transition-colors focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 ${
                       (allocations.get(m.id) ?? 0) > 0
                         ? "border-indigo-300 bg-surface"
                         : "border-border bg-surface"

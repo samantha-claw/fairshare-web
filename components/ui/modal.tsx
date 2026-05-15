@@ -62,7 +62,8 @@ export function Modal({
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex justify-center p-4 ${positionClass}`}
+      className={`fixed inset-0 z-[100] flex justify-center p-0 sm:p-4 ${positionClass}`}
+        style={{ paddingTop: 'env(safe-area-inset-top)' }}
       role="presentation"
     >
       {/* Backdrop */}
@@ -86,7 +87,8 @@ export function Modal({
           aria-modal="true"
           aria-label={title}
           tabIndex={-1}
-          className={`relative w-full ${MAX_WIDTH_MAP[maxWidth]} transform overflow-hidden rounded-2xl bg-surface text-left shadow-2xl outline-none sm:my-8`}
+          className={`relative w-full ${MAX_WIDTH_MAP[maxWidth]} transform rounded-t-2xl sm:rounded-2xl bg-surface text-left shadow-2xl outline-none sm:my-8 max-h-[100dvh] sm:max-h-[90vh]`}
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
           {children}
         </div>
