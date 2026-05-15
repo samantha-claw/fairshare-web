@@ -40,3 +40,4 @@ yarn-error.log*
 **/public/precache-manifest-*.js.map
 
 tsconfig.tsbuildinfo
+.next
