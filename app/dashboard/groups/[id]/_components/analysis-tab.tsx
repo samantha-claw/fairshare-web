@@ -37,9 +37,10 @@ import {
 import type { Expense, Balance } from "@/types/group";
 
 // ── Time Range Types ──
-type TimeRange = "week" | "2weeks" | "month" | "all";
+type TimeRange = "24h" | "week" | "2weeks" | "month" | "all";
 
 const TIME_RANGES: { value: TimeRange; label: string; days: number }[] = [
+  { value: "24h", label: "24H", days: 1 },
   { value: "week", label: "7D", days: 7 },
   { value: "2weeks", label: "14D", days: 14 },
   { value: "month", label: "1M", days: 30 },
@@ -496,22 +497,23 @@ export function AnalysisTab({
 
   // ── Daily breakdown for very short ranges ──
   const dailyData = useMemo(() => {
-    if (timeRange !== "week" && timeRange !== "2weeks") return [];
+    if (timeRange !== "24h") return [];
 
-    const dayMap = new Map<string, number>();
+    const hourMap = new Map<string, number>();
     filteredExpenses.forEach((e) => {
       const d = new Date(e.created_at);
-      const day = d.toLocaleDateString("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
+      const hour = d.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        hour12: true,
       });
-      dayMap.set(day, (dayMap.get(day) || 0) + Number(e.amount));
+      hourMap.set(hour, (hourMap.get(hour) || 0) + Number(e.amount));
     });
-    return Array.from(dayMap.entries())
-      .toSorted(([a], [b]) => a.localeCompare(b))
-      .map(([day, total]) => ({ day, total }));
+    return Array.from(hourMap.entries())
+      .toSorted(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
+      .map(([hour, total]) => ({ hour, total }));
   }, [filteredExpenses, timeRange]);
+
+  const trendChartData = timeRange === "24h" ? dailyData : trendData;
 
   // ── Empty State ──
   if (expenses.length === 0) {
@@ -664,20 +666,22 @@ export function AnalysisTab({
         )}
 
         {/* Spending Trend */}
-        {trendData.length > 1 && (
+        {trendChartData.length > 1 && (
           <Card delay={0.3}>
             <CardHeader
               icon={<TrendingUp className="h-5 w-5 text-purple-500" />}
               title="Spending Trend"
               subtitle={
-                timeRange === "week" || timeRange === "2weeks"
-                  ? "Daily breakdown"
-                  : "Monthly overview"
+                timeRange === "24h"
+                  ? "Hourly breakdown"
+                  : timeRange === "week" || timeRange === "2weeks"
+                    ? "Daily breakdown"
+                    : "Monthly overview"
               }
             />
             <div className="h-52">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={trendData}>
+                <AreaChart data={trendChartData}>
                   <defs>
                     <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.35} />
@@ -690,7 +694,7 @@ export function AnalysisTab({
                     vertical={false}
                   />
                   <XAxis
-                    dataKey="label"
+                    dataKey={timeRange === "24h" ? "hour" : "label"}
                     tick={{ fill: "var(--text-tertiary)", fontSize: 11 }}
                     axisLine={{ stroke: "var(--border)" }}
                     tickLine={false}
