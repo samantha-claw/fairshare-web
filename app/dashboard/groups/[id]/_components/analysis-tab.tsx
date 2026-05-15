@@ -465,28 +465,52 @@ export function AnalysisTab({
 
   // ── Member Comparison ──
   const memberComparison = useMemo(() => {
+    const memberNames = new Map(
+      balances.map((balance) => [balance.user_id, balance.display_name])
+    );
     const memberMap = new Map<string, { paid: number; owed: number }>();
-    balances.forEach((b) => {
-      memberMap.set(b.user_id, {
-        paid: Number(b.total_paid),
-        owed: Number(b.total_owed),
+
+    filteredExpenses.forEach((expense) => {
+      const payerEntry = memberMap.get(expense.paid_by) || { paid: 0, owed: 0 };
+      payerEntry.paid += Number(expense.amount);
+      memberMap.set(expense.paid_by, payerEntry);
+
+      const splits = ((expense as any).expense_splits || []) as Array<{
+        user_id: string;
+        amount?: number;
+        split_amount?: number;
+        owed_amount?: number;
+      }>;
+      const fallbackShare =
+        splits.length > 0 ? Number(expense.amount) / splits.length : 0;
+
+      splits.forEach((split) => {
+        const share = Number(
+          split.amount ?? split.split_amount ?? split.owed_amount
+        );
+        const owedAmount = Number.isFinite(share) && share > 0 ? share : fallbackShare;
+        if (owedAmount <= 0) return;
+
+        const owedEntry = memberMap.get(split.user_id) || { paid: 0, owed: 0 };
+        owedEntry.owed += owedAmount;
+        memberMap.set(split.user_id, owedEntry);
       });
     });
+
     return Array.from(memberMap.entries())
       .map(([userId, data]) => {
-        const member = balances.find((b) => b.user_id === userId);
         return {
           userId,
           name:
             userId === currentUserId
               ? "You"
-              : member?.display_name || "Member",
+              : memberNames.get(userId) || "Member",
           paid: data.paid,
           owed: data.owed,
         };
       })
       .sort((a, b) => b.paid - a.paid);
-  }, [balances, currentUserId]);
+  }, [balances, filteredExpenses, currentUserId]);
 
   // ── Top Expenses ──
   const topExpenses = useMemo(() => {
