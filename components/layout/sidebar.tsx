@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { LayoutDashboard, Users, FolderOpen, Settings, LogOut, Sun, Moon, User, Bell } from "lucide-react";
 import { useTheme } from "@/providers/theme-provider";
 

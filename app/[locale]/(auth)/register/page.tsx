@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent, type ChangeEvent } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import {
   Mail,
   Lock,

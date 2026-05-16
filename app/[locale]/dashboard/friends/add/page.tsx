@@ -3,8 +3,7 @@
 // ==========================================
 // 📦 IMPORTS
 // ==========================================
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useRouter, Link } from "@/i18n/navigation";
 import { useFriends } from "@/hooks/use-friends";
 import { Spinner } from "@/components/ui/spinner";
 import { Avatar } from "@/components/ui/avatar";

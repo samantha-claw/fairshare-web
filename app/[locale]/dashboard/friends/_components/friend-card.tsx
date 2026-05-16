@@ -3,7 +3,7 @@
 // ==========================================
 // 📦 IMPORTS
 // ==========================================
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { Check, Users, UserCheck, ArrowUpRight } from "lucide-react";
 import type { Friend } from "@/types/friend";

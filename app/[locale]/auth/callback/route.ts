@@ -82,6 +82,7 @@ async function generateUniqueUsername(
 }
 
 export async function GET(request: Request) {
+  const locale = new URL(request.url).pathname.split('/')[1] === 'ar' ? 'ar' : 'en';
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
 
@@ -220,10 +221,10 @@ export async function GET(request: Request) {
         }
       }
 
-      return NextResponse.redirect(`${origin}/dashboard`);
+      return NextResponse.redirect(`${origin}/${locale}/dashboard`);
     }
   }
 
   // If we get here, something went wrong
-  return NextResponse.redirect(`${origin}/login?error=auth_failed`);
+  return NextResponse.redirect(`${origin}/${locale}/login?error=auth_failed`);
 }

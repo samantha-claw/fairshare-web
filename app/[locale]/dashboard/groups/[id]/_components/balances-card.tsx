@@ -4,7 +4,7 @@
 // 📦 IMPORTS
 // ==========================================
 import { useState, useMemo } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Avatar } from "@/components/ui/avatar";
 import { formatCurrency } from "@/lib/utils";
 import type { Balance } from "@/types/group";

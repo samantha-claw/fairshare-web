@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { OverviewWidget } from "./_components/overview-widget";
 import { Receipt, HandCoins } from "lucide-react";

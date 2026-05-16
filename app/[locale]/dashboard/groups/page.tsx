@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Users, Search, ArrowUpDown, SortAsc, SortDesc } from "lucide-react";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { GroupsBentoGrid } from "@/app/[locale]/dashboard/_components/groups-bento-grid";

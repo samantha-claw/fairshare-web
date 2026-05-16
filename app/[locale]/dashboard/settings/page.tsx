@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/providers/toast-provider";
 import { DeleteAccountDialog } from "./_components/delete-account-dialog";
