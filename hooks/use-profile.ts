@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslations } from "next-intl";
 import type {
   UserProfile,
   FriendStatus,
@@ -76,6 +77,7 @@ export function useProfile(options: UseProfileOptions = {}) {
   const router = useRouter();
   const supabase = createClient();
   const toast = useToast();
+  const t = useTranslations("toasts");
 
   /* ── Core State ──────────────────────────────────── */
   const [loading, setLoading] = useState(true);
@@ -339,7 +341,7 @@ export function useProfile(options: UseProfileOptions = {}) {
       setFriendshipDirection("outgoing");
     } catch (err: any) {
       console.error(err);
-      toast.error("Failed to send friend request.");
+      toast.error(t("profile.sendRequestFailed"));
     } finally {
       setIsProcessing(false);
     }
@@ -361,7 +363,7 @@ export function useProfile(options: UseProfileOptions = {}) {
       setFriendshipDirection(null);
     } catch (err: any) {
       console.error(err);
-      toast.error("Failed to cancel request.");
+      toast.error(t("profile.cancelRequestFailed"));
     } finally {
       setIsProcessing(false);
     }
@@ -385,7 +387,7 @@ export function useProfile(options: UseProfileOptions = {}) {
       setFriendshipDirection(null);
     } catch (err: any) {
       console.error(err);
-      toast.error("Failed to accept request.");
+      toast.error(t("profile.acceptFailed"));
     } finally {
       setIsProcessing(false);
     }

@@ -7,6 +7,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslations } from "next-intl";
 import { validate } from "@/lib/validate";
 import { friendSearchSchema } from "@/lib/validations";
 import type { RealtimeChannel } from "@supabase/supabase-js";
@@ -25,6 +26,7 @@ export function useFriends() {
   const supabase = createClient();
   const router = useRouter();
   const toast = useToast();
+  const t = useTranslations("toasts");
   const channelRef = useRef<RealtimeChannel | null>(null);
 
   /* ── Core State ──────────────────────────────────────── */
@@ -210,7 +212,7 @@ export function useFriends() {
 
   async function handleSendRequest(targetUsername: string, targetId: string) {
     if (!targetUsername || !targetUsername.trim()) {
-      toast.error("Username is required to send a request.");
+      toast.error(t("friends.usernameRequired"));
       return;
     }
 
@@ -221,14 +223,14 @@ export function useFriends() {
       });
 
       if (error) {
-        toast.error(error.message || "Failed to send request.");
+        toast.error(error.message || t("friends.failedToSend"));
         return;
       }
 
-      toast.success(`Request sent to @${targetUsername}`);
+      toast.success(t("friends.requestSent", { username: targetUsername }));
       await fetchOutgoingRequests();
     } catch (err) {
-      toast.error("An unexpected error occurred.");
+      toast.error(t("friends.unexpectedError"));
     } finally {
       setSendingToId(null);
     }
@@ -247,14 +249,14 @@ export function useFriends() {
         .eq("status", "pending");
 
       if (error) {
-        toast.error("Failed to cancel request.");
+        toast.error(t("friends.cancelFailed"));
         return;
       }
 
       setOutgoingRequests((prev) => prev.filter((r) => r.request_id !== requestId));
-      toast.success("Request cancelled.");
+      toast.success(t("friends.requestCancelled"));
     } catch (err) {
-      toast.error("An unexpected error occurred.");
+      toast.error(t("friends.unexpectedError"));
     } finally {
       setCancellingId(null);
     }
@@ -269,15 +271,15 @@ export function useFriends() {
         request_id: requestId,
       });
       if (error) {
-        toast.error(error.message || "Failed to accept request.");
+        toast.error(error.message || t("friends.acceptFailed"));
         return;
       }
 
       setPendingRequests((prev) => prev.filter((r) => r.request_id !== requestId));
       await fetchFriends();
-      toast.success("Friend request accepted!");
+      toast.success(t("friends.accepted"));
     } catch (err) {
-      toast.error("An unexpected error occurred.");
+      toast.error(t("friends.unexpectedError"));
     } finally {
       setAcceptingId(null);
     }
@@ -319,10 +321,10 @@ export function useFriends() {
       if (error) throw error;
 
       setPendingRequests((prev) => prev.filter((r) => r.request_id !== requestId));
-      toast.success("Request declined.");
+      toast.success(t("friends.declined"));
     } catch (err) {
       console.error("Failed to decline request:", err);
-      toast.error("Failed to decline request.");
+      toast.error(t("friends.declineFailed"));
     } finally {
       setDecliningId(null);
     }
@@ -332,9 +334,9 @@ export function useFriends() {
 
   async function handleRemoveFriend(friendId: string) {
     const confirmed = await toast.confirm(
-      "Are you sure you want to remove this friend?",
+      t("friends.removeConfirmTitle"),
       {
-        confirmLabel: "Remove",
+        confirmLabel: t("friends.removeConfirmTitle").includes("remove") ? "Remove" : "Remove",
         cancelLabel: "Cancel"
       }
     );
@@ -351,9 +353,9 @@ export function useFriends() {
 
       if (error) throw error;
       setFriends((prev) => prev.filter((f) => f.friend_id !== friendId));
-      toast.success("Friend removed.");
+      toast.success(t("friends.removed"));
     } catch (err) {
-      toast.error("Failed to remove friend.");
+      toast.error(t("friends.removeFailed"));
     }
   }
 

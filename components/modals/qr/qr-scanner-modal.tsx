@@ -238,11 +238,11 @@ export function QRScannerModal({
           {state === "scanning" && (
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
               <div className="relative h-64 w-64">
-                <div className="absolute left-0 top-0 h-8 w-8 rounded-tl-lg border-l-[3px] border-t-[3px] border-indigo-400" />
-                <div className="absolute right-0 top-0 h-8 w-8 rounded-tr-lg border-r-[3px] border-t-[3px] border-indigo-400" />
-                <div className="absolute bottom-0 left-0 h-8 w-8 rounded-bl-lg border-b-[3px] border-l-[3px] border-indigo-400" />
-                <div className="absolute bottom-0 right-0 h-8 w-8 rounded-br-lg border-b-[3px] border-r-[3px] border-indigo-400" />
-                <div className="absolute left-2 right-2 top-0 h-0.5 animate-[scanline_2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-indigo-400 to-transparent" />
+                <div className="absolute start-0 top-0 h-8 w-8 rounded-tl-lg border-l-[3px] border-t-[3px] border-indigo-400" />
+                <div className="absolute end-0 top-0 h-8 w-8 rounded-tr-lg border-r-[3px] border-t-[3px] border-indigo-400" />
+                <div className="absolute bottom-0 start-0 h-8 w-8 rounded-bl-lg border-b-[3px] border-l-[3px] border-indigo-400" />
+                <div className="absolute bottom-0 end-0 h-8 w-8 rounded-br-lg border-b-[3px] border-r-[3px] border-indigo-400" />
+                <div className="absolute start-2 end-2 top-0 h-0.5 animate-[scanline_2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-indigo-400 to-transparent" />
               </div>
               <div
                 className="absolute inset-0 bg-black/40"

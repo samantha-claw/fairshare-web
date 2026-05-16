@@ -1,43 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import React from "react";
 
-const testimonials = [
-  {
-    text: "Finally, no more awkward conversations about money. FairShare made splitting rent and utilities with roommates completely painless.",
-    name: "Sarah M.",
-    role: "Medical Student",
-  },
-  {
-    text: "We used it for our Europe trip with 6 friends. Everyone knew exactly what they owed, and settlements took minutes instead of hours.",
-    name: "Alex K.",
-    role: "Travel Group",
-  },
-  {
-    text: "The smart settlement feature is genius. It figured out that only 2 payments needed to happen instead of everyone paying everyone.",
-    name: "Mike T.",
-    role: "Apartment Share",
-  },
-  {
-    text: "I've tried other apps but they're all so complicated. FairShare just works. Add expense, see balance, settle up. Simple.",
-    name: "Priya S.",
-    role: "College Student",
-  },
-  {
-    text: "We use it for our weekly office lunches. Scan the receipt, split it, and everyone gets notified. So much better than Venmo requests.",
-    name: "David L.",
-    role: "Software Engineer",
-  },
-  {
-    text: "The QR code invite feature is so convenient. New roommate joined, scanned the code, and was immediately part of the household group.",
-    name: "Emma J.",
-    role: "House Share",
-  },
-];
-
 interface TestimonialsColumnProps {
-  testimonials: typeof testimonials;
+  testimonials: { text: string; name: string; role: string }[];
   duration?: number;
   className?: string;
 }
@@ -93,6 +61,41 @@ function TestimonialsColumn({
 }
 
 export function TestimonialsSection() {
+  const t = useTranslations("landing.testimonials");
+
+  const testimonials = [
+    {
+      text: t("items.t1Text"),
+      name: t("items.t1Name"),
+      role: t("items.t1Role"),
+    },
+    {
+      text: t("items.t2Text"),
+      name: t("items.t2Name"),
+      role: t("items.t2Role"),
+    },
+    {
+      text: t("items.t3Text"),
+      name: t("items.t3Name"),
+      role: t("items.t3Role"),
+    },
+    {
+      text: t("items.t4Text"),
+      name: t("items.t4Name"),
+      role: t("items.t4Role"),
+    },
+    {
+      text: t("items.t5Text"),
+      name: t("items.t5Name"),
+      role: t("items.t5Role"),
+    },
+    {
+      text: t("items.t6Text"),
+      name: t("items.t6Name"),
+      role: t("items.t6Role"),
+    },
+  ];
+
   // Split testimonials into two columns
   const leftColumn = testimonials.slice(0, 3);
   const rightColumn = testimonials.slice(3);
@@ -109,13 +112,13 @@ export function TestimonialsSection() {
           className="text-center mb-16"
         >
           <span className="text-sm font-medium text-text-secondary uppercase tracking-wide">
-            Testimonials
+            {t("sectionLabel")}
           </span>
           <h2 className="mt-4 text-3xl font-bold text-text-primary sm:text-4xl">
-            Loved by thousands
+            {t("title")}
           </h2>
           <p className="mt-4 max-w-2xl mx-auto text-text-secondary">
-            See what our users have to say about FairShare.
+            {t("subtitle")}
           </p>
         </motion.div>
 

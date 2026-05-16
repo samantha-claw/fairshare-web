@@ -3,6 +3,7 @@
 import { useState, useCallback, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslations } from "next-intl";
 import { validate } from "@/lib/validate";
 import { expenseSchema } from "@/lib/validations";
 import type { Member, Expense, ExpenseCategory } from "@/types/group";
@@ -20,6 +21,7 @@ export function useGroupExpenses(
 ) {
   const supabase = createClient();
   const toast = useToast();
+  const t = useTranslations("toasts");
 
   /* ── Modal state ─────────────────────────────────────── */
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
@@ -173,8 +175,8 @@ export function useGroupExpenses(
           console.error("Failed to save expense:", rpcError);
           toast.error(
             editingExpenseId
-              ? "Failed to update the expense."
-              : "Failed to add the expense."
+              ? t("expenses.createFailed")
+              : t("expenses.createFailed")
           );
         } else {
           setIsExpenseModalOpen(false);
@@ -188,11 +190,7 @@ export function useGroupExpenses(
         }
       } catch (error) {
         console.error("Failed to save expense:", error);
-        toast.error(
-          editingExpenseId
-            ? "Failed to update the expense."
-            : "Failed to add the expense."
-        );
+        toast.error(t("expenses.createFailed"));
       } finally {
         setSubmittingExpense(false);
       }
@@ -226,7 +224,7 @@ export function useGroupExpenses(
 
       if (delError) {
         console.error("Failed to delete expense:", delError);
-        toast.error("Failed to delete the expense.");
+        toast.error(t("expenses.deleteFailed"));
       } else {
         refetch();
       }
