@@ -1,24 +1,27 @@
 "use client";
 
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { Wallet } from "lucide-react";
 
-const links = [
-  { title: "Features", href: "#features" },
-  { title: "How It Works", href: "#how-it-works" },
-  { title: "FAQ", href: "#faq" },
-  { title: "Privacy", href: "/privacy" },
-  { title: "Terms", href: "/terms" },
-];
-
-// Social media links - placeholders for user to fill in
-const socialLinks = [
-  { name: "Twitter", href: "#" },
-  { name: "Discord", href: "#" },
-  { name: "GitHub", href: "#" },
-];
-
 export function FooterSection() {
+  const t = useTranslations("landing.footer");
+
+  const links = [
+    { title: t("features"), href: "#features" },
+    { title: t("howItWorks"), href: "#how-it-works" },
+    { title: t("faq"), href: "#faq" },
+    { title: t("privacy"), href: "/privacy" },
+    { title: t("terms"), href: "/terms" },
+  ];
+
+  // Social media links - placeholders for user to fill in
+  const socialLinks = [
+    { name: "Twitter", href: "#" },
+    { name: "Discord", href: "#" },
+    { name: "GitHub", href: "#" },
+  ];
+
   return (
     <footer className="border-t border-border bg-surface py-12 px-4 sm:px-6">
       <div className="mx-auto max-w-6xl">
@@ -69,10 +72,10 @@ export function FooterSection() {
         {/* Bottom section */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-text-tertiary">
           <p>
-            © {new Date().getFullYear()} FairShare. All rights reserved.
+            &copy; {new Date().getFullYear()} {t("copyright")}
           </p>
           <p className="text-xs">
-            Made with ❤️ for fair expense splitting
+            {t("madeWith")}
           </p>
         </div>
       </div>

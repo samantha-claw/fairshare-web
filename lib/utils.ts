@@ -12,8 +12,8 @@ export function cn(...inputs: ClassValue[]) {
   return clsx(inputs);
 }
 
-export function formatCurrency(amount: number, currency = "USD"): string {
-  return new Intl.NumberFormat("en-US", {
+export function formatCurrency(amount: number, currency = "USD", locale = "en-US"): string {
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
     minimumFractionDigits: 2,
@@ -59,17 +59,17 @@ export function getAvatarGradient(identifier: string): string {
 }
 
 /** Human-friendly relative time */
-export function getRelativeTime(dateStr: string): string {
+export function getRelativeTime(dateStr: string, locale = "en"): string {
   const diffMs = Date.now() - new Date(dateStr).getTime();
   const minutes = Math.floor(diffMs / 60_000);
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
 
-  if (minutes < 1) return "Just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
-  return new Date(dateStr).toLocaleDateString("en-US", {
+  if (minutes < 1) return locale === "ar" ? "الآن" : "Just now";
+  if (minutes < 60) return `${minutes}${locale === "ar" ? "د" : "m"} ago`;
+  if (hours < 24) return `${hours}${locale === "ar" ? "س" : "h"} ago`;
+  if (days < 7) return `${days}${locale === "ar" ? "ي" : "d"} ago`;
+  return new Date(dateStr).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US", {
     month: "short",
     day: "numeric",
   });
@@ -78,9 +78,10 @@ export function getRelativeTime(dateStr: string): string {
 /** Format currency with sign for display */
 export function formatSignedCurrency(
   amount: number,
-  currency = "USD"
+  currency = "USD",
+  locale = "en-US"
 ): { text: string; sign: "+" | "−" | ""; colorClass: string } {
-  const formatted = formatCurrency(amount, currency);
+  const formatted = formatCurrency(amount, currency, locale);
   if (amount > 0) return { text: `+${formatted}`, sign: "+", colorClass: "text-emerald-600" };
   if (amount < 0) return { text: `−${formatted}`, sign: "−", colorClass: "text-rose-600" };
   return { text: formatted, sign: "", colorClass: "text-text-secondary" };

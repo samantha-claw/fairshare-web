@@ -26,7 +26,7 @@ export function ToastContainer({ toasts, onDismiss }: ToastContainerProps) {
 
   return (
     <div
-      className="fixed right-4 top-4 z-[200] space-y-2"
+      className="fixed end-4 top-4 z-[200] space-y-2"
       role="region"
       aria-label="Notifications"
       aria-live="polite"
@@ -41,7 +41,7 @@ export function ToastContainer({ toasts, onDismiss }: ToastContainerProps) {
           <span className="flex-1 max-w-xs">{toast.message}</span>
           <button
             onClick={() => onDismiss(toast.id)}
-            className="ml-2 rounded-full p-0.5 opacity-60 transition-opacity hover:opacity-100"
+            className="ms-2 rounded-full p-0.5 opacity-60 transition-opacity hover:opacity-100"
             aria-label="Dismiss"
           >
             <X className="h-3.5 w-3.5" />

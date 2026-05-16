@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -11,22 +11,8 @@ import {
   Plus,
   UserCircle,
 } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-
-interface MobileNavItem {
-  label: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  isSpecial?: boolean;
-}
-
-const MOBILE_NAV_ITEMS: MobileNavItem[] = [
-  { label: "Home", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Groups", href: "/dashboard/groups", icon: FolderOpen },
-  { label: "New", href: "/dashboard/groups/new", icon: Plus, isSpecial: true },
-  { label: "Friends", href: "/dashboard/friends", icon: Users },
-  { label: "Profile", href: "/dashboard/profile", icon: UserCircle },
-];
 
 function isActive(pathname: string, href: string): boolean {
   if (href === "/dashboard") return pathname === "/dashboard";
@@ -36,9 +22,18 @@ function isActive(pathname: string, href: string): boolean {
 export function MobileNav() {
   const pathname = usePathname();
   const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null);
+  const t = useTranslations();
+
+  const navItems = React.useMemo(() => [
+    { label: t('mobileNav.home'), href: "/dashboard", icon: LayoutDashboard },
+    { label: t('mobileNav.groups'), href: "/dashboard/groups", icon: FolderOpen },
+    { label: t('mobileNav.new'), href: "/dashboard/groups/new", icon: Plus, isSpecial: true },
+    { label: t('mobileNav.friends'), href: "/dashboard/friends", icon: Users },
+    { label: t('mobileNav.profile'), href: "/dashboard/profile", icon: UserCircle },
+  ], [t]);
 
   return (
-    <nav className="fixed bottom-4 left-4 right-4 z-50 md:hidden">
+    <nav className="fixed bottom-4 start-4 end-4 z-50 md:hidden">
       <motion.div
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -54,7 +49,7 @@ export function MobileNav() {
             transform: "perspective(600px) rotateX(5deg)",
           }}
         >
-          {MOBILE_NAV_ITEMS.map((item, i) => {
+          {navItems.map((item, i) => {
             const active = isActive(pathname, item.href);
             const Icon = item.icon;
             const isHovered = hoveredIndex === i;

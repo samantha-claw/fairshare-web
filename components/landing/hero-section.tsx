@@ -1,21 +1,23 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { Menu, X, ChevronRight, Users, Wallet, Receipt, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const menuItems = [
-  { name: "Features", href: "#features" },
-  { name: "How It Works", href: "#how-it-works" },
-  { name: "Testimonials", href: "#testimonials" },
-  { name: "FAQ", href: "#faq" },
-];
-
 export function HeroSection() {
+  const tLanding = useTranslations("landing");
   const [menuState, setMenuState] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
+
+  const menuItems = [
+    { name: tLanding("nav.features"), href: "#features" },
+    { name: tLanding("nav.howItWorks"), href: "#how-it-works" },
+    { name: tLanding("nav.testimonials"), href: "#testimonials" },
+    { name: tLanding("nav.faq"), href: "#faq" },
+  ];
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -64,7 +66,7 @@ export function HeroSection() {
               {/* Mobile menu button */}
               <button
                 onClick={() => setMenuState(!menuState)}
-                aria-label={menuState ? "Close Menu" : "Open Menu"}
+                aria-label={menuState ? tLanding("nav.closeMenu") : tLanding("nav.openMenu")}
                 aria-expanded={menuState}
                 aria-controls="mobile-menu"
                 className="relative z-20 -m-2.5 -mr-4 block cursor-pointer p-2.5 lg:hidden"
@@ -95,13 +97,13 @@ export function HeroSection() {
                   href="/login"
                   className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
                 >
-                  Sign in
+                  {tLanding("cta.ctaSecondary")}
                 </Link>
                 <Link
                   href="/register"
                   className="inline-flex items-center gap-2 rounded-full bg-text-primary px-4 py-2 text-sm font-medium text-surface shadow-sm transition-all hover:opacity-90"
                 >
-                  Get Started
+                  {tLanding("hero.getStarted")}
                   <ChevronRight className="h-4 w-4" />
                 </Link>
               </div>
@@ -129,14 +131,14 @@ export function HeroSection() {
                     className="inline-flex items-center justify-center rounded-lg border border-border px-4 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-surface-2"
                     onClick={() => setMenuState(false)}
                   >
-                    Sign in
+                    {tLanding("cta.ctaSecondary")}
                   </Link>
                   <Link
                     href="/register"
                     className="inline-flex items-center justify-center gap-2 rounded-lg bg-text-primary px-4 py-2 text-sm font-medium text-surface shadow-sm transition-all hover:opacity-90"
                     onClick={() => setMenuState(false)}
                   >
-                    Get Started
+                    {tLanding("hero.getStarted")}
                     <ChevronRight className="h-4 w-4" />
                   </Link>
                 </div>
@@ -168,7 +170,7 @@ export function HeroSection() {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-positive opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-positive" />
                 </span>
-                <span className="text-text-secondary">Free forever — No hidden fees</span>
+                <span className="text-text-secondary">{tLanding("heroSection.betaBadge")}</span>
               </motion.div>
 
               {/* Headline */}
@@ -178,9 +180,9 @@ export function HeroSection() {
                 transition={{ duration: 0.5, delay: 0.1 }}
                 className="max-w-4xl text-4xl font-bold tracking-tight text-text-primary sm:text-5xl md:text-6xl lg:text-7xl"
               >
-                Split expenses,{" "}
+                {tLanding("heroSection.headline")}{" "}
                 <span className="bg-gradient-to-r from-text-primary via-text-secondary to-text-tertiary bg-clip-text text-transparent">
-                  not friendships
+                  {tLanding("heroSection.headlineHighlight")}
                 </span>
               </motion.h1>
 
@@ -191,8 +193,7 @@ export function HeroSection() {
                 transition={{ duration: 0.5, delay: 0.2 }}
                 className="mt-6 max-w-2xl text-lg text-text-secondary sm:text-xl"
               >
-                The smart way to track shared expenses with friends, roommates, and groups. 
-                Settle debts fairly with minimum transactions.
+                {tLanding("heroSection.subtitle")}
               </motion.p>
 
               {/* CTA buttons */}
@@ -206,14 +207,14 @@ export function HeroSection() {
                   href="/register"
                   className="inline-flex items-center gap-2 rounded-full bg-text-primary px-8 py-4 text-base font-medium text-surface shadow-lg transition-all hover:opacity-90 hover:shadow-xl"
                 >
-                  Start splitting for free
+                  {tLanding("heroSection.ctaPrimary")}
                   <ArrowRight className="h-5 w-5" />
                 </Link>
                 <Link
                   href="#how-it-works"
                   className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-8 py-4 text-base font-medium text-text-primary transition-colors hover:bg-surface-2"
                 >
-                  See how it works
+                  {tLanding("heroSection.ctaSecondary")}
                 </Link>
               </motion.div>
 
@@ -226,15 +227,15 @@ export function HeroSection() {
               >
                 <div>
                   <div className="text-2xl font-bold text-text-primary sm:text-3xl">10K+</div>
-                  <div className="text-sm text-text-secondary">Users</div>
+                  <div className="text-sm text-text-secondary">{tLanding("heroSection.statUsers")}</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-text-primary sm:text-3xl">$2M+</div>
-                  <div className="text-sm text-text-secondary">Tracked</div>
+                  <div className="text-sm text-text-secondary">{tLanding("heroSection.statTracked")}</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-text-primary sm:text-3xl">50+</div>
-                  <div className="text-sm text-text-secondary">Countries</div>
+                  <div className="text-sm text-text-secondary">{tLanding("heroSection.statCountries")}</div>
                 </div>
               </motion.div>
             </div>

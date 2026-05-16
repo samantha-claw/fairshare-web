@@ -1,45 +1,23 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const faqs = [
-  {
-    question: "Is FairShare really free?",
-    answer:
-      "Yes, 100% free. No premium tier, no ads, no hidden fees. We believe expense tracking should be accessible to everyone.",
-  },
-  {
-    question: "How does smart settlement work?",
-    answer:
-      "Instead of everyone paying everyone, FairShare calculates the minimum number of transactions needed to settle all debts. For example, if you owe Sarah $20 and Sarah owes Mike $20, you can just pay Mike directly. Fewer transfers, less hassle.",
-  },
-  {
-    question: "Can I split expenses unevenly?",
-    answer:
-      "Absolutely! You can split equally, by percentage, or specify exact amounts for each person. Perfect for when someone didn't order dessert or left early.",
-  },
-  {
-    question: "What if someone owes me and I owe them?",
-    answer:
-      "FairShare automatically nets out debts. If you owe Sarah $20 and she owes you $15, it shows you only owe $5. This happens automatically across all your groups.",
-  },
-  {
-    question: "Is my data private?",
-    answer:
-      "Yes. Your expense data is only visible to you and members of your groups. We never sell your data or show you ads based on your spending.",
-  },
-  {
-    question: "Do I need everyone to have the app?",
-    answer:
-      "Everyone who wants to see balances and add expenses needs an account, but you can track expenses on behalf of others. They'll get notified and can join when they're ready.",
-  },
-];
-
 export function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const t = useTranslations("landing.faq");
+
+  const faqs = [
+    { question: t("items.q1"), answer: t("items.a1") },
+    { question: t("items.q2"), answer: t("items.a2") },
+    { question: t("items.q3"), answer: t("items.a3") },
+    { question: t("items.q4"), answer: t("items.a4") },
+    { question: t("items.q5"), answer: t("items.a5") },
+    { question: t("items.q6"), answer: t("items.a6") },
+  ];
 
   return (
     <section id="faq" className="py-24 px-4 sm:px-6 bg-surface">
@@ -53,13 +31,13 @@ export function FAQSection() {
           className="text-center mb-12"
         >
           <span className="text-sm font-medium text-text-secondary uppercase tracking-wide">
-            FAQ
+            {t("sectionLabel")}
           </span>
           <h2 className="mt-4 text-3xl font-bold text-text-primary sm:text-4xl">
-            Frequently asked questions
+            {t("title")}
           </h2>
           <p className="mt-4 text-text-secondary">
-            Everything you need to know about FairShare.
+            {t("subtitle")}
           </p>
         </motion.div>
 

@@ -160,7 +160,7 @@ export function QRShareModal({
       >
         <button
           onClick={handleClose}
-          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-surface/20 text-white/80 backdrop-blur-sm transition-colors hover:bg-surface/30 hover:text-white"
+          className="absolute end-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-surface/20 text-white/80 backdrop-blur-sm transition-colors hover:bg-surface/30 hover:text-white"
         >
           <X className="h-4 w-4" />
         </button>

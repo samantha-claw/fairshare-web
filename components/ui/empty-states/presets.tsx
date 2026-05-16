@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Users, UserPlus, PlusCircle, ArrowLeft, Eye } from "lucide-react";
 import { EmptyState } from "./empty-state";
 import { AgentSplitIllustration } from "./agent-split-illustration";
@@ -29,20 +30,20 @@ export function GroupsEmptyState({
   onCreateGroup,
   onJoinGroup,
 }: GroupsEmptyStateProps) {
-  const c = EMPTY_STATE_CONTENT.groups;
+  const t = useTranslations();
   return (
     <EmptyState
       illustration={getIllustration("groups")}
-      title={c.title}
-      description={c.description}
+      title={t("emptyStates.groups.title")}
+      description={t("emptyStates.groups.description")}
       action={{
-        label: c.actionLabel!,
+        label: t("emptyStates.groups.actionLabel"),
         onClick: onCreateGroup,
         icon: <Users className="h-4 w-4" />,
       }}
       secondaryAction={
         onJoinGroup
-          ? { label: c.secondaryLabel!, onClick: onJoinGroup }
+          ? { label: t("emptyStates.groups.secondaryLabel"), onClick: onJoinGroup }
           : undefined
       }
     />
@@ -61,20 +62,20 @@ export function FriendsEmptyState({
   onFindFriends,
   onShareLink,
 }: FriendsEmptyStateProps) {
-  const c = EMPTY_STATE_CONTENT.friends;
+  const t = useTranslations();
   return (
     <EmptyState
       illustration={getIllustration("friends")}
-      title={c.title}
-      description={c.description}
+      title={t("emptyStates.friends.title")}
+      description={t("emptyStates.friends.description")}
       action={{
-        label: c.actionLabel!,
+        label: t("emptyStates.friends.actionLabel"),
         onClick: onFindFriends,
         icon: <UserPlus className="h-4 w-4" />,
       }}
       secondaryAction={
         onShareLink
-          ? { label: c.secondaryLabel!, onClick: onShareLink }
+          ? { label: t("emptyStates.friends.secondaryLabel"), onClick: onShareLink }
           : undefined
       }
     />
@@ -89,14 +90,14 @@ interface ExpensesEmptyStateProps {
 }
 
 export function ExpensesEmptyState({ onAddExpense }: ExpensesEmptyStateProps) {
-  const c = EMPTY_STATE_CONTENT.expenses;
+  const t = useTranslations();
   return (
     <EmptyState
       illustration={getIllustration("expenses")}
-      title={c.title}
-      description={c.description}
+      title={t("emptyStates.expenses.title")}
+      description={t("emptyStates.expenses.description")}
       action={{
-        label: c.actionLabel!,
+        label: t("emptyStates.expenses.actionLabel"),
         onClick: onAddExpense,
         icon: <PlusCircle className="h-4 w-4" />,
       }}
@@ -114,15 +115,15 @@ interface NotificationsEmptyStateProps {
 export function NotificationsEmptyState({
   onBack,
 }: NotificationsEmptyStateProps) {
+  const t = useTranslations();
   const router = useRouter();
-  const c = EMPTY_STATE_CONTENT.notifications;
   return (
     <EmptyState
       illustration={getIllustration("notifications")}
-      title={c.title}
-      description={c.description}
+      title={t("emptyStates.notifications.title")}
+      description={t("emptyStates.notifications.description")}
       secondaryAction={{
-        label: c.secondaryLabel!,
+        label: t("emptyStates.notifications.secondaryLabel"),
         onClick: onBack ?? (() => router.push("/dashboard")),
       }}
     />
@@ -139,15 +140,15 @@ interface SettlementsEmptyStateProps {
 export function SettlementsEmptyState({
   onViewGroups,
 }: SettlementsEmptyStateProps) {
+  const t = useTranslations();
   const router = useRouter();
-  const c = EMPTY_STATE_CONTENT.settlements;
   return (
     <EmptyState
       illustration={getIllustration("settlements")}
-      title={c.title}
-      description={c.description}
+      title={t("emptyStates.settlements.title")}
+      description={t("emptyStates.settlements.description")}
       secondaryAction={{
-        label: c.secondaryLabel!,
+        label: t("emptyStates.settlements.secondaryLabel"),
         onClick: onViewGroups ?? (() => router.push("/dashboard/groups")),
       }}
     />

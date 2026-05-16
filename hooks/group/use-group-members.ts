@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslations } from "next-intl";
 import type { Member, SearchResult, InvitableFriend } from "@/types/group";
 
 /**
@@ -16,6 +17,7 @@ export function useGroupMembers(
 ) {
   const supabase = createClient();
   const toast = useToast();
+  const t = useTranslations("toasts");
 
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
   const [invitableFriends, setInvitableFriends] = useState<

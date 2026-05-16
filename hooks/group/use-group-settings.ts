@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { formatCurrency } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslations } from "next-intl";
 import type { Group, Balance } from "@/types/group";
 
 export function useGroupSettings(
@@ -16,6 +17,7 @@ export function useGroupSettings(
   const router = useRouter();
   const supabase = createClient();
   const toast = useToast();
+  const t = useTranslations("toasts");
 
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
@@ -25,7 +27,7 @@ export function useGroupSettings(
   /* ── Delete group (owner only) ───────────────────────── */
   const handleDeleteGroup = useCallback(async () => {
     if (!group || deleteConfirmText !== group.name) {
-      toast.error("Please type the group name exactly to confirm deletion.");
+      toast.error(t("groupSettings.nameMismatch"));
       return;
     }
 
@@ -38,14 +40,14 @@ export function useGroupSettings(
         .eq("owner_id", currentUser!);
 
       if (deleteError) {
-        toast.error(deleteError.message);
+      toast.error(t("groupSettings.deleteFailed"));
         return;
       }
 
       router.replace("/dashboard");
     } catch (err) {
       console.error(err);
-      toast.error("An unexpected error occurred.");
+      toast.error(t("expenses.unexpectedError"));
     } finally {
       setDeletingGroup(false);
     }
@@ -97,7 +99,7 @@ export function useGroupSettings(
       router.replace("/dashboard");
     } catch (err) {
       console.error(err);
-      toast.error("An unexpected error occurred.");
+      toast.error(t("expenses.unexpectedError"));
     } finally {
       setLeavingGroup(false);
     }
