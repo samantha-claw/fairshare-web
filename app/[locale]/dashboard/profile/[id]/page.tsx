@@ -4,7 +4,7 @@
 // 📦 IMPORTS
 // ==========================================
 import { useState } from "react";
-import { useParams } from "@/i18n/navigation";
+import { useParams } from "next/navigation";
 import { useProfile } from "@/hooks/use-profile";
 import { Spinner } from "@/components/ui/spinner";
 import { User, QrCode } from "lucide-react";

@@ -4,7 +4,7 @@
 // 📦 IMPORTS
 // ==========================================
 import { useState, useCallback } from "react";
-import { useParams } from "@/i18n/navigation";
+import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
