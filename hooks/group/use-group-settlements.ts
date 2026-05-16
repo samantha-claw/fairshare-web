@@ -3,6 +3,7 @@
 import { useState, useCallback, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslations } from "next-intl";
 import { validate } from "@/lib/validate";
 import { settlementSchema } from "@/lib/validations";
 
@@ -17,6 +18,7 @@ export function useGroupSettlements(
 ) {
   const supabase = createClient();
   const toast = useToast();
+  const t = useTranslations("toasts");
 
   /* ── Modal state ─────────────────────────────────────── */
   const [isSettleModalOpen, setIsSettleModalOpen] = useState(false);
@@ -49,7 +51,7 @@ export function useGroupSettlements(
       const { to_user, amount: validatedAmount } = validation.data;
 
       if (!currentUser) {
-        toast.error("Session expired. Please refresh.");
+        toast.error(t("settlements.sessionExpired"));
         return;
       }
 
@@ -69,7 +71,7 @@ export function useGroupSettlements(
           });
 
         if (insertError) {
-          toast.error(insertError.message);
+        toast.error(t("settlements.createFailed"));
           return;
         }
 
@@ -90,7 +92,7 @@ export function useGroupSettlements(
         refetch();
       } catch (err) {
         console.error(err);
-        toast.error("An unexpected error occurred.");
+        toast.error(t("expenses.unexpectedError"));
       } finally {
         setSubmittingSettle(false);
       }

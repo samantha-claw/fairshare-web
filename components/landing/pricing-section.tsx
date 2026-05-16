@@ -1,21 +1,24 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { Check, Sparkles } from "lucide-react";
 
-const features = [
-  "Unlimited groups",
-  "Unlimited expenses",
-  "Smart settlement algorithm",
-  "Real-time notifications",
-  "QR code group invites",
-  "Transaction history",
-  "Mobile & web access",
-  "No ads, ever",
-];
-
 export function PricingSection() {
+  const t = useTranslations("landing.pricing");
+
+  const features = [
+    t("items.unlimitedGroups"),
+    t("items.unlimitedExpenses"),
+    t("items.smartSettlements"),
+    t("items.realtimeNotifications"),
+    t("items.qrCodeInvites"),
+    t("items.transactionHistory"),
+    t("items.mobileWeb"),
+    t("items.noAds"),
+  ];
+
   return (
     <section id="pricing" className="py-24 px-4 sm:px-6 bg-background">
       <div className="mx-auto max-w-4xl">
@@ -28,14 +31,13 @@ export function PricingSection() {
           className="text-center mb-12"
         >
           <span className="text-sm font-medium text-text-secondary uppercase tracking-wide">
-            Pricing
+            {t("sectionLabel")}
           </span>
           <h2 className="mt-4 text-3xl font-bold text-text-primary sm:text-4xl">
-            100% Free. No catch.
+            {t("title")}
           </h2>
           <p className="mt-4 max-w-2xl mx-auto text-text-secondary">
-            We believe expense tracking should be accessible to everyone. 
-            No premium tiers, no hidden fees, no ads.
+            {t("subtitle")}
           </p>
         </motion.div>
 
@@ -51,7 +53,7 @@ export function PricingSection() {
           <div className="absolute -top-4 left-1/2 -translate-x-1/2">
             <div className="inline-flex items-center gap-2 rounded-full bg-text-primary px-4 py-1.5 text-sm font-medium text-surface">
               <Sparkles className="h-4 w-4" />
-              Free Forever
+              {t("badge")}
             </div>
           </div>
 
@@ -59,9 +61,9 @@ export function PricingSection() {
           <div className="text-center mb-8 pt-4">
             <div className="flex items-baseline justify-center gap-2">
               <span className="text-5xl font-bold text-text-primary">$0</span>
-              <span className="text-text-secondary">/month</span>
+              <span className="text-text-secondary">{t("price")}</span>
             </div>
-            <p className="mt-2 text-text-secondary">No credit card required</p>
+            <p className="mt-2 text-text-secondary">{t("noCard")}</p>
           </div>
 
           {/* Features */}
@@ -82,10 +84,10 @@ export function PricingSection() {
               href="/register"
               className="inline-flex items-center justify-center rounded-full bg-text-primary px-8 py-4 text-base font-medium text-surface shadow-lg transition-all hover:opacity-90 hover:shadow-xl"
             >
-              Start for free
+              {t("cta")}
             </Link>
             <p className="mt-4 text-xs text-text-tertiary">
-              Free forever • No limits • No spam
+              {t("footer")}
             </p>
           </div>
         </motion.div>

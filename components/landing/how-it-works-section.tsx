@@ -1,30 +1,33 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { Users, Receipt, CheckCircle } from "lucide-react";
 
-const steps = [
-  {
-    number: "01",
-    icon: Users,
-    title: "Create a group",
-    description: "Start a group for your roommates, trip, or any shared expense scenario. Give it a name and add members.",
-  },
-  {
-    number: "02",
-    icon: Receipt,
-    title: "Add expenses",
-    description: "Log shared expenses as they happen. Split equally or customize who owes what for each expense.",
-  },
-  {
-    number: "03",
-    icon: CheckCircle,
-    title: "Settle up",
-    description: "When ready, see who should pay whom. Our smart algorithm minimizes transactions for easy settling.",
-  },
-];
-
 export function HowItWorksSection() {
+  const t = useTranslations("landing.howItWorks");
+
+  const steps = [
+    {
+      number: "01",
+      icon: Users,
+      title: t("steps.step1"),
+      description: t("steps.step1Desc"),
+    },
+    {
+      number: "02",
+      icon: Receipt,
+      title: t("steps.step2"),
+      description: t("steps.step2Desc"),
+    },
+    {
+      number: "03",
+      icon: CheckCircle,
+      title: t("steps.step3"),
+      description: t("steps.step3Desc"),
+    },
+  ];
+
   return (
     <section id="how-it-works" className="py-24 px-4 sm:px-6 bg-surface">
       <div className="mx-auto max-w-6xl">
@@ -37,14 +40,13 @@ export function HowItWorksSection() {
           className="text-center mb-16"
         >
           <span className="text-sm font-medium text-text-secondary uppercase tracking-wide">
-            How It Works
+            {t("sectionLabel")}
           </span>
           <h2 className="mt-4 text-3xl font-bold text-text-primary sm:text-4xl">
-            Three steps to fair splitting
+            {t("title")}
           </h2>
           <p className="mt-4 max-w-2xl mx-auto text-text-secondary">
-            No complicated setup. No learning curve. Just straightforward expense tracking 
-            that anyone can use.
+            {t("subtitle")}
           </p>
         </motion.div>
 
