@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Avatar } from "@/components/ui/avatar";
 import { QrCode, UserPlus, Crown, MoreHorizontal } from "lucide-react";

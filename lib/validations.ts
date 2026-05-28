@@ -81,8 +81,8 @@ export const createGroupSchema = z.object({
   currency: z
     .string()
     .trim()
-    .toUpperCase()
-    .regex(/^[A-Z]{3}$/, "Currency must be a 3-letter code (e.g. USD).")
+    .transform((s) => s.toUpperCase())
+    .pipe(z.string().regex(/^[A-Z]{3}$/, "Currency must be a 3-letter code (e.g. USD)."))
     .default("USD"),
 });
 
@@ -99,8 +99,8 @@ export const groupSettingsSchema = z.object({
   currency: z
     .string()
     .trim()
-    .toUpperCase()
-    .regex(/^[A-Z]{3}$/, "Currency must be a 3-letter code (e.g. USD)."),
+    .transform((s) => s.toUpperCase())
+    .pipe(z.string().regex(/^[A-Z]{3}$/, "Currency must be a 3-letter code (e.g. USD).")),
 });
 
 // ── Expenses ──────────────────────────────────────────────────

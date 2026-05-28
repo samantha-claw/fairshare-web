@@ -13,7 +13,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Avatar } from "@/components/ui/avatar";
 import type { Balance } from "@/types/group";
 

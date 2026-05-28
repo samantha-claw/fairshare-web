@@ -171,7 +171,7 @@
     "createTitle": "Create New Group",
     "createSubtitle": "Split expenses with your friends",
     "groupNameLabel": "Group Name",
-    "groupNamePlaceholder": 'e.g. "Europe Trip 2025"',
+    "groupNamePlaceholder": "e.g. \"Europe Trip 2025\"",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "What is this group for?",
     "descriptionHint": "Optional. Describe what this group is about.",

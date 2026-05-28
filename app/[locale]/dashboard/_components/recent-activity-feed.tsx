@@ -3,7 +3,7 @@
 // ==========================================
 // 📦 IMPORTS
 // ==========================================
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Avatar } from "@/components/ui/avatar";
 import { formatCurrency } from "@/lib/utils";
 import { Clock, Zap } from "lucide-react";

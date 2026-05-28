@@ -3,7 +3,7 @@
 // ==========================================
 // 📦 IMPORTS
 // ==========================================
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { formatCurrency } from "@/lib/utils";
 import { ArrowUpRight } from "lucide-react";
 import type { ProfileStats, ProfileGroup } from "@/types/profile";

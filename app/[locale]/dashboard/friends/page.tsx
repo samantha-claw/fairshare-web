@@ -4,7 +4,7 @@
 // 📦 IMPORTS
 // ==========================================
 import { useRef, useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useFriends } from "@/hooks/use-friends";
 import { PendingRequests } from "./_components/pending-requests";
 import { FriendsList } from "./_components/friends-list";

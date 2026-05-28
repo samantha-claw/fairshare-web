@@ -1,9 +1,8 @@
 "use client";
 
 import { useLocale } from "next-intl";
-import { usePathname } from "@/i18n/navigation";
+import { usePathname, Link } from "@/i18n/navigation";
 import { Languages } from "lucide-react";
-import Link from "next/link";
 
 const LOCALES = [
   { code: "en", label: "English", flag: "🇺🇸" },

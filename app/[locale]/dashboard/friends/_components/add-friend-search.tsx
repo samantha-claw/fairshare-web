@@ -6,7 +6,7 @@
 import { forwardRef, useImperativeHandle, useRef } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Spinner } from "@/components/ui/spinner";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Search, X, UserPlus, Clock, AtSign } from "lucide-react";
 import type { SearchResultUser } from "@/types/friend";
 

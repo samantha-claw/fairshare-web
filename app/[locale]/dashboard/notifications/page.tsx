@@ -6,7 +6,7 @@ import { Bell, Check, UserPlus, HandCoins, Receipt, Users, Loader2 } from "lucid
 import { formatDistanceToNow } from "date-fns";
 import { ar as arLocale, enUS as enLocale } from "date-fns/locale";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { EmptyState, AgentSplitIllustration } from "@/components/ui/empty-states";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";

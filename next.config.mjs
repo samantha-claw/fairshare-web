@@ -1,15 +1,17 @@
 /** @type {import('next').NextConfig} */
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
+
+/** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
-  turbopack: {
-    root: '..'
-  },
-  images: {
-    remotePatterns: [
-      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
-    ],
-    unoptimized: false,
-  },
+      reactStrictMode: true,
+        images: {
+                remotePatterns: [
+                          { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
+                ],
+                    unoptimized: false,
+        },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Mail, ArrowRight, Loader2, CheckCircle2, ArrowLeft, Lock, Eye, EyeOff, AlertCircle, KeyRound } from "lucide-react";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
