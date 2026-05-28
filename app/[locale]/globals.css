@@ -200,6 +200,15 @@ html.dark ::selection {
    🎨 RTL SPECIFIC STYLES
    ========================================== */
 [dir="rtl"] {
+  /* Override font-family so the Arabic font is used for the entire RTL page */
+  body,
+  input,
+  textarea,
+  select,
+  button {
+    font-family: var(--font-arabic), Arial, sans-serif;
+  }
+
   /* Ensure Material Icons render correctly in RTL */
   .material-icons-outlined {
     transform: scaleX(1);

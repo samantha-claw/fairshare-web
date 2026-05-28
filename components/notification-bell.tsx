@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Bell, Check, UserPlus, HandCoins, Receipt, Users, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { ar as arLocale, enUS as enLocale } from "date-fns/locale";
+import { useLocale } from "next-intl";
 import { EmptyState, AgentSplitIllustration } from "@/components/ui/empty-states";
 
 export function NotificationBell({ userId }: { userId: string }) {
@@ -11,6 +13,8 @@ export function NotificationBell({ userId }: { userId: string }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const locale = useLocale();
+  const dateLocale = locale === "ar" ? arLocale : enLocale;
   const supabase = createClient();
 
   // جلب الإشعارات
@@ -155,7 +159,7 @@ export function NotificationBell({ userId }: { userId: string }) {
                         {notif.message}
                       </p>
                       <p className="text-[10px] text-text-secondary">
-                        {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true })}
+                        {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: dateLocale })}
                       </p>
                     </div>
                   </button>

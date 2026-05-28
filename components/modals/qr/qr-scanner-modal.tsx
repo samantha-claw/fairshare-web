@@ -4,7 +4,7 @@
 // 📦 IMPORTS
 // ==========================================
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Modal } from "@/components/ui/modal";
 import {
   X,

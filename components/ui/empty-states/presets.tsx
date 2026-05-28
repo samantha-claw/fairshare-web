@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { Users, UserPlus, PlusCircle, ArrowLeft, Eye } from "lucide-react";
 import { EmptyState } from "./empty-state";
