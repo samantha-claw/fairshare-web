@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { formatCurrency } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
 import { Receipt, Handshake, ArrowRight, Calendar } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { ActivityItem, Expense, Settlement } from "@/types/group";
 
 // ==========================================
@@ -87,6 +87,8 @@ function ActivityItemCard({
 // ==========================================
 export function ActivityTab({ allActivities, currency }: ActivityTabProps) {
   const locale = useLocale();
+  const t = useTranslations("groupTabs");
+  const tCommon = useTranslations("common");
   const dateLocale = locale === "ar" ? "ar-SA" : "en-US";
   if (allActivities.length === 0) {
     return (
@@ -98,9 +100,9 @@ export function ActivityTab({ allActivities, currency }: ActivityTabProps) {
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-2 mb-4">
           <Receipt className="h-8 w-8 text-text-tertiary" />
         </div>
-        <h3 className="text-lg font-semibold text-text-primary mb-2">No activity yet</h3>
+        <h3 className="text-lg font-semibold text-text-primary mb-2">{t("noActivity")}</h3>
         <p className="text-sm text-text-secondary text-center">
-          When expenses and settlements happen, they'll appear here.
+          {t("noActivityDesc")}
         </p>
       </motion.div>
     );
@@ -114,7 +116,7 @@ export function ActivityTab({ allActivities, currency }: ActivityTabProps) {
           const isSettleUp =
             exp.name.toLowerCase().includes("settle up") ||
             exp.name.toLowerCase().includes("cash payment");
-          const payerName = exp.profiles?.display_name || exp.profiles?.full_name || "Someone";
+          const payerName = exp.profiles?.display_name || exp.profiles?.full_name || tCommon("someone");
           const payerAvatar = (exp.profiles as any)?.avatar_url;
 
           return (
@@ -165,7 +167,7 @@ export function ActivityTab({ allActivities, currency }: ActivityTabProps) {
                       >
                         {payerName}
                       </Link>
-                      <span>{isSettleUp ? "settled up" : "added expense"}</span>
+                      <span>{isSettleUp ? t("settledUp") : t("addedExpense")}</span>
                     </div>
                   </div>
 

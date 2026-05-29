@@ -31,7 +31,10 @@
     "lightMode": "الوضع الفاتح",
     "darkMode": "الوضع الداكن",
     "switchToLight": "التبديل إلى الوضع الفاتح",
-    "switchToDark": "التبديل إلى الوضع الداكن"
+    "switchToDark": "التبديل إلى الوضع الداكن",
+    "someone": "Someone",
+    "unknown": "Unknown",
+    "close": "Close"
   },
   "auth": {
     "login": {
@@ -103,9 +106,11 @@
       "sending": "جاري الإرسال...",
       "updateButton": "تحديث كلمة المرور",
       "updating": "جاري التحديث...",
+      "backToSignIn": "Back to Sign In",
+      "passwordUpdatedTitle": "Password updated",
+      "passwordUpdatedDesc": "Your password has been reset successfully.",
       "checkEmailTitle": "تحقق من بريدك الإلكتروني",
       "checkEmailDesc": "أرسلنا رابط إعادة تعيين كلمة المرور إلى {email}.",
-      "passwordsDoNotMatch": "كلمتا المرور غير متطابقتين",
       "showPassword": "إظهار كلمة المرور",
       "hidePassword": "إخفاء كلمة المرور"
     }
@@ -141,96 +146,407 @@
     "spendingBreakdown": "توزيع الإنفاق",
     "owedToYou": "مستحق لك",
     "youOwe": "مستحق عليك",
-    "settleUp": "تسوية الحساب",
-    "addExpense": "إضافة مصروف",
-    "recentActivity": "النشاط الأخير",
-    "quickActions": "إجراءات سريعة",
-    "newGroup": "مجموعة جديدة",
-    "addFriend": "إضافة صديق",
-    "noActivity": "لا يوجد نشاط بعد",
-    "noActivityDesc": "ستظهر معاملاتك الأخيرة هنا"
+    "ofTotal": "of total",
+    "popularGroups": "Popular groups",
+    "allGroups": "All groups",
+    "connections_one": "{count} connection",
+    "connections_other": "{count} connections",
+    "pending": "pending",
+    "groups_one": "{count} group",
+    "groups_other": "{count} groups"
   },
   "groups": {
     "title": "المجموعات",
+    "newGroup": "New Group",
+    "searchPlaceholder": "Search groups...",
+    "sortByName": "Name",
+    "sortByActivity": "Recent Activity",
+    "sortByCashflow": "Cash Flow",
+    "ascending": "Ascending",
+    "descending": "Descending",
+    "asc": "Asc",
+    "desc": "Desc",
+    "noGroupsFound": "No groups found",
+    "tryDifferentSearch": "Try a different search term",
+    "loadingGroup": "Loading Group…",
+    "groupNotFound": "Group not found",
+    "shareTitle": "Share Group via QR",
     "createTitle": "إنشاء مجموعة",
-    "noGroups": "لا توجد مجموعات بعد",
-    "noGroupsDesc": "أنشئ مجموعتك الأولى لتبدأ بتقسيم النفقات",
-    "createGroup": "إنشاء مجموعة",
-    "groupName": "اسم المجموعة",
-    "currency": "العملة",
-    "members": "الأعضاء",
-    "addMembers": "إضافة أعضاء",
-    "createButton": "إنشاء المجموعة",
+    "createSubtitle": "Split expenses with your friends",
+    "groupNameLabel": "Group Name",
+    "groupNamePlaceholder": "e.g. \"Europe Trip 2025\"",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "What is this group for?",
+    "descriptionHint": "Optional. Describe what this group is about.",
+    "nameHint": "Give your group a memorable name.",
+    "groupCurrency": "Group Currency",
+    "addFriends": "Add Friends",
+    "addFriendsHint": "Optional — you can add members later",
+    "searchFriendsPlaceholder": "Search friends…",
+    "noFriendsYet": "No friends yet",
+    "noFriendsHint": "Add friends first, then invite them to groups.",
+    "noFriendsMatch": "No friends match \"{search}\"",
+    "summaryNote": "All expenses in this group will be tracked in {currency}. You can change the currency later in group settings. {count} {friends} will be added automatically.",
+    "friend_one": "friend",
+    "friend_other": "friends",
     "creating": "جاري الإنشاء…",
-    "settings": "إعدادات المجموعة",
-    "deleteGroup": "حذف المجموعة",
-    "leaveGroup": "مغادرة المجموعة"
+    "createButton": "إنشاء المجموعة",
+    "noCurrenciesFound": "No currencies found",
+    "addMember": "Add Member",
+    "addMemberDescription": "Search your friends to add them to this group",
+    "clearSearch": "Clear search",
+    "friendsShown": "{filtered} of {total} shown",
+    "friendsAvailable": "{count} available",
+    "allFriendsMembers": "All friends are already members",
+    "useShareQR": "Use the Share / QR button to invite new people",
+    "adding": "Adding…",
+    "inviteHint": "Want to add someone who is not your friend yet? Use the Share / QR Code button in the header to send them an invite link."
   },
   "groupTabs": {
     "overview": "نظرة عامة",
     "expenses": "المصاريف",
-    "balances": "الأرصدة",
     "settle": "التسوية",
     "activity": "النشاط",
+    "analysis": "التحليل",
     "members": "الأعضاء",
-    "analysis": "التحليل"
+    "noActivity": "No activity yet",
+    "noActivityDesc": "When expenses and settlements happen, they will appear here.",
+    "settledUp": "settled up",
+    "addedExpense": "added expense"
+  },
+  "groupDetail": {
+    "share": "Share",
+    "settings": "Settings"
   },
   "friends": {
     "title": "الأصدقاء",
-    "findFriends": "البحث عن أصدقاء",
-    "noFriends": "لا يوجد أصدقاء بعد",
-    "noFriendsDesc": "ابحث عن أصدقائك وأضفهم لبدء تقسيم النفقات",
-    "pendingRequests": "طلبات معلقة",
     "addFriend": "إضافة صديق",
+    "yourFriends": "Your Friends",
     "searchPlaceholder": "البحث بالاسم أو اسم المستخدم",
-    "requestSent": "تم إرسال الطلب",
+    "sortByName": "A-Z",
+    "sortByRecent": "Recent",
+    "noFriendsFound": "No friends found",
+    "tryDifferentSearch": "Try a different search term",
+    "pendingRequests": "طلبات معلقة",
+    "outgoingRequests": "Outgoing Requests",
     "accept": "قبول",
     "decline": "رفض",
-    "remove": "إزالة",
-    "mutualFriends": "أصدقاء مشتركون"
-  },
-  "profile": {
-    "title": "ملفي الشخصي",
-    "editProfile": "تعديل الملف الشخصي",
-    "displayName": "الاسم المعروض",
-    "username": "اسم المستخدم",
-    "email": "البريد الإلكتروني",
-    "bio": "نبذة شخصية",
-    "save": "حفظ التغييرات",
-    "saving": "جاري الحفظ…",
-    "saved": "تم الحفظ!",
-    "joinedOn": "انضم في",
-    "totalExpenses": "إجمالي المصاريف",
-    "groups": "المجموعات",
-    "friends": "الأصدقاء"
+    "cancel": "Cancel",
+    "shareInviteLink": "Share invite link",
+    "findFriends": "البحث عن أصدقاء"
   },
   "notifications": {
     "title": "الإشعارات",
     "subtitle": "ابق على اطلاع",
+    "unread_one": "{count} unread notification",
+    "unread_other": "{count} unread notifications",
+    "allCaughtUp": "All caught up!",
     "markAllRead": "تحديد الكل كمقروء",
-    "noNotifications": "لا توجد إشعارات",
-    "noNotificationsDesc": "ستظهر إشعاراتك هنا",
+    "markAsRead": "Mark as read",
     "friendRequest": "طلب صداقة",
-    "expense": "مصروف جديد",
     "settlement": "تسوية",
+    "expense": "مصروف جديد",
     "group": "مجموعة"
   },
   "settings": {
     "title": "الإعدادات",
-    "appearance": "المظهر",
-    "language": "اللغة",
-    "account": "الحساب",
+    "subtitle": "Manage your account, security, and preferences",
+    "emailSection": "Email Address",
+    "currently": "Currently",
+    "newEmailLabel": "New email address",
+    "newEmailPlaceholder": "your-new-email@example.com",
+    "emailConfirmationNote": "A confirmation link will be sent to both your current and new email addresses.",
+    "updateEmail": "Update Email",
+    "sending": "Sending…",
+    "passwordSection": "Password",
+    "passwordSubtitle": "Update your password to keep your account secure",
+    "newPasswordLabel": "New password",
+    "newPasswordPlaceholder": "Enter new password",
+    "confirmPasswordLabel": "Confirm new password",
+    "confirmPasswordPlaceholder": "Confirm new password",
+    "requirements": "Requirements",
+    "min8Chars": "At least 8 characters",
+    "passwordsMatch": "Passwords match",
+    "updatePassword": "Update Password",
+    "updating": "Updating…",
+    "dangerZone": "Danger Zone",
+    "dangerSubtitle": "Irreversible and destructive actions",
     "deleteAccount": "حذف الحساب",
-    "deleteAccountWarning": "هذا الإجراء لا يمكن التراجع عنه.",
-    "deleteAccountConfirm": "هل أنت متأكد من رغبتك في حذف حسابك؟"
+    "deleteAccountDesc": "Permanently anonymize your profile, remove you from groups, and delete your auth credentials. This cannot be undone."
+  },
+  "join": {
+    "loading": "Verifying Invite Link…",
+    "loadingWithoutToken": "Loading Group…",
+    "waitMoment": "Please wait a moment",
+    "signInRequired": "Sign In Required",
+    "signInSubtitle": "You need to sign in before joining this group",
+    "signInToContinue": "Sign In to Continue",
+    "invitedTitle": "You're Invited!",
+    "invitedSubtitle": "Join this group to start sharing expenses",
+    "createdBy": "Created by {name}",
+    "verifiedInvite": "Verified invite link",
+    "joinGroup": "Join Group",
+    "joiningGroup": "Joining Group…",
+    "welcomeAboard": "Welcome Aboard!",
+    "redirecting": "Redirecting to the group…",
+    "alreadyMember": "Already a Member",
+    "alreadyMemberDesc": "You're already in {group}",
+    "goToGroup": "Go to Group",
+    "invalidInvite": "Invalid Invite Link",
+    "unableToJoin": "Unable to Join",
+    "thisGroup": "this group"
+  },
+  "emptyStates": {
+    "groups": {
+      "title": "No Squad? No Problem… Actually, It's a Problem.",
+      "description": "Agent Split is sitting here, sharpening receipts, waiting for you to create your first group. Every great dinner split starts with a crew.",
+      "actionLabel": "Create a Group",
+      "secondaryLabel": "Join with invite"
+    },
+    "friends": {
+      "title": "Zero Friends Found. We Won't Judge. (Much.)",
+      "description": "Agent Split has been searching everywhere. Add some friends so he can stop pretending to look busy.",
+      "actionLabel": "Find Friends",
+      "secondaryLabel": "Share invite link"
+    },
+    "expenses": {
+      "title": "No Expenses? Either You're a Monk or You Forgot.",
+      "description": "The ledger is emptier than Agent Split's social calendar. Start tracking expenses before your friends start 'conveniently forgetting' who paid for dinner.",
+      "actionLabel": "Add an Expense"
+    },
+    "notifications": {
+      "title": "Inbox Zero. Nice Work!",
+      "description": "Nothing to see here. No pings, no nudges, no passive-aggressive payment reminders. This is peak adulting.",
+      "secondaryLabel": "Back to Dashboard"
+    },
+    "settlements": {
+      "title": "All Squared Up. Great Job!",
+      "description": "Zero outstanding debts. You and your friends have achieved financial harmony. It's beautiful.",
+      "secondaryLabel": "View Groups"
+    }
+  },
+  "confirmDialog": {
+    "title": "Are you sure?",
+    "dismiss": "Dismiss"
+  },
+  "deleteAccount": {
+    "button": "Delete Account",
+    "modalTitle": "Delete account",
+    "title": "Delete your account?",
+    "subtitle": "This action is permanent and cannot be undone. Here is what will happen:",
+    "deletedUser": "[Deleted User]",
+    "consequences": {
+      "profileAnonymized": "Your profile will be anonymized to",
+      "removedFromGroups": "You will be removed from all groups (except ones you own)",
+      "deletedFriendships": "All friendships and notifications will be deleted",
+      "preservedRecords": "Expense records are preserved for group integrity but de-identified"
+    },
+    "warning": "If you have outstanding debts, deletion will be blocked. Settle all balances first.",
+    "description": "This will permanently delete your account. This action cannot be undone.",
+    "typeUsername": "Type {username} to confirm",
+    "confirmHint": "This ensures you do not accidentally delete your account.",
+    "cancel": "Cancel",
+    "confirmDelete": "Delete My Account",
+    "permanentlyDelete": "Permanently Delete Account",
+    "deleting": "Deleting…",
+    "errors": {
+      "hasDebt": "Cannot delete account: You have outstanding debts. Please settle all balances first.",
+      "failed": "Deletion failed",
+      "unexpected": "Unexpected error. Please try again later.",
+      "success": "Account deleted. Your profile has been anonymized and removed."
+    }
+  },
+  "profile": {
+    "title": "ملفي الشخصي",
+    "editProfile": "تعديل الملف الشخصي",
+    "shareProfile": "Share Profile",
+    "activityLog": "Activity Log",
+    "stats": "Statistics",
+    "notProvided": "Not provided",
+    "loading": "Loading Profile…",
+    "userNotFound": "User Not Found",
+    "notFoundDesc": "This profile does not exist or is private.",
+    "myQRCode": "My QR Code",
+    "fullName": "Full Name",
+    "usernameLabel": "Username",
+    "joinedFairShare": "Joined FairShare",
+    "bioLabel": "Bio",
+    "noActivity": "No activity yet",
+    "noHistoryDesc": "Your expense history will appear here."
+  },
+  "toasts": {
+    "friends": {
+      "usernameRequired": "Username is required to send a request.",
+      "requestSent": "Request sent to @{username}",
+      "failedToSend": "Failed to send request.",
+      "unexpectedError": "An unexpected error occurred.",
+      "cancelFailed": "Failed to cancel request.",
+      "requestCancelled": "Request cancelled.",
+      "acceptFailed": "Failed to accept request.",
+      "accepted": "Friend request accepted!",
+      "declined": "Request declined.",
+      "declineFailed": "Failed to decline request.",
+      "removeConfirmTitle": "Are you sure you want to remove this friend?",
+      "removed": "Friend removed.",
+      "removeFailed": "Failed to remove friend."
+    },
+    "expenses": {
+      "validationError": "Validation error",
+      "createFailed": "Failed to create expense",
+      "deleteFailed": "Failed to delete the expense.",
+      "sessionExpired": "Session expired. Please refresh."
+    },
+    "groupSettings": {
+      "nameMismatch": "Please type the group name exactly to confirm deletion.",
+      "deleteFailed": "Failed to delete group.",
+      "leaveFailed": "Failed to leave group."
+    },
+    "settlements": {
+      "validationError": "Validation error",
+      "createFailed": "Failed to record settlement",
+      "markFailed": "Failed to mark settlement",
+      "deleteFailed": "Failed to delete settlement"
+    },
+    "members": {
+      "addFailed": "Failed to add member",
+      "removeFailed": "Failed to remove member"
+    },
+    "profile": {
+      "sendRequestFailed": "Failed to send friend request.",
+      "cancelRequestFailed": "Failed to cancel request.",
+      "acceptFailed": "Failed to accept request."
+    }
   },
   "landing": {
     "hero": {
-      "badge": "مجاني تماماً",
       "title": "قسّم النفقات بسهولة مع أصدقائك",
       "subtitle": "تتبع النفقات المشتركة وتسوية الحسابات بشكل عادل",
-      "cta": "ابدأ مجاناً",
-      "ctaSecondary": "اعرف المزيد"
+      "getStarted": "Get Started Free",
+      "learnMore": "Learn More"
+    },
+    "nav": {
+      "features": "Features",
+      "howItWorks": "How It Works",
+      "testimonials": "Testimonials",
+      "faq": "FAQ",
+      "openMenu": "Open Menu",
+      "closeMenu": "Close Menu"
+    },
+    "heroSection": {
+      "betaBadge": "Free forever — No hidden fees",
+      "headline": "Split expenses,",
+      "headlineHighlight": "not friendships",
+      "subtitle": "The smart way to track shared expenses with friends, roommates, and groups. Settle debts fairly with minimum transactions.",
+      "ctaPrimary": "Start splitting for free",
+      "ctaSecondary": "See how it works",
+      "statUsers": "Users",
+      "statTracked": "Tracked",
+      "statCountries": "Countries"
+    },
+    "features": {
+      "sectionLabel": "Features",
+      "title": "كل ما تحتاجه",
+      "subtitle": "أدوات بسيطة وقوية لإدارة نفقاتك المشتركة",
+      "items": {
+        "groupSplitting": "Group Expense Tracking",
+        "groupSplittingDesc": "Create unlimited groups for roommates, trips, or events. Everyone sees the same balances in real-time.",
+        "smartSettlements": "Smart Settlements",
+        "smartSettlementsDesc": "Our algorithm calculates the minimum number of transactions to settle all debts. No more payment chains.",
+        "easyExpense": "Easy Expense Entry",
+        "easyExpenseDesc": "Add expenses in seconds with descriptions, categories, and custom splits. Split equally or by percentage.",
+        "qrInvites": "QR Code Invites",
+        "qrInvitesDesc": "Share a QR code to instantly add members to your group. No more typing emails or usernames.",
+        "notifications": "Real-time Notifications",
+        "notificationsDesc": "Get notified when expenses are added or someone settles up. Stay on top of your group activity.",
+        "balanceDashboard": "Balance Dashboard",
+        "balanceDashboardDesc": "See at a glance who owes what. Clear visualization of your financial position across all groups."
+      }
+    },
+    "howItWorks": {
+      "sectionLabel": "How It Works",
+      "title": "كيف يعمل",
+      "subtitle": "No complicated setup. No learning curve. Just straightforward expense tracking that anyone can use.",
+      "steps": {
+        "step1": "Create a group",
+        "step1Desc": "Start a group for your roommates, trip, or any shared expense scenario. Give it a name and add members.",
+        "step2": "Add expenses",
+        "step2Desc": "Log shared expenses as they happen. Split equally or customize who owes what for each expense.",
+        "step3": "Settle up",
+        "step3Desc": "When ready, see who should pay whom. Our smart algorithm minimizes transactions for easy settling."
+      }
+    },
+    "testimonials": {
+      "sectionLabel": "Testimonials",
+      "title": "ماذا يقول مستخدمونا",
+      "subtitle": "See what our users have to say about FairShare.",
+      "items": {
+        "t1Text": "Finally, no more awkward conversations about money. FairShare made splitting rent and utilities with roommates completely painless.",
+        "t1Name": "Sarah M.",
+        "t1Role": "Medical Student",
+        "t2Text": "We used it for our Europe trip with 6 friends. Everyone knew exactly what they owed, and settlements took minutes instead of hours.",
+        "t2Name": "Alex K.",
+        "t2Role": "Travel Group",
+        "t3Text": "The smart settlement feature is genius. It figured out that only 2 payments needed to happen instead of everyone paying everyone.",
+        "t3Name": "Mike T.",
+        "t3Role": "Apartment Share",
+        "t4Text": "I've tried other apps but they're all so complicated. FairShare just works. Add expense, see balance, settle up. Simple.",
+        "t4Name": "Priya S.",
+        "t4Role": "College Student",
+        "t5Text": "We use it for our weekly office lunches. Scan the receipt, split it, and everyone gets notified. So much better than Venmo requests.",
+        "t5Name": "David L.",
+        "t5Role": "Software Engineer",
+        "t6Text": "The QR code invite feature is so convenient. New roommate joined, scanned the code, and was immediately part of the household group.",
+        "t6Name": "Emma J.",
+        "t6Role": "House Share"
+      }
+    },
+    "stats": {
+      "sectionLabel": "Our Impact",
+      "title": "أرقام تتحدث عن نفسها",
+      "subtitle": "Join a growing community of users who've simplified their expense tracking.",
+      "activeUsers": "Active Users",
+      "expensesTracked": "Expenses Tracked",
+      "countries": "Countries",
+      "usdTracked": "Million USD Tracked"
+    },
+    "pricing": {
+      "sectionLabel": "Pricing",
+      "title": "الأسعار",
+      "subtitle": "خطط بسيطة وشفافة",
+      "badge": "Free Forever",
+      "price": "/month",
+      "noCard": "No credit card required",
+      "cta": "Start for free",
+      "footer": "Free forever • No limits • No spam",
+      "items": {
+        "unlimitedGroups": "Unlimited groups",
+        "unlimitedExpenses": "Unlimited expenses",
+        "smartSettlements": "Smart settlement algorithm",
+        "realtimeNotifications": "Real-time notifications",
+        "qrCodeInvites": "QR code group invites",
+        "transactionHistory": "Transaction history",
+        "mobileWeb": "Mobile & web access",
+        "noAds": "No ads, ever"
+      }
+    },
+    "faq": {
+      "sectionLabel": "FAQ",
+      "title": "الأسئلة الشائعة",
+      "subtitle": "إجابات على أكثر الأسئلة شيوعاً",
+      "items": {
+        "q1": "Is FairShare really free?",
+        "a1": "Yes, 100% free. No premium tier, no ads, no hidden fees. We believe expense tracking should be accessible to everyone.",
+        "q2": "How does smart settlement work?",
+        "a2": "Instead of everyone paying everyone, FairShare calculates the minimum number of transactions needed to settle all debts. For example, if you owe Sarah $20 and Sarah owes Mike $20, you can just pay Mike directly. Fewer transfers, less hassle.",
+        "q3": "Can I split expenses unevenly?",
+        "a3": "Absolutely! You can split equally, by percentage, or specify exact amounts for each person. Perfect for when someone didn't order dessert or left early.",
+        "q4": "What if someone owes me and I owe them?",
+        "a4": "FairShare automatically nets out debts. If you owe Sarah $20 and she owes you $15, it shows you only owe $5. This happens automatically across all your groups.",
+        "q5": "Is my data private?",
+        "a5": "Yes. Your expense data is only visible to you and members of your groups. We never sell your data or show you ads based on your spending.",
+        "q6": "Do I need everyone to have the app?",
+        "a6": "Everyone who wants to see balances and add expenses needs an account, but you can track expenses on behalf of others. They'll get notified and can join when they're ready."
+      }
     },
     "cta": {
       "title": "جاهز لتقسيم النفقات بشكل عادل؟",
@@ -238,36 +554,91 @@
       "ctaPrimary": "ابدأ مجاناً",
       "ctaSecondary": "تسجيل الدخول"
     },
-    "features": {
-      "title": "كل ما تحتاجه",
-      "subtitle": "أدوات بسيطة وقوية لإدارة نفقاتك المشتركة"
-    },
-    "faq": {
-      "title": "الأسئلة الشائعة",
-      "subtitle": "إجابات على أكثر الأسئلة شيوعاً"
-    },
-    "pricing": {
-      "title": "الأسعار",
-      "subtitle": "خطط بسيطة وشفافة"
-    },
-    "stats": {
-      "title": "أرقام تتحدث عن نفسها"
-    },
-    "testimonials": {
-      "title": "ماذا يقول مستخدمونا"
-    },
-    "howItWorks": {
-      "title": "كيف يعمل"
-    },
     "footer": {
-      "rights": "جميع الحقوق محفوظة"
+      "features": "Features",
+      "howItWorks": "How It Works",
+      "faq": "FAQ",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "copyright": "FairShare. All rights reserved.",
+      "madeWith": "Made with love for fair expense splitting"
     }
   },
   "errors": {
-    "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
-    "notFound": "الصفحة غير موجودة",
-    "unauthorized": "غير مصرح لك بالوصول",
-    "tryAgain": "حاول مجدداً",
-    "goHome": "الصفحة الرئيسية"
+    "generic": "Something went wrong. Please try again.",
+    "notFound": "Page not found",
+    "unauthorized": "Unauthorized access",
+    "tryAgain": "Try Again",
+    "goHome": "Go Home",
+    "somethingWentWrong": "Something went wrong",
+    "errorLoading": "We encountered an error loading {context}. Please try again.",
+    "errorDetails": "Error Details (Copy this to me)",
+    "message": "Message:",
+    "stackTrace": "Stack Trace:",
+    "digest": "Digest:",
+    "dashboard": "Dashboard"
+  },
+  "time": {
+    "justNow": "Just now",
+    "minutesAgo": "{minutes}m ago",
+    "hoursAgo": "{hours}h ago",
+    "daysAgo": "{days}d ago"
+  },
+  "quickActions": {
+    "createGroup": "Create Group",
+    "addFriend": "Add Friend",
+    "friends": "Friends"
+  },
+  "recentActivity": {
+    "title": "Recent Activity",
+    "noActivity": "No recent activity yet",
+    "noActivityDesc": "Expenses will appear here as they are added."
+  },
+  "offline": {
+    "title": "You're offline",
+    "description": "Check your connection and try again. Your data will sync when you are back online.",
+    "tryAgain": "Try again"
+  },
+  "balances": {
+    "groupBalances": "Group Balances",
+    "settleUp": "Settle Up",
+    "netBalance": "Net Balance",
+    "allSettledUp": "All settled up!",
+    "noOneOwes": "No one owes anything.",
+    "owes": "Owes",
+    "receives": "Receives",
+    "noBalancesYet": "No balances yet",
+    "addExpensePrompt": "Add an expense to see balances.",
+    "settled": "Settled",
+    "youAreOwed": "You are owed",
+    "isOwed": "Is owed",
+    "youOwe": "You owe"
+  },
+  "groupSettings": {
+    "modalTitle": "Group Settings",
+    "createdInfo": "Created {date} · {members} members",
+    "dangerZone": "Danger Zone",
+    "deleteWarning": "Deleting this group will permanently remove all expenses, settlements, and member data. This action cannot be undone.",
+    "typeToConfirm": "Type \"{name}\" to confirm:",
+    "deleting": "Deleting…",
+    "deletePermanently": "Delete Group Permanently",
+    "leaveGroup": "Leave Group",
+    "settleFirst": "You must settle your balances before leaving the group.",
+    "settleFirstOwed": "You are still owed {amount}.",
+    "settleFirstOwe": "You still owe {amount}.",
+    "canLeave": "You can leave this group since your balance is settled. This action cannot be undone.",
+    "settleFirstTitle": "Settle your balances first",
+    "leaving": "Leaving…"
+  },
+  "settleModal": {
+    "title": "Settle Up",
+    "description": "Record a payment to a group member. They will need to approve it.",
+    "whoPaying": "Who are you paying?",
+    "noMembers": "No other members in this group.",
+    "amount": "Amount",
+    "info": "This settlement will be pending until the recipient approves it. Balances update only after approval.",
+    "cancel": "Cancel",
+    "sending": "Sending…",
+    "send": "Send Settlement"
   }
 }

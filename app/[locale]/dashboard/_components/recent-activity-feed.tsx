@@ -7,13 +7,14 @@ import { Link } from "@/i18n/navigation";
 import { Avatar } from "@/components/ui/avatar";
 import { formatCurrency } from "@/lib/utils";
 import { Clock, Zap } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import type { RecentExpense } from "@/types/dashboard";
 
 // ==========================================
 // ⚙️ LOGIC
 // ==========================================
 
-function getRelativeTime(dateStr: string): string {
+function getRelativeTime(dateStr: string, t: ReturnType<typeof useTranslations>, locale: string): string {
   const now = new Date();
   const then = new Date(dateStr);
   const diff = now.getTime() - then.getTime();
@@ -21,11 +22,11 @@ function getRelativeTime(dateStr: string): string {
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
 
-  if (minutes < 1) return "Just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
-  return then.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  if (minutes < 1) return t("justNow");
+  if (minutes < 60) return t("minutesAgo", { minutes });
+  if (hours < 24) return t("hoursAgo", { hours });
+  if (days < 7) return t("daysAgo", { days });
+  return then.toLocaleDateString(locale, { month: "short", day: "numeric" });
 }
 
 const DOT_COLORS = [
@@ -50,12 +51,17 @@ interface RecentActivityFeedProps {
 // 🎨 UI RENDER
 // ==========================================
 export function RecentActivityFeed({ expenses }: RecentActivityFeedProps) {
+  const t = useTranslations("recentActivity");
+  const tCommon = useTranslations("common");
+  const tTime = useTranslations("time");
+  const locale = useLocale();
+
   if (expenses.length === 0) {
     return (
       <div className="rounded-3xl border border-border bg-surface p-8 text-center shadow-sm">
         <Clock className="mx-auto mb-3 h-10 w-10 text-gray-300" />
-        <p className="text-sm font-medium text-text-secondary">No recent activity yet</p>
-        <p className="mt-1 text-xs text-text-tertiary">Expenses will appear here as they are added.</p>
+        <p className="text-sm font-medium text-text-secondary">{t("noActivity")}</p>
+        <p className="mt-1 text-xs text-text-tertiary">{t("noActivityDesc")}</p>
       </div>
     );
   }
@@ -66,7 +72,7 @@ export function RecentActivityFeed({ expenses }: RecentActivityFeedProps) {
         <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-50">
           <Zap className="h-4 w-4 text-text-primary" />
         </div>
-        <h3 className="text-sm font-bold text-text-primary">Recent Activity</h3>
+        <h3 className="text-sm font-bold text-text-primary">{t("title")}</h3>
       </div>
 
       <div className="relative space-y-1">
@@ -75,9 +81,9 @@ export function RecentActivityFeed({ expenses }: RecentActivityFeedProps) {
 
         {expenses.map((expense, index) => {
           const dotColor = DOT_COLORS[index % DOT_COLORS.length];
-          const paidByName = expense.paid_by_profile?.display_name || "Someone";
+          const paidByName = expense.paid_by_profile?.display_name || tCommon("someone");
           const paidByAvatar = expense.paid_by_profile?.avatar_url || "";
-          const groupName = expense.expense_group?.name || "Unknown";
+          const groupName = expense.expense_group?.name || tCommon("unknown");
 
           return (
             <Link
@@ -111,7 +117,7 @@ export function RecentActivityFeed({ expenses }: RecentActivityFeedProps) {
                       {formatCurrency(expense.amount)}
                     </span>
                     <span className="whitespace-nowrap text-[10px] text-text-tertiary">
-                      {getRelativeTime(expense.created_at)}
+                      {getRelativeTime(expense.created_at, tTime, locale)}
                     </span>
                   </div>
                 </div>

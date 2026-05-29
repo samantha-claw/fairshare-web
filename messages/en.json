@@ -31,7 +31,10 @@
     "lightMode": "Light mode",
     "darkMode": "Dark mode",
     "switchToLight": "Switch to light mode",
-    "switchToDark": "Switch to dark mode"
+    "switchToDark": "Switch to dark mode",
+    "someone": "Someone",
+    "unknown": "Unknown",
+    "close": "Close"
   },
   "auth": {
     "login": {
@@ -188,7 +191,16 @@
     "friend_other": "friends",
     "creating": "Creating…",
     "createButton": "Create Group",
-    "noCurrenciesFound": "No currencies found"
+    "noCurrenciesFound": "No currencies found",
+    "addMember": "Add Member",
+    "addMemberDescription": "Search your friends to add them to this group",
+    "clearSearch": "Clear search",
+    "friendsShown": "{filtered} of {total} shown",
+    "friendsAvailable": "{count} available",
+    "allFriendsMembers": "All friends are already members",
+    "useShareQR": "Use the Share / QR button to invite new people",
+    "adding": "Adding…",
+    "inviteHint": "Want to add someone who is not your friend yet? Use the Share / QR Code button in the header to send them an invite link."
   },
   "groupTabs": {
     "overview": "Overview",
@@ -196,7 +208,11 @@
     "settle": "Settle",
     "activity": "Activity",
     "analysis": "Analysis",
-    "members": "Members"
+    "members": "Members",
+    "noActivity": "No activity yet",
+    "noActivityDesc": "When expenses and settlements happen, they will appear here.",
+    "settledUp": "settled up",
+    "addedExpense": "added expense"
   },
   "groupDetail": {
     "share": "Share",
@@ -345,7 +361,18 @@
     "editProfile": "Edit Profile",
     "shareProfile": "Share Profile",
     "activityLog": "Activity Log",
-    "stats": "Statistics"
+    "stats": "Statistics",
+    "notProvided": "Not provided",
+    "loading": "Loading Profile…",
+    "userNotFound": "User Not Found",
+    "notFoundDesc": "This profile does not exist or is private.",
+    "myQRCode": "My QR Code",
+    "fullName": "Full Name",
+    "usernameLabel": "Username",
+    "joinedFairShare": "Joined FairShare",
+    "bioLabel": "Bio",
+    "noActivity": "No activity yet",
+    "noHistoryDesc": "Your expense history will appear here."
   },
   "toasts": {
     "friends": {
@@ -536,5 +563,82 @@
       "copyright": "FairShare. All rights reserved.",
       "madeWith": "Made with love for fair expense splitting"
     }
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "notFound": "Page not found",
+    "unauthorized": "Unauthorized access",
+    "tryAgain": "Try Again",
+    "goHome": "Go Home",
+    "somethingWentWrong": "Something went wrong",
+    "errorLoading": "We encountered an error loading {context}. Please try again.",
+    "errorDetails": "Error Details (Copy this to me)",
+    "message": "Message:",
+    "stackTrace": "Stack Trace:",
+    "digest": "Digest:",
+    "dashboard": "Dashboard"
+  },
+  "time": {
+    "justNow": "Just now",
+    "minutesAgo": "{minutes}m ago",
+    "hoursAgo": "{hours}h ago",
+    "daysAgo": "{days}d ago"
+  },
+  "quickActions": {
+    "createGroup": "Create Group",
+    "addFriend": "Add Friend",
+    "friends": "Friends"
+  },
+  "recentActivity": {
+    "title": "Recent Activity",
+    "noActivity": "No recent activity yet",
+    "noActivityDesc": "Expenses will appear here as they are added."
+  },
+  "offline": {
+    "title": "You're offline",
+    "description": "Check your connection and try again. Your data will sync when you are back online.",
+    "tryAgain": "Try again"
+  },
+  "balances": {
+    "groupBalances": "Group Balances",
+    "settleUp": "Settle Up",
+    "netBalance": "Net Balance",
+    "allSettledUp": "All settled up!",
+    "noOneOwes": "No one owes anything.",
+    "owes": "Owes",
+    "receives": "Receives",
+    "noBalancesYet": "No balances yet",
+    "addExpensePrompt": "Add an expense to see balances.",
+    "settled": "Settled",
+    "youAreOwed": "You are owed",
+    "isOwed": "Is owed",
+    "youOwe": "You owe"
+  },
+  "groupSettings": {
+    "modalTitle": "Group Settings",
+    "createdInfo": "Created {date} · {members} members",
+    "dangerZone": "Danger Zone",
+    "deleteWarning": "Deleting this group will permanently remove all expenses, settlements, and member data. This action cannot be undone.",
+    "typeToConfirm": "Type \"{name}\" to confirm:",
+    "deleting": "Deleting…",
+    "deletePermanently": "Delete Group Permanently",
+    "leaveGroup": "Leave Group",
+    "settleFirst": "You must settle your balances before leaving the group.",
+    "settleFirstOwed": "You are still owed {amount}.",
+    "settleFirstOwe": "You still owe {amount}.",
+    "canLeave": "You can leave this group since your balance is settled. This action cannot be undone.",
+    "settleFirstTitle": "Settle your balances first",
+    "leaving": "Leaving…"
+  },
+  "settleModal": {
+    "title": "Settle Up",
+    "description": "Record a payment to a group member. They will need to approve it.",
+    "whoPaying": "Who are you paying?",
+    "noMembers": "No other members in this group.",
+    "amount": "Amount",
+    "info": "This settlement will be pending until the recipient approves it. Balances update only after approval.",
+    "cancel": "Cancel",
+    "sending": "Sending…",
+    "send": "Send Settlement"
   }
 }

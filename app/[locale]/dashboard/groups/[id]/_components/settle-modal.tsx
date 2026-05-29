@@ -6,6 +6,7 @@
 import type { FormEvent } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Spinner } from "@/components/ui/spinner";
+import { useTranslations } from "next-intl";
 import type { Member } from "@/types/group";
 
 // ==========================================
@@ -39,6 +40,8 @@ export function SettleModal({
   submitting,
   onSubmit,
 }: SettleModalProps) {
+  const t = useTranslations("settleModal");
+
   if (!isOpen) return null;
 
   return (
@@ -50,16 +53,16 @@ export function SettleModal({
   <div className="px-6 pb-6 pt-6">
             <div className="mb-1 flex items-center gap-2">
               <span className="text-2xl">🤝</span>
-              <h3 className="text-xl font-bold text-text-primary">Settle Up</h3>
+              <h3 className="text-xl font-bold text-text-primary">{t("title")}</h3>
             </div>
-            <p className="text-sm text-text-secondary">Record a payment to a group member. They will need to approve it.</p>
+            <p className="text-sm text-text-secondary">{t("description")}</p>
 
             <form onSubmit={onSubmit} className="mt-6 space-y-5">
               <div>
-                <label className="mb-2 block text-sm font-medium text-text-primary">Who are you paying?</label>
+                <label className="mb-2 block text-sm font-medium text-text-primary">{t("whoPaying")}</label>
                 <div className="max-h-48 space-y-1 overflow-y-auto rounded-xl border border-border bg-surface-2 p-2">
                   {otherMembers.length === 0 ? (
-                    <p className="p-3 text-center text-sm text-text-tertiary">No other members in this group.</p>
+                    <p className="p-3 text-center text-sm text-text-tertiary">{t("noMembers")}</p>
                   ) : (
                     otherMembers.map((m) => (
                       <label
@@ -88,7 +91,7 @@ export function SettleModal({
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-text-primary">Amount</label>
+                <label className="mb-1 block text-sm font-medium text-text-primary">{t("amount")}</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-text-tertiary">{currency}</span>
                   <input
@@ -109,21 +112,21 @@ export function SettleModal({
                   <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
                 </svg>
                 <p className="text-xs text-blue-700">
-                  This settlement will be <strong>pending</strong> until the recipient approves it. Balances update only after approval.
+                  {t("info")}
                 </p>
               </div>
 
               <div className="flex gap-3 border-t border-border pt-4">
-                <button type="button" onClick={onClose} className="flex-1 rounded-xl bg-surface-2 py-3 text-sm font-medium text-text-primary hover:bg-gray-200">Cancel</button>
+                <button type="button" onClick={onClose} className="flex-1 rounded-xl bg-surface-2 py-3 text-sm font-medium text-text-primary hover:bg-gray-200">{t("cancel")}</button>
                 <button
                   type="submit"
                   disabled={submitting || !settleReceiver || !settleAmount}
                   className="flex-1 rounded-xl bg-green-600 py-3 text-sm font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {submitting ? (
-                    <span className="inline-flex items-center gap-2"><Spinner className="h-4 w-4" /> Sending…</span>
+                    <span className="inline-flex items-center gap-2"><Spinner className="h-4 w-4" /> {t("sending")}</span>
                   ) : (
-                    "Send Settlement"
+                    t("send")
                   )}
                 </button>
               </div>

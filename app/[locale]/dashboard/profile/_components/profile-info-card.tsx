@@ -9,6 +9,7 @@ import {
   AtSign,
   FileText,
 } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import type { UserProfile } from "@/types/profile";
 
 // ==========================================
@@ -22,6 +23,9 @@ interface ProfileInfoCardProps {
 // 🎨 UI RENDER
 // ==========================================
 export function ProfileInfoCard({ profile }: ProfileInfoCardProps) {
+  const t = useTranslations("profile");
+  const locale = useLocale();
+
   return (
     <div className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
       <div className="mb-5 flex items-center gap-2">
@@ -29,7 +33,7 @@ export function ProfileInfoCard({ profile }: ProfileInfoCardProps) {
           <FileText className="h-3.5 w-3.5 text-text-primary" />
         </div>
         <h3 className="text-sm font-bold text-text-primary">
-          Profile Information
+          {t("title")}
         </h3>
       </div>
 
@@ -41,10 +45,10 @@ export function ProfileInfoCard({ profile }: ProfileInfoCardProps) {
           </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
-              Full Name
+              {t("fullName")}
             </p>
             <p className="text-sm font-medium text-text-primary">
-              {profile.full_name || "Not provided"}
+              {profile.full_name || t("notProvided")}
             </p>
           </div>
         </div>
@@ -56,7 +60,7 @@ export function ProfileInfoCard({ profile }: ProfileInfoCardProps) {
           </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
-              Username
+              {t("usernameLabel")}
             </p>
             <p className="text-sm font-medium text-text-primary">
               @{profile.username}
@@ -71,10 +75,10 @@ export function ProfileInfoCard({ profile }: ProfileInfoCardProps) {
           </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
-              Joined FairShare
+              {t("joinedFairShare")}
             </p>
             <p className="text-sm font-medium text-text-primary">
-              {new Date(profile.created_at).toLocaleDateString("en-US", {
+              {new Date(profile.created_at).toLocaleDateString(locale, {
                 month: "long",
                 day: "numeric",
                 year: "numeric",
@@ -91,7 +95,7 @@ export function ProfileInfoCard({ profile }: ProfileInfoCardProps) {
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
-                Bio
+                {t("bioLabel")}
               </p>
               <p className="mt-0.5 text-sm leading-relaxed text-text-primary">
                 {profile.bio}

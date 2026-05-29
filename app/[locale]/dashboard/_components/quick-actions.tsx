@@ -5,11 +5,14 @@
 // ==========================================
 import { Link } from "@/i18n/navigation";
 import { Plus, UserPlus, Users, Sparkles } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 // ==========================================
 // 🎨 UI RENDER
 // ==========================================
 export function QuickActions() {
+  const t = useTranslations("quickActions");
+
   return (
     <div className="flex flex-wrap gap-3">
       <Link
@@ -19,7 +22,7 @@ export function QuickActions() {
         <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-surface/20">
           <Plus className="h-3.5 w-3.5" />
         </div>
-        Create Group
+        {t("createGroup")}
         <Sparkles className="h-3.5 w-3.5 text-indigo-200 transition-transform group-hover:rotate-12" />
       </Link>
 
@@ -30,7 +33,7 @@ export function QuickActions() {
         <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-surface-2 transition-colors group-hover:bg-surface-2">
           <UserPlus className="h-3.5 w-3.5 text-text-secondary transition-colors group-hover:text-text-primary" />
         </div>
-        Add Friend
+        {t("addFriend")}
       </Link>
 
       <Link
@@ -40,7 +43,7 @@ export function QuickActions() {
         <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-surface-2 transition-colors group-hover:bg-surface-2">
           <Users className="h-3.5 w-3.5 text-text-secondary transition-colors group-hover:text-text-primary" />
         </div>
-        Friends
+        {t("friends")}
       </Link>
     </div>
   );
