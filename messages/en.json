@@ -1072,5 +1072,21 @@
       "cancelRequestFailed": "Failed to cancel request.",
       "acceptFailed": "Failed to accept request."
     }
+  },
+  "notificationSettings": {
+    "title": "Push notifications",
+    "activeSubtitle": "You will receive updates on this device",
+    "inactiveSubtitle": "Get notified about new expenses and settlements",
+    "blockedSubtitle": "Notifications are blocked in browser settings",
+    "enabled": "Notifications enabled!",
+    "disabled": "Notifications disabled",
+    "errorEnable": "Could not enable notifications. Check browser settings.",
+    "errorDisable": "Could not disable notifications",
+    "errorGeneric": "Something went wrong",
+    "notSupportedTitle": "Not supported",
+    "notSupportedDesc": "Your browser does not support push notifications",
+    "deniedHint": "To enable, click the lock icon in your address bar and allow notifications",
+    "enableAria": "Enable push notifications",
+    "disableAria": "Disable push notifications"
   }
 }

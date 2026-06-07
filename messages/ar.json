@@ -1106,5 +1106,21 @@
       "cancelRequestFailed": "فشل إلغاء الطلب.",
       "acceptFailed": "فشل قبول الطلب."
     }
+  },
+  "notificationSettings": {
+    "title": "الإشعارات الفورية",
+    "activeSubtitle": "ستصلك التحديثات على هذا الجهاز",
+    "inactiveSubtitle": "احصل على إشعارات بالمصاريف والتسويات الجديدة",
+    "blockedSubtitle": "الإشعارات محظورة في إعدادات المتصفح",
+    "enabled": "تم تفعيل الإشعارات!",
+    "disabled": "تم إيقاف الإشعارات",
+    "errorEnable": "تعذر تفعيل الإشعارات. تحقق من إعدادات المتصفح.",
+    "errorDisable": "تعطل إيقاف الإشعارات",
+    "errorGeneric": "حدث خطأ ما",
+    "notSupportedTitle": "غير مدعوم",
+    "notSupportedDesc": "متصفحك لا يدعم الإشعارات الفورية",
+    "deniedHint": "لتفعيلها، انقر على أيقونة القفل في شريط العنوان واسمح بالإشعارات",
+    "enableAria": "تفعيل الإشعارات",
+    "disableAria": "إيقاف الإشعارات"
   }
 }

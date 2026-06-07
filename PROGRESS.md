@@ -101,3 +101,36 @@ Next sensible work (if any):
 
 ## Last Tick
 2026-06-07 14:05 — Audited A–V. All done. Build passes (exit 0). Extras (W) already implemented.
+
+---
+
+## Date: 2026-06-07 — Session 5: Push Notifications Feature
+
+### Status: ✅ Feature built — build passes
+
+### What was built
+- `public/sw.js` — service worker for push handling
+- `lib/push-notifications.ts` — subscribe/unsubscribe helpers
+- `components/notification-settings.tsx` — toggle UI in settings
+- `supabase/migrations/20260607150000_push_subscriptions.sql` — DB table with RLS
+- VAPID keys generated (public in lib, private for server)
+- New "Push notifications" section in settings page
+- 15 new i18n keys (en + ar)
+
+### Code stats
+- 4 new files
+- 1 modified file
+- Settings bundle: 3 kB → 10.9 kB
+- tsc --noEmit: 0 errors, next build: compiled successfully
+
+### How it works
+1. User toggles in settings → browser asks for permission
+2. If granted, subscribe with VAPID key
+3. Subscription saved to Supabase push_subscriptions table
+4. (Future) Edge Function sends pushes on events
+5. SW receives push → shows notification → click opens app
+
+### What's needed for full functionality
+- Supabase Edge Function that listens to events
+- VAPID_PRIVATE_KEY in Edge Function secrets
+- Real trigger function (current is stub)
