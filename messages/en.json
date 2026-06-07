@@ -72,7 +72,9 @@
     "dailyBreakdown": "Daily breakdown",
     "monthlyOverview": "Monthly overview",
     "paid": "Paid",
-    "owed": "Owed"
+    "owed": "Owed",
+    "member": "member",
+    "unknown": "Unknown"
   },
   "auth": {
     "login": {
@@ -221,7 +223,8 @@
     "equal": "Equal",
     "exact": "Exact",
     "percent": "Percent",
-    "sharesLabel": "Shares"
+    "sharesLabel": "Shares",
+    "you": "You"
   },
   "confirmDialog": {
     "title": "Are you sure?",
@@ -244,7 +247,11 @@
     "connections_other": "{count} connections",
     "pending": "pending",
     "groups_one": "{count} group",
-    "groups_other": "{count} groups"
+    "groups_other": "{count} groups",
+    "outstandingDebts": "Outstanding debts",
+    "pendingPayments": "Pending payments",
+    "youAreOwedTitle": "You are owed",
+    "youOweTitle": "You owe"
   },
   "deleteAccount": {
     "button": "Delete Account",
@@ -382,7 +389,11 @@
     "findFriends": "Find Friends",
     "sortBy": "Sort by...",
     "ascending": "Ascending",
-    "descending": "Descending"
+    "descending": "Descending",
+    "addFriendTitle": "Add Friend",
+    "searchByUsername": "Search by username...",
+    "unknownUser": "Unknown user",
+    "usernameUnavailable": "Username unavailable"
   },
   "friendsList": {
     "noFriendsYet": "No friends yet",
@@ -705,7 +716,9 @@
     "friendRequest": "Friend request",
     "settlement": "Settlement",
     "expense": "Expense",
-    "group": "Group"
+    "group": "Group",
+    "inboxZero": "Inbox zero. 🤌",
+    "noNewNotifications": "No new notifications. Enjoy the moment!"
   },
   "offline": {
     "title": "You're offline",
@@ -784,7 +797,22 @@
     "joinedFairShare": "Joined FairShare",
     "bioLabel": "Bio",
     "noActivity": "No activity yet",
-    "noHistoryDesc": "Your expense history will appear here."
+    "noHistoryDesc": "Your expense history will appear here.",
+    "acceptRequest": "Accept",
+    "addFriend": "Add Friend",
+    "allSettledUp": "All settled up",
+    "cancelRequest": "Cancel Request",
+    "changePhoto": "Change Photo",
+    "declineRequest": "Decline",
+    "displayName": "Display Name",
+    "displayNameHint": "This is your public name visible to everyone.",
+    "displayNamePlaceholder": "How others see you",
+    "oweOverall": "Total owed overall",
+    "owedOverall": "Total owed to you overall",
+    "removeFriend": "Remove Friend",
+    "user": "User",
+    "username": "Username",
+    "usernameHint": "Lowercase letters, numbers, and underscores only."
   },
   "profileEdit": {
     "backToProfile": "Back to Profile",
@@ -1007,7 +1035,10 @@
       "declineFailed": "Failed to decline request.",
       "removeConfirmTitle": "Are you sure you want to remove this friend?",
       "removed": "Friend removed.",
-      "removeFailed": "Failed to remove friend."
+      "removeFailed": "Failed to remove friend.",
+      "acceptFailed2": "Failed to accept request.",
+      "cancelRequestFailed": "Failed to cancel request.",
+      "sendRequestFailed": "Failed to send friend request."
     },
     "expenses": {
       "validationError": "Validation error",
