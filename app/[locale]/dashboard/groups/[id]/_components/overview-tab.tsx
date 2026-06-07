@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { formatCurrency } from "@/lib/utils";
 import { motion, useSpring, useTransform, animate } from "framer-motion";
 import {
@@ -36,6 +37,7 @@ interface AnimatedBalanceCardProps {
   onToggleVisibility: () => void;
   icon: React.ReactNode;
   accentColor?: "positive" | "negative" | "neutral";
+  locale: string;
 }
 
 function AnimatedBalanceCard({
@@ -48,10 +50,12 @@ function AnimatedBalanceCard({
   onToggleVisibility,
   icon,
   accentColor = "neutral",
+  locale,
 }: AnimatedBalanceCardProps) {
+  const t = useTranslations("overviewTab");
   const springValue = useSpring(0, { damping: 100, stiffness: 100 });
   const displayValue = useTransform(springValue, (latest) => {
-    return formatCurrency(latest, currency);
+    return formatCurrency(latest, currency, locale);
   });
 
   useEffect(() => {
@@ -82,7 +86,7 @@ function AnimatedBalanceCard({
     return "bg-surface-2";
   };
 
-  const visibilityLabel = isVisible ? "Hide financial data" : "Show financial data";
+  const visibilityLabel = isVisible ? t("hideFinancialData") : t("showFinancialData");
 
   return (
     <motion.div
@@ -164,7 +168,7 @@ function AnimatedBalanceCard({
                   isPositive ? "text-positive" : "text-negative"
                 }`}
               >
-                {isPositive ? "You are owed" : "You owe"}
+                {isPositive ? t("youAreOwed") : t("youOwe")}
               </span>
             </p>
           </div>
@@ -181,6 +185,10 @@ export function OverviewTab({
   currency,
   currentUserId,
 }: OverviewTabProps) {
+  const t = useTranslations("overviewTab");
+  const tBalances = useTranslations("balances");
+  const tCommon = useTranslations("common");
+  const locale = useLocale();
   const [showTotal, setShowTotal] = useState(true);
   const [showMyBalance, setShowMyBalance] = useState(true);
   const [showGroupBalances, setShowGroupBalances] = useState(false);
@@ -189,9 +197,9 @@ export function OverviewTab({
 
   const getBalanceStatusText = (isPositiveBalance: boolean, isCurrentUser: boolean): string => {
     if (isPositiveBalance) {
-      return isCurrentUser ? "You are owed" : "Is owed";
+      return isCurrentUser ? t("youAreOwed") : t("isOwed");
     }
-    return isCurrentUser ? "You owe" : "Owes";
+    return isCurrentUser ? t("youOwe") : t("owes");
   };
 
   return (
@@ -200,20 +208,21 @@ export function OverviewTab({
       <div className="grid gap-4 sm:grid-cols-2">
         {/* Total Group Expenses */}
         <AnimatedBalanceCard
-          title="Total Expenses"
-          subtitle="All group expenses"
+          title={t("totalExpenses")}
+          subtitle={t("allGroupExpenses")}
           amount={totalGroupExpenses}
           currency={currency}
           isVisible={showTotal}
           onToggleVisibility={() => setShowTotal(!showTotal)}
           icon={<Wallet className="w-5 h-5 text-text-primary" />}
           accentColor="neutral"
+          locale={locale}
         />
 
         {/* My Balance */}
         <AnimatedBalanceCard
-          title="My Balance"
-          subtitle="Your net position"
+          title={t("myBalance")}
+          subtitle={t("yourNetPosition")}
           amount={Math.abs(myNetBalance)}
           currency={currency}
           isPositive={myNetBalance !== 0 ? isPositive : null}
@@ -231,6 +240,7 @@ export function OverviewTab({
           accentColor={
             myNetBalance > 0 ? "positive" : myNetBalance < 0 ? "negative" : "neutral"
           }
+          locale={locale}
         />
       </div>
 
@@ -255,7 +265,7 @@ export function OverviewTab({
           <button
             onClick={() => setShowGroupBalances(!showGroupBalances)}
             className="flex items-center justify-center w-8 h-8 rounded-full bg-surface-2 hover:bg-surface-2/80 transition-colors"
-            aria-label={showGroupBalances ? "Hide financial data" : "Show financial data"}
+            aria-label={showGroupBalances ? t("hideFinancialData") : t("showFinancialData")}
             aria-pressed={showGroupBalances}
           >
             {showGroupBalances ? (
@@ -324,7 +334,7 @@ export function OverviewTab({
                             ) : (
                               <ArrowDownRight className="w-4 h-4" />
                             )}
-                            {formatCurrency(Math.abs(bal.net_balance), currency)}
+                            {formatCurrency(Math.abs(bal.net_balance), currency, locale)}
                           </span>
                           <span
                             className={`text-xs font-medium ${

@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui/modal";
 import {
   Users,
@@ -54,6 +55,7 @@ export function JoinGroupConfirmModal({
   groupId,
   token = null,
 }: JoinGroupConfirmModalProps) {
+  const t = useTranslations("joinGroupConfirmModal");
   const [state, setState] = useState<ModalState>("loading");
   const [groupInfo, setGroupInfo] = useState<GroupInfo | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
@@ -75,7 +77,7 @@ export function JoinGroupConfirmModal({
         } = await supabase.auth.getUser();
 
         if (!user) {
-          setErrorMsg("Please sign in to join a group.");
+          setErrorMsg(t("signInRequired"));
           setState("error");
           return;
         }
@@ -105,21 +107,17 @@ export function JoinGroupConfirmModal({
               rpcError.message.includes("expired")
             ) {
               setState("invalid_token");
-              setErrorMsg(
-                "This invite link is invalid or has been reset by the group owner. Please ask for a new link."
-              );
+              setErrorMsg(t("invalidTokenMsg"));
               return;
             }
-            setErrorMsg(rpcError.message || "Unable to verify invite link.");
+            setErrorMsg(rpcError.message || t("somethingWrong"));
             setState("error");
             return;
           }
 
           if (!rpcResult) {
             setState("invalid_token");
-            setErrorMsg(
-              "This invite link is no longer valid. The group owner may have reset it."
-            );
+            setErrorMsg(t("invalidTokenMsg"));
             return;
           }
 
@@ -132,7 +130,7 @@ export function JoinGroupConfirmModal({
 
           if (!groupData) {
             setState("invalid_token");
-            setErrorMsg("Invalid invite token.");
+            setErrorMsg(t("invalidTokenMsg"));
             return;
           }
         } else {
@@ -144,7 +142,7 @@ export function JoinGroupConfirmModal({
             .single();
 
           if (groupErr || !group) {
-            setErrorMsg("Group not found. The invite link may be expired.");
+            setErrorMsg(t("groupNotFound"));
             setState("error");
             return;
           }
@@ -172,14 +170,14 @@ export function JoinGroupConfirmModal({
 
         // Owner name
         const ownerId = groupData.owner_id;
-        let ownerName = "Unknown";
+        let ownerName = t("unknownOwner");
         if (ownerId) {
           const { data: ownerProfile } = await supabase
             .from("profiles")
             .select("display_name")
             .eq("id", ownerId)
             .single();
-          ownerName = ownerProfile?.display_name || "Unknown";
+          ownerName = ownerProfile?.display_name || t("unknownOwner");
         }
 
         setGroupInfo({
@@ -192,7 +190,7 @@ export function JoinGroupConfirmModal({
         setState("ready");
       } catch (err) {
         console.error("Fetch group error:", err);
-        setErrorMsg("Something went wrong. Please try again.");
+        setErrorMsg(t("somethingWrong"));
         setState("error");
       }
     }
@@ -210,7 +208,7 @@ export function JoinGroupConfirmModal({
       } = await supabase.auth.getUser();
 
       if (!user) {
-        setErrorMsg("Authentication required.");
+        setErrorMsg(t("authRequired"));
         setState("error");
         return;
       }
@@ -229,9 +227,7 @@ export function JoinGroupConfirmModal({
         }
       } else {
         setState("error");
-        setErrorMsg(
-          "This invite link is missing a security token. Please ask the group owner for a new link."
-        );
+        setErrorMsg(t("missingToken"));
         return;
       }
 
@@ -244,7 +240,7 @@ export function JoinGroupConfirmModal({
     } catch (err: any) {
       console.error("Join error:", err);
       setState("error");
-      setErrorMsg(err.message || "Failed to join the group.");
+      setErrorMsg(err.message || t("failedToJoin"));
     }
   }, [supabase, groupId, token, router, onClose]);
 
@@ -261,13 +257,13 @@ export function JoinGroupConfirmModal({
   }, [state, onClose]);
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Join Group" maxWidth="sm">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t("title")} maxWidth="sm">
       {/* ── Loading ── */}
       {state === "loading" && (
         <div className="flex flex-col items-center justify-center px-6 py-16">
           <Loader2 className="mb-3 h-8 w-8 animate-spin text-text-primary" />
           <p className="text-sm text-text-secondary">
-            {token ? "Verifying invite link…" : "Loading group details…"}
+            {token ? t("verifyingToken") : t("loadingDetails")}
           </p>
         </div>
       )}
@@ -279,9 +275,9 @@ export function JoinGroupConfirmModal({
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50">
               <Users className="h-8 w-8 text-text-primary" />
             </div>
-            <h2 className="text-xl font-bold text-text-primary">Join Group?</h2>
+            <h2 className="text-xl font-bold text-text-primary">{t("joinGroupTitle")}</h2>
             <p className="mt-1 text-sm text-text-secondary">
-              You&apos;ve been invited to join
+              {t("invitedToJoin")}
             </p>
           </div>
 
@@ -292,8 +288,7 @@ export function JoinGroupConfirmModal({
             <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-text-secondary">
               <span className="flex items-center gap-1">
                 <Users className="h-4 w-4" />
-                {groupInfo.memberCount} member
-                {groupInfo.memberCount !== 1 && "s"}
+                {t("members", { count: groupInfo.memberCount })}
               </span>
               <span className="flex items-center gap-1">
                 <Globe className="h-4 w-4" />
@@ -301,14 +296,14 @@ export function JoinGroupConfirmModal({
               </span>
             </div>
             <p className="mt-2 text-xs text-text-tertiary">
-              Created by {groupInfo.ownerName}
+              {t("createdBy", { name: groupInfo.ownerName })}
             </p>
 
             {token && (
               <div className="mt-3 flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1.5">
                 <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
                 <span className="text-[11px] font-medium text-emerald-700">
-                  Verified invite link
+                  {t("verifiedInvite")}
                 </span>
               </div>
             )}
@@ -319,14 +314,14 @@ export function JoinGroupConfirmModal({
               onClick={handleClose}
               className="flex-1 rounded-xl border border-border bg-surface py-3 text-sm font-semibold text-text-primary transition-colors hover:bg-surface-2"
             >
-              Cancel
+              {t("cancel")}
             </button>
             <button
               onClick={handleJoin}
               className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl active:scale-[0.98]"
             >
               <LogIn className="h-4 w-4" />
-              Join Group
+              {t("joinGroup")}
             </button>
           </div>
         </div>
@@ -336,7 +331,7 @@ export function JoinGroupConfirmModal({
       {state === "joining" && (
         <div className="flex flex-col items-center justify-center px-6 py-16">
           <Loader2 className="mb-3 h-8 w-8 animate-spin text-text-primary" />
-          <p className="text-sm font-medium text-text-primary">Joining group…</p>
+          <p className="text-sm font-medium text-text-primary">{t("joiningGroup")}</p>
         </div>
       )}
 
@@ -346,9 +341,9 @@ export function JoinGroupConfirmModal({
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50">
             <CheckCircle2 className="h-8 w-8 text-emerald-600" />
           </div>
-          <h3 className="text-lg font-bold text-text-primary">You&apos;re in!</h3>
+          <h3 className="text-lg font-bold text-text-primary">{t("successTitle")}</h3>
           <p className="mt-1 text-sm text-text-secondary">
-            Redirecting to the group…
+            {t("redirecting")}
           </p>
         </div>
       )}
@@ -360,16 +355,16 @@ export function JoinGroupConfirmModal({
             <Users className="h-8 w-8 text-text-primary" />
           </div>
           <h3 className="text-lg font-bold text-text-primary">
-            Already a Member
+            {t("alreadyMember")}
           </h3>
           <p className="mt-1 text-sm text-text-secondary">
-            You&apos;re already in <strong>{groupInfo.name}</strong>
+            {t("alreadyInGroup", { name: groupInfo.name })}
           </p>
           <button
             onClick={handleGoToGroup}
             className="mt-5 w-full rounded-xl bg-text-primary py-3 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
           >
-            Go to Group
+            {t("goToGroup")}
           </button>
         </div>
       )}
@@ -381,7 +376,7 @@ export function JoinGroupConfirmModal({
             <ShieldAlert className="h-8 w-8 text-amber-500" />
           </div>
           <h3 className="text-lg font-bold text-text-primary">
-            Invalid Invite Link
+            {t("invalidInvite")}
           </h3>
           <p className="mt-2 max-w-xs text-sm leading-relaxed text-text-secondary">
             {errorMsg}
@@ -390,7 +385,7 @@ export function JoinGroupConfirmModal({
             onClick={handleClose}
             className="mt-5 w-full rounded-xl bg-surface-2 py-3 text-sm font-semibold text-text-primary transition-colors hover:bg-gray-200"
           >
-            Close
+            {t("close")}
           </button>
         </div>
       )}
@@ -401,13 +396,13 @@ export function JoinGroupConfirmModal({
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
             <AlertCircle className="h-8 w-8 text-red-500" />
           </div>
-          <h3 className="text-lg font-bold text-text-primary">Unable to Join</h3>
+          <h3 className="text-lg font-bold text-text-primary">{t("unableToJoin")}</h3>
           <p className="mt-2 text-sm text-text-secondary">{errorMsg}</p>
           <button
             onClick={handleClose}
             className="mt-5 w-full rounded-xl bg-surface-2 py-3 text-sm font-semibold text-text-primary transition-colors hover:bg-gray-200"
           >
-            Close
+            {t("close")}
           </button>
         </div>
       )}

@@ -177,7 +177,7 @@ export function ActivityTab({ allActivities, currency }: ActivityTabProps) {
                         isSettleUp ? "text-positive" : "text-text-primary"
                       }`}
                     >
-                      {formatCurrency(exp.amount, currency)}
+                      {formatCurrency(exp.amount, currency, locale)}
                     </p>
                   </div>
                 </div>
@@ -246,7 +246,7 @@ export function ActivityTab({ allActivities, currency }: ActivityTabProps) {
                     >
                       {fromName}
                     </Link>
-                    <ArrowRight className="h-4 w-4 text-text-tertiary shrink-0" />
+                    <ArrowRight className="h-4 w-4 text-text-tertiary shrink-0 rtl:rotate-180" />
                     <Link
                       href={`/dashboard/profile/${s.to_user}`}
                       className="font-medium text-text-primary hover:underline truncate"
@@ -284,7 +284,7 @@ export function ActivityTab({ allActivities, currency }: ActivityTabProps) {
                   </div>
 
                   <p className="text-lg font-bold text-positive">
-                    {formatCurrency(s.amount, currency)}
+                    {formatCurrency(s.amount, currency, locale)}
                   </p>
                 </div>
               </div>

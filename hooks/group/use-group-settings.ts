@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { formatCurrency } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import type { Group, Balance } from "@/types/group";
 
 export function useGroupSettings(
@@ -18,6 +18,7 @@ export function useGroupSettings(
   const supabase = createClient();
   const toast = useToast();
   const t = useTranslations("toasts");
+  const locale = useLocale();
 
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
@@ -65,20 +66,24 @@ export function useGroupSettings(
 
     const myBal = balances.find((b) => b.user_id === currentUser);
     if (myBal && myBal.net_balance !== 0) {
-      toast.error(
-        "You must settle your balances before leaving the group. " +
-          (myBal.net_balance > 0
-            ? `You are still owed ${formatCurrency(myBal.net_balance, group?.currency)}.`
-            : `You still owe ${formatCurrency(Math.abs(myBal.net_balance), group?.currency)}.`)
-      );
+      const settleMsg = t("groupSettings.mustSettle");
+      const amountMsg =
+        myBal.net_balance > 0
+          ? t("groupSettings.stillOwed", {
+              amount: formatCurrency(myBal.net_balance, group?.currency, locale),
+            })
+          : t("groupSettings.stillOwe", {
+              amount: formatCurrency(Math.abs(myBal.net_balance), group?.currency, locale),
+            });
+      toast.error(`${settleMsg} ${amountMsg}`);
       return;
     }
 
     const confirmed = await toast.confirm(
-      "Leave this group? This action cannot be undone.",
+      t("groupSettings.leaveConfirmTitle"),
       {
-        confirmLabel: "Leave",
-        cancelLabel: "Cancel"
+        confirmLabel: t("groupSettings.leaveConfirmConfirm"),
+        cancelLabel: t("groupSettings.leaveConfirmCancel"),
       }
     );
     if (!confirmed) return;
@@ -110,6 +115,8 @@ export function useGroupSettings(
     balances,
     supabase,
     router,
+    t,
+    locale,
   ]);
 
   return {

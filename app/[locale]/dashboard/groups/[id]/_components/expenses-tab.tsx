@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatCurrency } from "@/lib/utils";
@@ -8,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
 import { Receipt, Plus, Calendar, User, ChevronRight, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import type { Expense } from "@/types/group";
+import { ExpenseFilters } from "@/components/ui/expense-filters";
 
 // ==========================================
 // 🎨 AVATAR GROUP FOR SPLIT PARTICIPANTS
@@ -97,25 +99,7 @@ function ExpenseAvatarGroup({ items, maxVisible = 4, size = "sm" }: AvatarGroupP
   );
 }
 
-// ==========================================
-// 🏷️ SPLIT BADGE
-// ==========================================
-function SplitBadge({ type }: { type?: string }) {
-  const normalizedType = (type || "equal").toLowerCase();
-  const config: Record<string, { label: string; className: string }> = {
-    equal: { label: "Equal", className: "bg-surface-2 text-text-secondary" },
-    exact: { label: "Exact", className: "bg-surface-2 text-text-secondary" },
-    percentage: { label: "Percent", className: "bg-surface-2 text-text-secondary" },
-    shares: { label: "Shares", className: "bg-surface-2 text-text-secondary" },
-  };
-  const { label, className } = config[normalizedType] || config.equal;
 
-  return (
-    <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium", className)}>
-      {label}
-    </span>
-  );
-}
 
 // ==========================================
 // 🧩 TYPES
@@ -131,6 +115,24 @@ interface ExpensesTabProps {
   onViewAll?: () => void;
 }
 
+// ── Split Badge (standalone, owns its own translations) ──
+function SplitBadge({ type }: { type?: string }) {
+  const tCommon = useTranslations("common");
+  const normalizedType = (type || "equal").toLowerCase();
+  const config: Record<string, { label: string; className: string }> = {
+    equal: { label: tCommon("equal"), className: "bg-surface-2 text-text-secondary" },
+    exact: { label: tCommon("exact"), className: "bg-surface-2 text-text-secondary" },
+    percentage: { label: tCommon("percent"), className: "bg-surface-2 text-text-secondary" },
+    shares: { label: tCommon("sharesLabel"), className: "bg-surface-2 text-text-secondary" },
+  };
+  const { label, className } = config[normalizedType] || config.equal;
+  return (
+    <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium", className)}>
+      {label}
+    </span>
+  );
+}
+
 // ==========================================
 // 🎨 UI RENDER
 // ==========================================
@@ -144,10 +146,37 @@ export function ExpensesTab({
   onDeleteExpense,
   onViewAll,
 }: ExpensesTabProps) {
+  const t = useTranslations("expensesTab");
+  const tCommon = useTranslations("common");
+  const locale = useLocale();
+
+  function SplitBadge({ type }: { type?: string }) {
+    const normalizedType = (type || "equal").toLowerCase();
+    const config: Record<string, { label: string; className: string }> = {
+      equal: { label: tCommon("equal"), className: "bg-surface-2 text-text-secondary" },
+      exact: { label: tCommon("exact"), className: "bg-surface-2 text-text-secondary" },
+      percentage: { label: tCommon("percent"), className: "bg-surface-2 text-text-secondary" },
+      shares: { label: tCommon("sharesLabel"), className: "bg-surface-2 text-text-secondary" },
+    };
+    const { label, className } = config[normalizedType] || config.equal;
+
+    return (
+      <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium", className)}>
+        {label}
+      </span>
+    );
+  }
+
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>(expenses);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const menuTriggerRef = useRef<HTMLButtonElement | null>(null);
   const firstActionRef = useRef<HTMLButtonElement | null>(null);
+
+  // Keep filtered in sync when prop expenses change
+  useEffect(() => {
+    setFilteredExpenses(expenses);
+  }, [expenses]);
 
   useEffect(() => {
     if (!menuOpenId) {
@@ -191,33 +220,38 @@ export function ExpensesTab({
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-2 mb-4">
           <Receipt className="h-8 w-8 text-text-tertiary" />
         </div>
-        <h3 className="text-lg font-semibold text-text-primary mb-2">No expenses yet</h3>
+        <h3 className="text-lg font-semibold text-text-primary mb-2">{t("noExpensesTitle")}</h3>
         <p className="text-sm text-text-secondary text-center mb-6">
-          Add your first expense to start tracking group spending.
+          {t("noExpensesDesc")}
         </p>
         <button
           onClick={onAddExpense}
           className="inline-flex items-center gap-2 rounded-xl bg-text-primary px-5 py-2.5 text-sm font-medium text-surface transition-all hover:opacity-90"
         >
           <Plus className="h-4 w-4" />
-          Add Expense
+          {t("addExpense")}
         </button>
       </motion.div>
     );
   }
 
-  const displayedExpenses = expenses.slice(0, 5);
-  const hasMore = expenses.length > 5;
+  const displayedExpenses = filteredExpenses.slice(0, 5);
+  const hasMore = filteredExpenses.length > 5;
 
   return (
     <div className="space-y-3">
+      <ExpenseFilters
+        expenses={expenses}
+        currentUserId={currentUser}
+        onFilteredChange={setFilteredExpenses}
+      />
       {displayedExpenses.map((exp, index) => {
-        const payerName = exp.profiles.display_name || exp.profiles.full_name || "Unknown";
+        const payerName = exp.profiles.display_name || exp.profiles.full_name || tCommon("unknown");
         const payerAvatar = (exp.profiles as any)?.avatar_url || null;
         const splits = (exp.expense_splits || []) as any[];
         const splitParticipants = splits.map((s: any) => ({
           id: s.user_id || s.id,
-          name: s?.profiles?.display_name || s?.profiles?.full_name || "Member",
+          name: s?.profiles?.display_name || s?.profiles?.full_name || tCommon("member"),
           avatar: s?.profiles?.avatar_url || undefined,
         }));
 
@@ -269,7 +303,7 @@ export function ExpensesTab({
                   <div className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
                     <span>
-                      {new Date(exp.created_at).toLocaleDateString("en-US", {
+                      {new Date(exp.created_at).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US", {
                         month: "short",
                         day: "numeric",
                       })}
@@ -281,7 +315,7 @@ export function ExpensesTab({
               {/* Amount */}
               <div className="text-right shrink-0">
                 <p className="text-lg font-bold text-text-primary">
-                  {formatCurrency(exp.amount, currency)}
+                  {formatCurrency(exp.amount, currency, locale)}
                 </p>
               </div>
             </div>
@@ -367,7 +401,7 @@ export function ExpensesTab({
               {expenses.length}
             </span>
           )}
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-4 w-4 rtl:rotate-180" />
         </motion.button>
       )}
     </div>

@@ -8,6 +8,7 @@ import { formatCurrency } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Wallet, Users, Clock } from "lucide-react";
 import type { GroupBalance } from "@/types/dashboard";
+import { useLocale, useTranslations } from "next-intl";
 
 // ==========================================
 // 🧩 TYPES
@@ -50,7 +51,9 @@ interface GlassGroupCardProps {
 
 function GlassGroupCard({ group, status, isFeatured, isOwner }: GlassGroupCardProps) {
   const statusStyle = STATUS_COLORS[status];
-  
+  const locale = useLocale();
+  const t = useTranslations("groupsBentoGrid");
+
   // Use Unsplash images for group backgrounds
   const images = [
     "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80",
@@ -62,7 +65,7 @@ function GlassGroupCard({ group, status, isFeatured, isOwner }: GlassGroupCardPr
   ];
   
   const image = images[Math.abs(group.group_id.charCodeAt(0)) % images.length];
-  const tags = [group.currency, isOwner ? "Owner" : "Member"];
+  const tags = [group.currency, isOwner ? t("owner") : t("member")];
 
   return (
     <motion.div
@@ -104,7 +107,7 @@ function GlassGroupCard({ group, status, isFeatured, isOwner }: GlassGroupCardPr
               className="flex items-center gap-2 rounded-full bg-text-primary px-6 py-2.5 text-sm font-medium text-text-primary-foreground shadow-lg shadow-primary/25"
             >
               <Users className="h-4 w-4" />
-              View Group
+              {t("viewGroup")}
             </motion.span>
           </div>
         </div>
@@ -119,10 +122,10 @@ function GlassGroupCard({ group, status, isFeatured, isOwner }: GlassGroupCardPr
             {/* Balance */}
             <p className="line-clamp-2 text-sm text-text-secondary">
               {group.net_balance > 0
-                ? `You get back ${formatCurrency(group.net_balance, group.currency)}`
+                ? t("youGetBack", { amount: formatCurrency(group.net_balance, group.currency, locale) })
                 : group.net_balance < 0
-                ? `You owe ${formatCurrency(Math.abs(group.net_balance), group.currency)}`
-                : "You're settled up"}
+                ? t("youOwe", { amount: formatCurrency(Math.abs(group.net_balance), group.currency, locale) })
+                : t("settledUp")}
             </p>
           </div>
           
@@ -131,17 +134,17 @@ function GlassGroupCard({ group, status, isFeatured, isOwner }: GlassGroupCardPr
             {group.net_balance > 0 ? (
               <div className={`inline-flex items-center gap-1.5 rounded-full ${statusStyle.bg} ${statusStyle.text} px-3 py-1.5 text-xs font-bold ${statusStyle.border} border`}>
                 <TrendingUp className="h-3 w-3" />
-                Gets back {formatCurrency(group.net_balance, group.currency)}
+                {t("getsBack", { amount: formatCurrency(group.net_balance, group.currency, locale) })}
               </div>
             ) : group.net_balance < 0 ? (
               <div className={`inline-flex items-center gap-1.5 rounded-full ${statusStyle.bg} ${statusStyle.text} px-3 py-1.5 text-xs font-bold ${statusStyle.border} border`}>
                 <TrendingDown className="h-3 w-3" />
-                Owes {formatCurrency(Math.abs(group.net_balance), group.currency)}
+                {t("owes", { amount: formatCurrency(Math.abs(group.net_balance), group.currency, locale) })}
               </div>
             ) : (
               <div className="inline-flex items-center gap-1.5 rounded-full bg-surface-2 px-3 py-1.5 text-xs font-bold text-text-secondary border border-border">
                 <Wallet className="h-3 w-3" />
-                Settled up
+                {t("settledUp")}
               </div>
             )}
           </div>
@@ -154,10 +157,10 @@ function GlassGroupCard({ group, status, isFeatured, isOwner }: GlassGroupCardPr
               </div>
               <div className="flex flex-col text-xs">
                 <span className="font-medium text-text-primary">
-                  Group
+                  {t("group")}
                 </span>
                 <span className="text-text-secondary">
-                  {new Date(group.created_at).toLocaleDateString("en-US", {
+                  {new Date(group.created_at).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US", {
                     month: "short",
                     day: "numeric",
                   })}
@@ -179,6 +182,7 @@ function GlassGroupCard({ group, status, isFeatured, isOwner }: GlassGroupCardPr
 // 🎨 UI RENDER — EMPTY STATE
 // ==========================================
 function EmptyState() {
+  const t = useTranslations("groupsBentoGrid");
   return (
     <div className="rounded-3xl border-2 border-dashed border-border bg-surface-2/30 py-20 text-center">
       <motion.div
@@ -190,16 +194,16 @@ function EmptyState() {
         <Wallet className="h-8 w-8 text-text-primary" />
       </motion.div>
       <h4 className="text-lg font-bold text-text-primary">
-        No groups yet
+        {t("emptyTitle")}
       </h4>
       <p className="mx-auto mt-1 max-w-xs text-sm text-text-secondary">
-        Create your first group to start splitting expenses with friends.
+        {t("emptyDescription")}
       </p>
       <Link
         href="/dashboard/groups/new"
         className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-foreground text-background px-6 py-3 text-sm font-semibold shadow-lg transition-all hover:scale-105"
       >
-        Create your first group
+        {t("createFirst")}
       </Link>
     </div>
   );

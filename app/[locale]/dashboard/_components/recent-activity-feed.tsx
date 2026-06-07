@@ -114,7 +114,7 @@ export function RecentActivityFeed({ expenses }: RecentActivityFeedProps) {
                   </div>
                   <div className="flex flex-col items-end gap-0.5">
                     <span className="whitespace-nowrap font-mono text-sm font-bold text-text-primary">
-                      {formatCurrency(expense.amount)}
+                      {formatCurrency(expense.amount, undefined, locale)}
                     </span>
                     <span className="whitespace-nowrap text-[10px] text-text-tertiary">
                       {getRelativeTime(expense.created_at, tTime, locale)}

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 type FloatingActionMenuProps = {
@@ -18,6 +19,7 @@ export function FloatingActionMenu({
   options,
   className,
 }: FloatingActionMenuProps) {
+  const t = useTranslations("floatingActionMenu");
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleMenu = () => {
@@ -28,6 +30,8 @@ export function FloatingActionMenu({
     <div className={cn("fixed bottom-24 right-4 md:bottom-8 md:right-8 z-[60]", className)}>
       <button
         onClick={toggleMenu}
+        aria-label={t("toggleMenu")}
+        aria-expanded={isOpen}
         className="flex h-14 w-14 items-center justify-center rounded-full bg-text-primary text-surface shadow-lg transition-all hover:opacity-90"
       >
         <motion.div

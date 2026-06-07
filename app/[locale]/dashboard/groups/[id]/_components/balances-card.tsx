@@ -10,7 +10,7 @@ import { formatCurrency } from "@/lib/utils";
 import type { Balance } from "@/types/group";
 import { simplifyDebts } from "@/lib/debt-simplifier";
 import { ArrowDown, TrendingDown, TrendingUp } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 // ==========================================
 // 🧩 TYPES
@@ -30,6 +30,7 @@ export function BalancesCard({
   currentUserId,
 }: BalancesCardProps) {
   const t = useTranslations("balances");
+  const locale = useLocale();
   const [view, setView] = useState<"settlements" | "net">("settlements");
 
   const simplifiedDebts = useMemo(() => {
@@ -123,7 +124,7 @@ export function BalancesCard({
                     <div className="flex items-center justify-center gap-2 py-1">
                       <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border-light dark:via-border-dark to-transparent" />
                       <div className="flex items-center gap-1.5 rounded-full bg-orange-100 px-3 py-1 text-sm font-black text-orange-700 ring-1 ring-inset ring-orange-200">
-                        {formatCurrency(debt.amount, currency)}
+                        {formatCurrency(debt.amount, currency, locale)}
                         <ArrowDown className="h-3.5 w-3.5" />
                       </div>
                       <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border-light dark:via-border-dark to-transparent" />
@@ -218,7 +219,8 @@ export function BalancesCard({
                               {isPositive ? "+" : "-"}
                               {formatCurrency(
                                 Math.abs(bal.net_balance),
-                                currency
+                                currency,
+                                locale
                               )}
                             </span>
                             <span

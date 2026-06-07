@@ -218,4 +218,20 @@ html.dark ::selection {
   .rtl-flip {
     transform: scaleX(-1);
   }
+
+  /* Improve RTL readability: slightly more line-height for Arabic */
+  body {
+    line-height: 1.65;
+  }
+
+  /* Arabic text should not break in the middle of words awkwardly */
+  body {
+    word-spacing: 0.05em;
+  }
+
+  /* Form elements: keep caret and selection LTR-correct */
+  input,
+  textarea {
+    text-align: start;
+  }
 }

@@ -29,7 +29,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   getCategoryInfo,
   EXPENSE_CATEGORIES,
@@ -45,7 +45,7 @@ const TIME_RANGES: { value: TimeRange; label: string; days: number }[] = [
   { value: "week", label: "7D", days: 7 },
   { value: "2weeks", label: "14D", days: 14 },
   { value: "month", label: "1M", days: 30 },
-  { value: "all", label: "All", days: -1 },
+  { value: "all", label: "ALL_LABEL", days: -1 },
 ];
 
 // ── Chart Colors ──
@@ -78,10 +78,12 @@ function ChartTooltip({
   active,
   payload,
   currency,
+  locale,
 }: {
   active?: boolean;
   payload?: any[];
   currency: string;
+  locale: string;
 }) {
   if (!active || !payload?.length) return null;
   const item = payload[0];
@@ -91,7 +93,7 @@ function ChartTooltip({
         {item.payload?.label || item.payload?.name || item.name}
       </p>
       <p className="text-sm font-bold text-text-primary">
-        {formatCurrency(item.value, currency)}
+        {formatCurrency(item.value, currency, locale)}
       </p>
     </div>
   );
@@ -103,11 +105,13 @@ function AnimatedCounter({
   prefix = "",
   suffix = "",
   className = "",
+  locale,
 }: {
   value: number;
   prefix?: string;
   suffix?: string;
   className?: string;
+  locale: string;
 }) {
   return (
     <motion.span
@@ -117,7 +121,7 @@ function AnimatedCounter({
       className={className}
     >
       {prefix}
-      {formatCurrency(value, "").replace("$", "").replace("£", "").replace("€", "")}
+      {formatCurrency(value, "", locale).replace("$", "").replace("£", "").replace("€", "")}
       {suffix}
     </motion.span>
   );
@@ -219,9 +223,11 @@ function StatCard({
 function TimeRangeFilter({
   value,
   onChange,
+  ranges,
 }: {
   value: TimeRange;
   onChange: (v: TimeRange) => void;
+  ranges: { value: TimeRange; label: string; days: number }[];
 }) {
   return (
     <motion.div
@@ -229,7 +235,7 @@ function TimeRangeFilter({
       animate={{ opacity: 1, y: 0 }}
       className="flex items-center gap-1.5 rounded-xl border border-border/60 bg-surface-2/50 p-1 backdrop-blur-sm"
     >
-      {TIME_RANGES.map((range) => (
+      {ranges.map((range) => (
         <button
           key={range.value}
           onClick={() => onChange(range.value)}
@@ -268,6 +274,11 @@ export function AnalysisTab({
   currency,
   currentUserId,
 }: AnalysisTabProps) {
+  const t = useTranslations("analysisTab");
+  const tCommon = useTranslations("common");
+
+  // Replace the ALL_LABEL placeholder with translated text
+  const TIME_RANGES_LOCAL = TIME_RANGES.map(r => r.value === "all" ? { ...r, label: t("all") } : r);
   const locale = useLocale();
   const dateLocale = locale === "ar" ? "ar-SA" : "en-US";
   const [timeRange, setTimeRange] = useState<TimeRange>("all");
@@ -529,7 +540,7 @@ export function AnalysisTab({
     const hourMap = new Map<string, number>();
     filteredExpenses.forEach((e) => {
       const d = new Date(e.created_at);
-      const hour = d.toLocaleTimeString("en-US", {
+      const hour = d.toLocaleTimeString(dateLocale, {
         hour: "numeric",
         hour12: true,
       });
@@ -561,7 +572,7 @@ export function AnalysisTab({
             No Data Yet
           </h3>
           <p className="text-sm text-text-secondary max-w-sm">
-            Add some expenses to see spending analysis and insights.
+            t("noDataDesc")
           </p>
         </motion.div>
       </div>
@@ -579,43 +590,43 @@ export function AnalysisTab({
         className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
       >
         <div>
-          <h2 className="text-lg font-bold text-text-primary">Analysis</h2>
+          <h2 className="text-lg font-bold text-text-primary">{t("analysisTitle")}</h2>
           <p className="text-xs text-text-secondary">
             {filteredExpenses.length} expense{filteredExpenses.length !== 1 ? "s" : ""}{" "}
             {timeRange !== "all" ? "in selected period" : "total"}
           </p>
         </div>
-        <TimeRangeFilter value={timeRange} onChange={setTimeRange} />
+        <TimeRangeFilter value={timeRange} onChange={setTimeRange} ranges={TIME_RANGES_LOCAL} />
       </motion.div>
 
       {/* ── Stats Row ── */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           icon={<DollarSign className="h-4 w-4" />}
-          label="Total Spent"
-          value={formatCurrency(stats.total, currency)}
+          label={t("totalSpent")}
+          value={formatCurrency(stats.total, currency, locale)}
           color="#3b82f6"
           delay={0.05}
         />
         <StatCard
           icon={<ReceiptText className="h-4 w-4" />}
-          label="Expenses"
+          label={t("expensesLabel")}
           value={stats.count.toString()}
-          subValue={`Avg ${formatCurrency(stats.avg, currency)}`}
+          subValue={`Avg ${formatCurrency(stats.avg, currency, locale)}`}
           color="#8b5cf6"
           delay={0.1}
         />
         <StatCard
           icon={<TrendingDown className="h-4 w-4" />}
-          label="Top Category"
+          label={t("topCategory")}
           value={`${stats.topCat.emoji} ${stats.topCat.label}`}
-          subValue={formatCurrency(stats.topCatAmount, currency)}
+          subValue={formatCurrency(stats.topCatAmount, currency, locale)}
           color={CATEGORY_COLORS[stats.topCat.value]}
           delay={0.15}
         />
         <StatCard
           icon={<Crown className="h-4 w-4" />}
-          label="Top Spender"
+          label={t("topSpender")}
           value={
             topSpenders[0]
               ? topSpenders[0].id === currentUserId
@@ -625,7 +636,7 @@ export function AnalysisTab({
           }
           subValue={
             topSpenders[0]
-              ? formatCurrency(topSpenders[0].amount, currency)
+              ? formatCurrency(topSpenders[0].amount, currency, locale)
               : undefined
           }
           color="#f59e0b"
@@ -640,8 +651,8 @@ export function AnalysisTab({
           <Card delay={0.25}>
             <CardHeader
               icon={<PieIcon className="h-5 w-5 text-blue-500" />}
-              title="By Category"
-              subtitle="Spending distribution"
+              title={t("byCategory")}
+              subtitle={t("spendingDistribution")}
             />
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
               <div className="h-44 w-44 shrink-0">
@@ -665,7 +676,7 @@ export function AnalysisTab({
                         />
                       ))}
                     </Pie>
-                    <Tooltip content={<ChartTooltip currency={currency} />} />
+                    <Tooltip content={<ChartTooltip currency={currency} locale={locale} />} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -683,7 +694,7 @@ export function AnalysisTab({
                     />
                     <span className="text-text-secondary">{c.label}</span>
                     <span className="ml-1 font-medium text-text-primary">
-                      {formatCurrency(c.value, currency)}
+                      {formatCurrency(c.value, currency, locale)}
                     </span>
                   </motion.div>
                 ))}
@@ -697,13 +708,13 @@ export function AnalysisTab({
           <Card delay={0.3}>
             <CardHeader
               icon={<TrendingUp className="h-5 w-5 text-purple-500" />}
-              title="Spending Trend"
+              title={t("spendingTrend")}
               subtitle={
                 timeRange === "24h"
-                  ? "Hourly breakdown"
+                  ? t("hourlyBreakdown")
                   : timeRange === "week" || timeRange === "2weeks"
-                    ? "Daily breakdown"
-                    : "Monthly overview"
+                    ? t("dailyBreakdown")
+                    : t("monthlyOverview")
               }
             />
             <div className="h-52">
@@ -731,9 +742,9 @@ export function AnalysisTab({
                     axisLine={false}
                     tickLine={false}
                     width={55}
-                    tickFormatter={(v: number) => formatCurrency(v, currency)}
+                    tickFormatter={(v: number) => formatCurrency(v, currency, locale)}
                   />
-                  <Tooltip content={<ChartTooltip currency={currency} />} />
+                  <Tooltip content={<ChartTooltip currency={currency} locale={locale} />} />
                   <Area
                     type="monotone"
                     dataKey="total"
@@ -755,8 +766,8 @@ export function AnalysisTab({
           <Card delay={0.35}>
             <CardHeader
               icon={<Users className="h-5 w-5 text-orange-500" />}
-              title="Top Spenders"
-              subtitle="Who paid the most"
+              title={t("topSpenders")}
+              subtitle={t("whoPaidTheMost")}
             />
             <div className="space-y-4">
               {topSpenders.map((s, i) => (
@@ -767,10 +778,10 @@ export function AnalysisTab({
                   <div className="min-w-0 flex-1">
                     <div className="mb-1.5 flex items-center justify-between">
                       <span className="truncate text-sm font-medium text-text-primary">
-                        {s.id === currentUserId ? "You" : s.name}
+                        {s.id === currentUserId ? tCommon("you") : s.name}
                       </span>
                       <span className="shrink-0 text-sm font-bold text-text-primary">
-                        {formatCurrency(s.amount, currency)}
+                        {formatCurrency(s.amount, currency, locale)}
                       </span>
                     </div>
                     <div className="h-1.5 overflow-hidden rounded-full bg-surface-2">
@@ -803,8 +814,8 @@ export function AnalysisTab({
           <Card delay={0.4}>
             <CardHeader
               icon={<BarChart3 className="h-5 w-5 text-teal-500" />}
-              title="Split Methods"
-              subtitle="How expenses are divided"
+              title={t("splitMethods")}
+              subtitle={t("howExpensesDivided")}
             />
             <div className="h-52">
               <ResponsiveContainer width="100%" height="100%">
@@ -862,8 +873,8 @@ export function AnalysisTab({
         <Card delay={0.45}>
           <CardHeader
             icon={<ArrowUpRight className="h-5 w-5 text-emerald-500" />}
-            title="Category Over Time"
-            subtitle="Spending breakdown by category over time"
+            title={t("categoryOverTime")}
+            subtitle={t("categoryOverTimeSub")}
           />
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -884,9 +895,9 @@ export function AnalysisTab({
                   axisLine={false}
                   tickLine={false}
                   width={55}
-                  tickFormatter={(v: number) => formatCurrency(v, currency)}
+                  tickFormatter={(v: number) => formatCurrency(v, currency, locale)}
                 />
-                <Tooltip content={<ChartTooltip currency={currency} />} />
+                <Tooltip content={<ChartTooltip currency={currency} locale={locale} />} />
                 <Bar stackId="category" dataKey="food" fill={CATEGORY_COLORS.food} />
                 <Bar
                   stackId="category"
@@ -932,8 +943,8 @@ export function AnalysisTab({
         <Card delay={0.5}>
           <CardHeader
             icon={<Users className="h-5 w-5 text-pink-500" />}
-            title="Member Comparison"
-            subtitle="Paid vs Owed per member"
+            title={t("memberComparison")}
+            subtitle={t("paidVsOwed")}
           />
           <div className="h-52">
             <ResponsiveContainer width="100%" height="100%">
@@ -954,11 +965,11 @@ export function AnalysisTab({
                   axisLine={false}
                   tickLine={false}
                   width={55}
-                  tickFormatter={(v: number) => formatCurrency(v, currency)}
+                  tickFormatter={(v: number) => formatCurrency(v, currency, locale)}
                 />
-                <Tooltip content={<ChartTooltip currency={currency} />} />
-                <Bar dataKey="paid" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Paid" />
-                <Bar dataKey="owed" fill="#ec4899" radius={[4, 4, 0, 0]} name="Owed" />
+                <Tooltip content={<ChartTooltip currency={currency} locale={locale} />} />
+                <Bar dataKey="paid" fill="#3b82f6" radius={[4, 4, 0, 0]} name={t('paid')} />
+                <Bar dataKey="owed" fill="#ec4899" radius={[4, 4, 0, 0]} name={t('owed')} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -970,8 +981,8 @@ export function AnalysisTab({
         <Card delay={0.55}>
           <CardHeader
             icon={<Receipt className="h-5 w-5 text-amber-500" />}
-            title="Largest Expenses"
-            subtitle="Top 5 by amount"
+            title={t("largestExpenses")}
+            subtitle={t("top5ByAmount")}
           />
           <div className="space-y-2">
             {topExpenses.map((e) => {
@@ -996,11 +1007,11 @@ export function AnalysisTab({
                         ? "You"
                         : e.profiles?.display_name ||
                           e.profiles?.full_name ||
-                          "Unknown"}
+                          tCommon("unknown")}
                     </p>
                   </div>
                   <span className="shrink-0 text-sm font-bold text-text-primary">
-                    {formatCurrency(Number(e.amount), currency)}
+                    {formatCurrency(Number(e.amount), currency, locale)}
                   </span>
                 </div>
               );

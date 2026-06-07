@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Bell, Check, UserPlus, HandCoins, Receipt, Users, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ar as arLocale, enUS as enLocale } from "date-fns/locale";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { EmptyState, AgentSplitIllustration } from "@/components/ui/empty-states";
 
 export function NotificationBell({ userId }: { userId: string }) {
@@ -15,6 +15,7 @@ export function NotificationBell({ userId }: { userId: string }) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const locale = useLocale();
   const dateLocale = locale === "ar" ? arLocale : enLocale;
+  const t = useTranslations("notificationBell");
   const supabase = createClient();
 
   // جلب الإشعارات
@@ -93,6 +94,7 @@ export function NotificationBell({ userId }: { userId: string }) {
           setIsOpen(!isOpen);
           if (!isOpen) markAllAsRead();
         }}
+        aria-label={t("buttonLabel")}
         className="relative flex h-9 w-9 items-center justify-center rounded-xl text-text-secondary transition-all duration-200 hover:bg-surface-2 dark:hover:bg-gray-800"
       >
         <Bell className="h-5 w-5" />
@@ -108,7 +110,7 @@ export function NotificationBell({ userId }: { userId: string }) {
         <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-border bg-surface shadow-xl sm:w-96">
           <div className="flex items-center justify-between border-b border-border bg-surface-2/50 dark:bg-gray-800/50 px-4 py-3">
             <h3 className="font-semibold text-text-primary">
-              Notifications
+              {t("title")}
             </h3>
             <div className="flex items-center gap-2">
               {unreadCount > 0 && (
@@ -116,11 +118,12 @@ export function NotificationBell({ userId }: { userId: string }) {
                   onClick={markAllAsRead}
                   className="text-xs font-medium text-text-primary hover:text-text-primary/80"
                 >
-                  Mark all read
+                  {t("markAllRead")}
                 </button>
               )}
               <button
                 onClick={() => setIsOpen(false)}
+                aria-label={t("close")}
                 className="text-text-secondary hover:text-text-light-primary dark:hover:text-text-dark-primary"
               >
                 <X className="h-4 w-4" />
@@ -132,8 +135,8 @@ export function NotificationBell({ userId }: { userId: string }) {
               <div className="p-4">
                 <EmptyState
                   illustration={<AgentSplitIllustration pose="relaxed" className="h-28 w-28" />}
-                  title="Inbox Zero. 🤌"
-                  description="No new notifications. Enjoy the moment!"
+                  title={t("emptyTitle")}
+                  description={t("emptyDescription")}
                   className="border-none bg-transparent py-4 shadow-none"
                 />
               </div>

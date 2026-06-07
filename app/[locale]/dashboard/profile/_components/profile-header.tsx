@@ -16,7 +16,7 @@ import {
   Shield,
   Sparkles,
 } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { UserProfile, FriendStatus } from "@/types/profile";
 
 // ==========================================
@@ -63,6 +63,7 @@ export function ProfileHeader({
   onEditProfile,
 }: ProfileHeaderProps) {
   const locale = useLocale();
+  const t = useTranslations("profileHeader");
   const displayName =
     profile.display_name || profile.full_name || profile.username || "User";
   const joinDate = new Date(profile.created_at).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US", {
@@ -86,7 +87,7 @@ export function ProfileHeader({
             className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-surface/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-md transition-all duration-200 hover:bg-surface/20 active:scale-95"
           >
             <Share2 className="h-4 w-4" />
-            Share
+            {t("share")}
           </button>
 
           {isOwnProfile && onEditProfile && (
@@ -95,7 +96,7 @@ export function ProfileHeader({
               className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-surface/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-md transition-all duration-200 hover:bg-surface/20 active:scale-95"
             >
               <Pencil className="h-4 w-4" />
-              Edit
+              {t("edit")}
             </button>
           )}
         </div>
@@ -143,7 +144,7 @@ export function ProfileHeader({
           <div className="mt-3">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-600 ring-1 ring-inset ring-emerald-200">
               <UserCheck className="h-3 w-3" />
-              Friend
+              {t("friend")}
             </span>
           </div>
         )}
@@ -159,14 +160,14 @@ export function ProfileHeader({
         <div className="mt-5 flex flex-wrap items-center justify-center gap-4">
           <div className="flex items-center gap-1.5 text-xs font-medium text-text-tertiary">
             <CalendarDays className="h-3.5 w-3.5" />
-            <span>Joined {joinDate}</span>
+            <span>{t("joined", { date: joinDate })}</span>
           </div>
           {profile.is_public && (
             <>
               <span className="h-1 w-1 rounded-full bg-gray-300"></span>
               <div className="flex items-center gap-1 text-xs font-medium text-text-tertiary">
                 <Shield className="h-3.5 w-3.5" />
-                <span>Public Profile</span>
+                <span>{t("publicProfile")}</span>
               </div>
             </>
           )}
@@ -187,7 +188,7 @@ export function ProfileHeader({
                 ) : (
                   <UserPlus className="h-5 w-5" />
                 )}
-                Add Friend
+                {t("addFriend")}
               </button>
             )}
 
@@ -204,11 +205,11 @@ export function ProfileHeader({
                   <>
                     <span className="flex items-center gap-1.5 group-hover:hidden">
                       <UserCheck className="h-5 w-5" />
-                      Request Sent
+                      {t("requestSent")}
                     </span>
                     <span className="hidden items-center gap-1.5 group-hover:flex">
                       <X className="h-5 w-5" />
-                      Cancel Request
+                      {t("cancelRequest")}
                     </span>
                   </>
                 )}
@@ -222,7 +223,7 @@ export function ProfileHeader({
                 <div className="flex items-center justify-center gap-1.5 rounded-xl bg-indigo-50 px-3 py-2">
                   <UserPlus className="h-3.5 w-3.5 text-positive" />
                   <span className="text-xs font-semibold text-text-primary">
-                    Sent you a friend request
+                    {t("sentYouRequest")}
                   </span>
                 </div>
 
@@ -238,7 +239,7 @@ export function ProfileHeader({
                     ) : (
                       <>
                         <X className="h-4 w-4" />
-                        Decline
+                        {t("decline")}
                       </>
                     )}
                   </button>
@@ -252,7 +253,7 @@ export function ProfileHeader({
                     ) : (
                       <>
                         <Check className="h-4 w-4" />
-                        Accept
+                        {t("accept")}
                       </>
                     )}
                   </button>
@@ -273,11 +274,11 @@ export function ProfileHeader({
                   <>
                     <span className="flex items-center gap-1.5 group-hover:hidden">
                       <UserCheck className="h-5 w-5" />
-                      Requested
+                      {t("requested")}
                     </span>
                     <span className="hidden items-center gap-1.5 group-hover:flex">
                       <X className="h-5 w-5" />
-                      Cancel
+                      {t("cancel")}
                     </span>
                   </>
                 )}
@@ -288,7 +289,7 @@ export function ProfileHeader({
             {friendStatus === "friends" && (
               <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 py-3.5 text-sm font-bold text-emerald-700">
                 <UserCheck className="h-5 w-5" />
-                Friends
+                {t("friends")}
                 <Sparkles className="h-4 w-4 text-emerald-400" />
               </div>
             )}

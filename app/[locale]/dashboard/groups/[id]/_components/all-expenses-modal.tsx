@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Modal } from "@/components/ui/modal";
 import { Avatar } from "@/components/ui/avatar";
 import { formatCurrency } from "@/lib/utils";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { Expense } from "@/types/group";
 
 // ── Constants ───────────────────────────────────────────
@@ -43,28 +43,28 @@ function getAvatarColor(name: string): string {
 }
 
 // ── Split Badge ─────────────────────────────────────────
-function SplitBadge({ type }: { type?: string }) {
+function SplitBadge({ type, t }: { type?: string; t: ReturnType<typeof useTranslations<"expensesTab">> }) {
   const normalizedType = (type || "equal").toLowerCase();
 
   const config: Record<string, { label: string; style: string; icon: string }> =
     {
       equal: {
-        label: "Equal",
+        label: t("equal"),
         style: "bg-blue-50 text-blue-700 ring-blue-200",
         icon: "⚖️",
       },
       exact: {
-        label: "Exact",
+        label: t("exact"),
         style: "bg-emerald-50 text-emerald-700 ring-emerald-200",
         icon: "💰",
       },
       percentage: {
-        label: "Percent",
+        label: t("percent"),
         style: "bg-purple-50 text-purple-700 ring-purple-200",
         icon: "📊",
       },
       shares: {
-        label: "Shares",
+        label: t("sharesLabel"),
         style: "bg-orange-50 text-orange-700 ring-orange-200",
         icon: "🎯",
       },
@@ -201,6 +201,9 @@ export function AllExpensesModal({
   onDeleteExpense,
 }: AllExpensesModalProps) {
   const locale = useLocale();
+  const t = useTranslations("allExpensesModal");
+  const tSplit = useTranslations("expensesTab");
+  const tCommon = useTranslations("common");
   // ── Pagination state ──────────────────────────────────
   const [expenses, setExpenses] = useState<ExpenseWithAvatar[]>([]);
   const [page, setPage] = useState(0);
@@ -256,24 +259,24 @@ export function AllExpensesModal({
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="All Expenses" maxWidth="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title={t("title")} maxWidth="lg">
       {/* Constrain height so the body scrolls, not the whole modal */}
       <div className="flex max-h-[90vh] flex-col sm:max-h-[85vh]">
         {/* ── Header ── */}
         <div className="flex shrink-0 items-center justify-between border-b border-border px-5 py-4">
           <div>
-            <h2 className="text-lg font-bold text-text-primary">All Expenses</h2>
+            <h2 className="text-lg font-bold text-text-primary">{t("title")}</h2>
             <p className="mt-0.5 text-xs text-text-secondary">
               {isLoadingInitial
-                ? "Loading…"
-                : `${totalCount} expense${totalCount !== 1 ? "s" : ""} · ${currency}`}
+                ? t("loading")
+                : t("countLabel", { count: totalCount, currency })}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="flex h-9 w-9 items-center justify-center rounded-full text-text-tertiary transition-all duration-200 hover:bg-surface-2 hover:text-text-secondary active:scale-95"
-            title="Close"
+            title={tCommon("close")}
           >
             <svg
               className="h-5 w-5"
@@ -316,12 +319,12 @@ export function AllExpensesModal({
             <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-5 text-center">
               <p className="text-sm text-red-600">{fetchError}</p>
               <p className="mt-1 text-xs text-red-500">
-                Close and reopen this modal to retry.
+                {t("retryHint")}
               </p>
             </div>
           ) : expenses.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-300 py-12 text-center">
-              <p className="text-text-secondary">No expenses yet.</p>
+              <p className="text-text-secondary">{t("empty")}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -329,7 +332,7 @@ export function AllExpensesModal({
                 const payerName =
                   exp.profiles.display_name ||
                   exp.profiles.full_name ||
-                  "Unknown";
+                  tCommon("unknown");
                 const payerAvatar = exp.profiles.avatar_url || undefined;
                 const splits = exp.expense_splits ?? [];
                 const visibleSplits = splits.slice(0, 3);
@@ -360,11 +363,11 @@ export function AllExpensesModal({
                           <h3 className="truncate text-sm font-semibold text-text-primary sm:text-base">
                             {exp.name}
                           </h3>
-                          <SplitBadge type={exp.split_type ?? undefined} />
+                          <SplitBadge type={exp.split_type ?? undefined} t={tSplit} />
                         </div>
 
                         <p className="truncate text-xs text-text-secondary">
-                          Paid by{" "}
+                          {t("paidBy")}{" "}
                           <Link
                             href={`/dashboard/profile/${exp.paid_by}`}
                             className="font-medium text-text-primary hover:text-text-primary hover:underline"
@@ -378,7 +381,7 @@ export function AllExpensesModal({
 
                       <div className="flex flex-shrink-0 flex-col items-end gap-1.5">
                         <p className="text-base font-bold text-text-primary sm:text-lg">
-                          {formatCurrency(exp.amount, currency)}
+                          {formatCurrency(exp.amount, currency, locale)}
                         </p>
                         <div className="flex items-center">
                           {visibleSplits.map((split: any, i: number) => {
@@ -413,7 +416,7 @@ export function AllExpensesModal({
                           {remainingCount > 0 && (
                             <div
                               className="-ml-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-[10px] font-bold text-text-secondary ring-2 ring-white"
-                              title={`+${remainingCount} more`}
+                              title={t("moreCount", { count: remainingCount })}
                             >
                               +{remainingCount}
                             </div>
@@ -432,7 +435,7 @@ export function AllExpensesModal({
                             onClose();
                           }}
                           className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium text-text-secondary shadow-sm transition-all duration-200 hover:border-blue-300 hover:bg-blue-50 hover:text-text-primary active:scale-95"
-                          title={`Edit "${exp.name}"`}
+                          title={t("editTitle", { name: exp.name })}
                         >
                           <svg
                             className="h-3.5 w-3.5"
@@ -447,7 +450,7 @@ export function AllExpensesModal({
                               d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
                             />
                           </svg>
-                          Edit
+                          {tCommon("edit")}
                         </button>
                         <button
                           type="button"
@@ -456,7 +459,7 @@ export function AllExpensesModal({
                             onClose();
                           }}
                           className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium text-text-secondary shadow-sm transition-all duration-200 hover:border-red-300 hover:bg-red-50 hover:text-red-600 active:scale-95"
-                          title={`Delete "${exp.name}"`}
+                          title={t("deleteTitle", { name: exp.name })}
                         >
                           <svg
                             className="h-3.5 w-3.5"
@@ -471,7 +474,7 @@ export function AllExpensesModal({
                               d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                             />
                           </svg>
-                          Delete
+                          {tCommon("delete")}
                         </button>
                       </div>
                     )}
@@ -499,10 +502,10 @@ export function AllExpensesModal({
                 disabled={page === 0 || isLoadingInitial}
                 className="rounded-lg px-3 py-1.5 text-sm font-medium text-text-secondary hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Previous
+                {tCommon("previous")}
               </button>
               <span className="text-xs text-text-tertiary">
-                Page {page + 1} of {totalPages}
+                {t("pageOf", { page: page + 1, total: totalPages })}
               </span>
               <button
                 type="button"
@@ -510,7 +513,7 @@ export function AllExpensesModal({
                 disabled={page === totalPages - 1 || isLoadingInitial}
                 className="rounded-lg px-3 py-1.5 text-sm font-medium text-text-secondary hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Next
+                {tCommon("next")}
               </button>
             </div>
           )}
@@ -519,7 +522,7 @@ export function AllExpensesModal({
             onClick={onClose}
             className="w-full rounded-xl bg-surface-2 py-2.5 text-sm font-semibold text-text-primary transition-all duration-200 hover:bg-gray-200 active:scale-[0.98]"
           >
-            Close
+            {tCommon("close")}
           </button>
         </div>
       </div>

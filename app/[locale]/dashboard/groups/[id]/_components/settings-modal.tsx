@@ -170,8 +170,8 @@ export function SettingsModal({
                 <p className="text-xs text-amber-800">
                   {t("settleFirst")}{" "}
                   {myNetBalance > 0
-                    ? t("settleFirstOwed", { amount: formatCurrency(myNetBalance, group.currency) })
-                    : t("settleFirstOwe", { amount: formatCurrency(Math.abs(myNetBalance), group.currency) })}
+                    ? t("settleFirstOwed", { amount: formatCurrency(myNetBalance, group.currency, locale) })
+                    : t("settleFirstOwe", { amount: formatCurrency(Math.abs(myNetBalance), group.currency, locale) })}
                 </p>
               </div>
             ) : (

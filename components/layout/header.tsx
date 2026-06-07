@@ -134,7 +134,7 @@ export function Header({ displayName, avatarUrl, userId, onMobileMenuToggle }: H
         {/* Mobile Menu */}
         <button
           onClick={onMobileMenuToggle}
-          aria-label="Toggle mobile menu"
+          aria-label={t('header.toggleMobileMenu')}
           className="flex h-8 w-8 items-center justify-center rounded-lg text-text-secondary hover:bg-surface-2 hover:text-text-primary transition-colors md:hidden"
         >
           <Menu className="h-5 w-5" />

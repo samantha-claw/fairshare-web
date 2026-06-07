@@ -3,6 +3,7 @@
 // ==========================================
 // 📦 IMPORTS
 // ==========================================
+import { useTranslations, useLocale } from "next-intl";
 import { formatCurrency } from "@/lib/utils";
 
 // ==========================================
@@ -24,6 +25,9 @@ export function SummaryCards({
   pendingCount,
   currency,
 }: SummaryCardsProps) {
+  const t = useTranslations("summaryCards");
+  const locale = useLocale();
+
   return (
     <div className="grid gap-4 sm:grid-cols-3">
       {/* Total Expenses */}
@@ -35,8 +39,8 @@ export function SummaryCards({
             </svg>
           </div>
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-text-secondary">Total Expenses</p>
-            <p className="text-xl font-bold text-text-primary">{formatCurrency(totalGroupExpenses, currency)}</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-text-secondary">{t("totalExpenses")}</p>
+            <p className="text-xl font-bold text-text-primary">{formatCurrency(totalGroupExpenses, currency, locale)}</p>
           </div>
         </div>
       </div>
@@ -62,7 +66,7 @@ export function SummaryCards({
             </svg>
           </div>
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-text-secondary">My Balance</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-text-secondary">{t("myBalance")}</p>
             <p
               className={`text-xl font-bold ${
                 myNetBalance > 0 ? "text-green-600" : myNetBalance < 0 ? "text-red-600" : "text-text-primary"
@@ -70,7 +74,7 @@ export function SummaryCards({
             >
               {myNetBalance > 0 && "+"}
               {myNetBalance < 0 && "-"}
-              {formatCurrency(Math.abs(myNetBalance), currency)}
+              {formatCurrency(Math.abs(myNetBalance), currency, locale)}
             </p>
           </div>
         </div>
@@ -93,7 +97,7 @@ export function SummaryCards({
             </svg>
           </div>
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-text-secondary">Pending</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-text-secondary">{t("pending")}</p>
             <p className="text-xl font-bold text-text-primary">{pendingCount}</p>
           </div>
         </div>

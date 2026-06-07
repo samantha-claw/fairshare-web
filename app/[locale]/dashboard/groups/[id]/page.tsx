@@ -164,7 +164,7 @@ export default function GroupDetailsPage() {
             <button
               onClick={() => setIsShareModalOpen(true)}
               className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-text-primary transition-all hover:bg-surface-2"
-              title="Share Group via QR"
+              title={t('groupDetail.shareTitle')}
             >
               <QrCode className="h-4 w-4" />
               <span className="hidden sm:inline">{t('groupDetail.share')}</span>
@@ -172,7 +172,7 @@ export default function GroupDetailsPage() {
             <button
               onClick={() => settingsCtl.setIsSettingsModalOpen(true)}
               className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-text-secondary transition-all hover:bg-surface-2"
-              title="Group Settings"
+              title={t('groupDetail.settingsTitle')}
             >
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">{t('groupDetail.settings')}</span>
@@ -308,6 +308,10 @@ export default function GroupDetailsPage() {
         initialSplits={expenseCtl.computedSplits}
         category={expenseCtl.category}
         onCategoryChange={expenseCtl.setCategory}
+        notes={expenseCtl.notes}
+        onNotesChange={expenseCtl.setNotes}
+        receiptUrl={expenseCtl.receiptUrl}
+        onReceiptUrlChange={expenseCtl.setReceiptUrl}
       />
 
       <SettleModal

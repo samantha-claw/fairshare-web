@@ -6,6 +6,7 @@
 import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { Check, Users, UserCheck, ArrowUpRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { Friend } from "@/types/friend";
 
 // ==========================================
@@ -20,9 +21,10 @@ interface FriendCardProps {
 // 🎨 PROFILE HOVER CARD (Premium Design)
 // ==========================================
 export function FriendCard({ friend, onRemove }: FriendCardProps) {
+  const t = useTranslations("friendCard");
   const displayName = friend.friend_display_name || friend.friend_username;
   const avatarUrl = friend.friend_avatar_url;
-  const description = "Fairshare user";
+  const description = t("userTagline");
 
   return (
     <motion.div
@@ -76,12 +78,12 @@ export function FriendCard({ friend, onRemove }: FriendCardProps) {
           <div className="flex items-center gap-1.5 text-text-secondary">
             <Users className="w-3.5 h-3.5" />
             <span className="font-semibold text-text-primary text-sm">0</span>
-            <span className="text-xs">followers</span>
+            <span className="text-xs">{t("followers")}</span>
           </div>
           <div className="flex items-center gap-1.5 text-text-secondary">
             <UserCheck className="w-3.5 h-3.5" />
             <span className="font-semibold text-text-primary text-sm">0</span>
-            <span className="text-xs">following</span>
+            <span className="text-xs">{t("following")}</span>
           </div>
         </div>
 
@@ -97,7 +99,7 @@ export function FriendCard({ friend, onRemove }: FriendCardProps) {
               className="w-full cursor-pointer py-2.5 px-4 rounded-xl font-semibold text-sm transition-all duration-200 border border-border/20 shadow-sm bg-foreground text-background hover:bg-foreground/90 flex items-center justify-center gap-2"
             >
               <ArrowUpRight className="h-4 w-4" />
-              View Profile
+              {t("viewProfile")}
             </motion.button>
           </Link>
           <motion.button
@@ -109,7 +111,7 @@ export function FriendCard({ friend, onRemove }: FriendCardProps) {
             }}
             className="cursor-pointer py-2.5 px-4 rounded-xl font-semibold text-sm transition-all duration-200 border border-border/20 shadow-sm bg-surface-2 text-text-secondary hover:bg-negative-bg hover:text-negative hover:border-destructive/30"
           >
-            Remove
+            {t("remove")}
           </motion.button>
         </div>
       </motion.div>
