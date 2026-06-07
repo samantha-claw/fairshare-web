@@ -45,6 +45,7 @@ function PasswordInput({
   disabled: boolean;
   ariaDescribedBy?: string;
 }) {
+  const t = useTranslations();
   const [show, setShow] = useState(false);
   return (
     <div className="relative">
@@ -64,7 +65,7 @@ function PasswordInput({
         onClick={() => setShow((s) => !s)}
         aria-pressed={show}
         className="absolute end-3 top-1/2 -translate-y-1/2 text-text-tertiary transition-colors hover:text-text-secondary"
-        aria-label={show ? "Hide password" : "Show password"}
+        aria-label={show ? t("auth.login.hidePassword") : t("auth.login.showPassword")}
       >
         {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
       </button>

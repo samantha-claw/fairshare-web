@@ -350,7 +350,7 @@ export function AnalysisTab({
         e.profiles?.display_name ||
         e.profiles?.full_name ||
         e.profiles?.username ||
-        "Unknown";
+        tCommon("unknown");
       const existing = map.get(e.paid_by) || { name, amount: 0 };
       existing.amount += Number(e.amount);
       map.set(e.paid_by, existing);
