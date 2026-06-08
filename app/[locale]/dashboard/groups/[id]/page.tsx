@@ -5,7 +5,7 @@
 // ==========================================
 import { useState, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FloatingActionMenu } from "@/components/ui/floating-action-menu";
@@ -48,6 +48,7 @@ export default function GroupDetailsPage() {
   const groupId = params.id as string;
   const supabase = createClient();
   const t = useTranslations();
+  const locale = useLocale();
 
   /* ── Compose focused hooks ───────────────────────────── */
   const data = useGroupData(groupId);
@@ -173,6 +174,7 @@ export default function GroupDetailsPage() {
                 completedSettlements: data.completedSettlements,
                 totalGroupExpenses: data.totalGroupExpenses,
                 currentUserId: data.currentUser,
+                locale,
               } as GroupExportData}
             />
             <button

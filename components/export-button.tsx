@@ -1,9 +1,7 @@
 "use client";
 
-// ==========================================
-// 📤 EXPORT BUTTON — DROPDOWN WITH PDF/CSV OPTIONS
-// ==========================================
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Download, FileText, FileSpreadsheet, Loader2 } from "lucide-react";
 import {
   exportGroupPDF,
@@ -12,24 +10,19 @@ import {
   type GroupExportData,
 } from "@/lib/export";
 
-// ==========================================
-// 🧩 PROPS
-// ==========================================
 interface ExportButtonProps {
   data: GroupExportData;
   className?: string;
 }
 
-// ==========================================
-// 🎨 EXPORT BUTTON COMPONENT
-// ==========================================
 export function ExportButton({ data, className = "" }: ExportButtonProps) {
+  const t = useTranslations("groupDetail.export");
+  const locale = useLocale();
   const [isOpen, setIsOpen] = useState(false);
   const [exportingPDF, setExportingPDF] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -41,36 +34,30 @@ export function ExportButton({ data, className = "" }: ExportButtonProps) {
         setIsOpen(false);
       }
     }
-
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  // Close on Escape
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setIsOpen(false);
-        buttonRef.current?.focus();
-      }
-    },
-    []
-  );
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      setIsOpen(false);
+      buttonRef.current?.focus();
+    }
+  }, []);
 
-  // ── Export Handlers ─────────────────────────────
   const handlePDF = useCallback(async () => {
     setExportingPDF(true);
     setIsOpen(false);
     try {
-      await exportGroupPDF(data);
+      await exportGroupPDF({ ...data, locale });
     } catch (err) {
       console.error("PDF export failed:", err);
     } finally {
       setExportingPDF(false);
     }
-  }, [data]);
+  }, [data, locale]);
 
   const handleExpensesCSV = useCallback(() => {
     exportGroupExpensesCSV(data);
@@ -82,42 +69,36 @@ export function ExportButton({ data, className = "" }: ExportButtonProps) {
     setIsOpen(false);
   }, [data]);
 
-  // ================================================
-  // 🎨 RENDER
-  // ================================================
   return (
     <div className="relative inline-flex" onKeyDown={handleKeyDown}>
-      {/* ── Trigger Button ──────────────────────── */}
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         disabled={exportingPDF}
         className={`flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-text-primary transition-all hover:bg-surface-2 disabled:opacity-60 ${className}`}
-        title="Export Report"
+        title={t("download")}
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
         {exportingPDF ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span className="hidden sm:inline">Exporting…</span>
+            <span className="hidden sm:inline">{t("generating")}</span>
           </>
         ) : (
           <>
             <Download className="h-4 w-4" />
-            <span className="hidden sm:inline">Export</span>
+            <span className="hidden sm:inline">{t("download")}</span>
           </>
         )}
       </button>
 
-      {/* ── Dropdown Menu ───────────────────────── */}
       {isOpen && (
         <div
           ref={menuRef}
           role="menu"
           className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-border bg-surface shadow-xl animate-in slide-in-from-top-2"
         >
-          {/* PDF Option */}
           <button
             role="menuitem"
             onClick={handlePDF}
@@ -127,14 +108,11 @@ export function ExportButton({ data, className = "" }: ExportButtonProps) {
               <FileText className="h-4 w-4" />
             </span>
             <div className="flex flex-col">
-              <span className="font-medium">Full Report (PDF)</span>
-              <span className="text-xs text-text-muted">
-                Professional document with all details
-              </span>
+              <span className="font-medium">{t("pdfTitle")}</span>
+              <span className="text-xs text-text-secondary">{t("pdfDesc")}</span>
             </div>
           </button>
 
-          {/* CSV — Expenses */}
           <button
             role="menuitem"
             onClick={handleExpensesCSV}
@@ -144,14 +122,11 @@ export function ExportButton({ data, className = "" }: ExportButtonProps) {
               <FileSpreadsheet className="h-4 w-4" />
             </span>
             <div className="flex flex-col">
-              <span className="font-medium">Expenses (CSV)</span>
-              <span className="text-xs text-text-muted">
-                Spreadsheet-ready expenses list
-              </span>
+              <span className="font-medium">{t("csvTitle")}</span>
+              <span className="text-xs text-text-secondary">{t("csvDesc")}</span>
             </div>
           </button>
 
-          {/* CSV — Balances */}
           <button
             role="menuitem"
             onClick={handleBalancesCSV}
@@ -161,10 +136,8 @@ export function ExportButton({ data, className = "" }: ExportButtonProps) {
               <FileSpreadsheet className="h-4 w-4" />
             </span>
             <div className="flex flex-col">
-              <span className="font-medium">Balances (CSV)</span>
-              <span className="text-xs text-text-muted">
-                Member balance summary
-              </span>
+              <span className="font-medium">{t("balancesTitle")}</span>
+              <span className="text-xs text-text-secondary">{t("balancesDesc")}</span>
             </div>
           </button>
         </div>

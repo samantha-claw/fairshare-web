@@ -399,11 +399,48 @@
     "noFriendsYet": "No friends yet",
     "noFriendsHint": "Search for people above and send them a friend request to get started."
   },
+  "exportPdf": {
+    "totalExpenses": "Total Expenses",
+    "yourBalance": "Your Balance",
+    "settlements": "Settlements",
+    "expensesSection": "EXPENSES",
+    "expensesRecorded": "{count} expense{count, plural, =1 {} other {s}} recorded",
+    "date": "Date",
+    "description": "Description",
+    "category": "Category",
+    "paidBy": "Paid By",
+    "amount": "Amount",
+    "yourShare": "Your Share",
+    "total": "TOTAL",
+    "noExpenses": "No expenses recorded yet",
+    "balancesSection": "BALANCES",
+    "whoOwesWhom": "Who owes whom in {name}",
+    "youLabel": "(You)",
+    "paidLabel": "Paid:",
+    "owedLabel": "Owed:",
+    "settlementsSection": "SETTLEMENTS",
+    "completedPending": "{completed} completed · {pending} pending",
+    "paidVerb": "paid",
+    "generatedOn": "Generated on {date}",
+    "unknown": "Unknown",
+    "membersCount": "{count} Member{count, plural, =1 {} other {s}}",
+    "createdLabel": "Created"
+  },
   "groupDetail": {
     "share": "Share",
     "settings": "Settings",
     "shareTitle": "Share Group via QR",
-    "settingsTitle": "Group Settings"
+    "settingsTitle": "Group Settings",
+    "export": {
+      "download": "Export",
+      "generating": "Exporting…",
+      "pdfTitle": "Full Report (PDF)",
+      "pdfDesc": "Professional document with all details",
+      "csvTitle": "Expenses (CSV)",
+      "csvDesc": "Spreadsheet-ready expenses list",
+      "balancesTitle": "Balances (CSV)",
+      "balancesDesc": "Member balance summary"
+    }
   },
   "groupSettings": {
     "modalTitle": "Group Settings",

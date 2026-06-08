@@ -407,11 +407,48 @@
     "noFriendsYet": "لا يوجد أصدقاء بعد",
     "noFriendsHint": "ابحث عن أشخاص أعلاه وأرسل لهم طلب صداقة للبدء."
   },
+  "exportPdf": {
+    "totalExpenses": "إجمالي المصاريف",
+    "yourBalance": "رصيدك",
+    "settlements": "التسويات",
+    "expensesSection": "المصاريف",
+    "expensesRecorded": "{count} مصروف{count, plural, =1 {} other {ات}} مسجل",
+    "date": "التاريخ",
+    "description": "الوصف",
+    "category": "الفئة",
+    "paidBy": "دفعها",
+    "amount": "المبلغ",
+    "yourShare": "حصتك",
+    "total": "الإجمالي",
+    "noExpenses": "لا توجد مصاريف مسجلة بعد",
+    "balancesSection": "الأرصدة",
+    "whoOwesWhom": "من يدين لمن في {name}",
+    "youLabel": "(أنت)",
+    "paidLabel": "دفع:",
+    "owedLabel": "مستحق:",
+    "settlementsSection": "التسويات",
+    "completedPending": "{completed} مكتملة · {pending} معلقة",
+    "paidVerb": "دفع",
+    "generatedOn": "تم الإنشاء في {date}",
+    "unknown": "غير معروف",
+    "membersCount": "{count} عضو{count, plural, =1 {} other {}}",
+    "createdLabel": "أُنشئت"
+  },
   "groupDetail": {
     "share": "مشاركة",
     "settings": "الإعدادات",
     "shareTitle": "مشاركة المجموعة عبر QR",
-    "settingsTitle": "إعدادات المجموعة"
+    "settingsTitle": "إعدادات المجموعة",
+    "export": {
+      "download": "تصدير",
+      "generating": "جارٍ التصدير…",
+      "pdfTitle": "التقرير الكامل (PDF)",
+      "pdfDesc": "مستند احترافي بجميع التفاصيل",
+      "csvTitle": "المصاريف (CSV)",
+      "csvDesc": "قائمة المصاريف بتنسيق جدول",
+      "balancesTitle": "الأرصدة (CSV)",
+      "balancesDesc": "ملخص أرصدة الأعضاء"
+    }
   },
   "groupSettings": {
     "modalTitle": "إعدادات المجموعة",

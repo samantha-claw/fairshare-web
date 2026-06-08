@@ -20,13 +20,14 @@ export interface GroupExportData {
   completedSettlements: Settlement[];
   totalGroupExpenses: number;
   currentUserId?: string | null;
+  locale?: string;
 }
 
 // ==========================================
 // 📄 PDF EXPORT
 // ==========================================
 export async function exportGroupPDF(data: GroupExportData): Promise<void> {
-  const doc = GroupReportDocument(data);
+  const doc = GroupReportDocument({ ...data, locale: data.locale || "en" });
   const blob = await pdf(doc).toBlob();
 
   const fileName = `FairShare_${sanitizeFileName(data.group.name)}_Report.pdf`;
