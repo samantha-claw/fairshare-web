@@ -403,7 +403,17 @@
     "share": "Share",
     "settings": "Settings",
     "shareTitle": "Share Group via QR",
-    "settingsTitle": "Group Settings"
+    "settingsTitle": "Group Settings",
+    "export": {
+      "download": "Export",
+      "generating": "Generating…",
+      "csvTitle": "Expenses (CSV)",
+      "csvDesc": "Spreadsheet-ready expenses list",
+      "pdfTitle": "Full Report (PDF)",
+      "pdfDesc": "Professional document with all details",
+      "balancesTitle": "Balances (CSV)",
+      "balancesDesc": "Member balance summary"
+    }
   },
   "groupSettings": {
     "modalTitle": "Group Settings",
