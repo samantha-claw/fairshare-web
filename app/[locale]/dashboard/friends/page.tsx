@@ -121,7 +121,7 @@ export default function FriendsPage() {
                 {t('friends.title')}
               </h1>
               <p className="text-sm text-text-secondary">
-                {hasFriends ? t('dashboard.connections', { count: f.friends.length }) : "Manage your connections"}
+                {hasFriends ? t('dashboard.connections', { count: f.friends.length }) : t('dashboard.manageConnections')}
                 {f.pendingRequests.length > 0 && ` · ${f.pendingRequests.length} ${t('dashboard.pending')}`}
               </p>
             </div>

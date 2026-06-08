@@ -16,7 +16,8 @@
     "cancel": "إلغاء",
     "cancelling": "جارٍ الإلغاء",
     "addFriend": "إضافة صديق",
-    "sending": "جارٍ الإرسال"
+    "sending": "جارٍ الإرسال",
+    "unknownUser": "مستخدم غير معروف"
   },
   "addFriendsPage": {
     "backToFriends": "العودة إلى الأصدقاء",
@@ -263,7 +264,8 @@
     "outstandingDebts": "ديون مستحقة",
     "pendingPayments": "مدفوعات معلّقة",
     "youOweTitle": "مستحق عليك",
-    "youAreOwedTitle": "مستحق لك"
+    "youAreOwedTitle": "مستحق لك",
+    "manageConnections": "إدارة اتصالاتك"
   },
   "deleteAccount": {
     "button": "حذف الحساب",

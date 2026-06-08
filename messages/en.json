@@ -12,7 +12,8 @@
     "cancel": "Cancel",
     "cancelling": "Cancelling",
     "addFriend": "Add Friend",
-    "sending": "Sending"
+    "sending": "Sending",
+    "unknownUser": "Unknown User"
   },
   "addFriendsPage": {
     "backToFriends": "Back to Friends",
@@ -255,7 +256,8 @@
     "outstandingDebts": "Outstanding debts",
     "pendingPayments": "Pending payments",
     "youAreOwedTitle": "You are owed",
-    "youOweTitle": "You owe"
+    "youOweTitle": "You owe",
+    "manageConnections": "Manage your connections"
   },
   "deleteAccount": {
     "button": "Delete Account",

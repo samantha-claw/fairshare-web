@@ -35,14 +35,14 @@ export interface AddFriendSearchHandle {
 // ==========================================
 // ⚙️ LOGIC
 // ==========================================
-function resolveDisplayName(user: SearchResultUser): string {
+function resolveDisplayName(user: SearchResultUser, t?: ReturnType<typeof useTranslations>): string {
   if (user.display_name && user.display_name.trim().length > 0) {
     return user.display_name.trim();
   }
   if (user.username && user.username.trim().length > 0) {
     return user.username.trim();
   }
-  return "Unknown User";
+  return t ? t("unknownUser") : "Unknown User";
 }
 
 function resolveUsername(user: SearchResultUser): string {
@@ -157,7 +157,7 @@ export const AddFriendSearch = forwardRef<AddFriendSearchHandle, AddFriendSearch
                   const outgoingId = getOutgoingRequestId(user.id);
                   const isSending = sendingToId === user.id;
                   const isCancelling = outgoingId ? cancellingId === outgoingId : false;
-                  const displayName = resolveDisplayName(user);
+                  const displayName = resolveDisplayName(user, t);
                   const username = resolveUsername(user);
 
                   return (
