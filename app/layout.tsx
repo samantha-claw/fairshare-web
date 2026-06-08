@@ -1,38 +1,38 @@
-import type { Metadata, Viewport } from "next";
-import "./globals.css";
+import { Inter, IBM_Plex_Sans_Arabic } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import { ToastProvider } from "@/providers/toast-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
+import "./globals.css";
 
-export const metadata: Metadata = {
-  title: "FairShare",
-  description: "Financial collaboration made simple",
-  manifest: "/manifest.json",
-  icons: {
-    apple: "/apple-icon.png",
-  },
-};
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const ibmPlexArabic = IBM_Plex_Sans_Arabic({
+  weight: ["400", "500", "600", "700"],
+  subsets: ["arabic"],
+  variable: "--font-arabic",
+});
 
-export const viewport: Viewport = {
-  themeColor: "#111111",
-};
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+  const isRtl = locale === "ar";
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang={locale}
+      dir={isRtl ? "rtl" : "ltr"}
+      suppressHydrationWarning
+      className={`${inter.variable} ${ibmPlexArabic.variable} ${isRtl ? "font-arabic" : ""}`}
+    >
       <head>
-        {/* FOUC prevention script — runs before React hydrates. Reads localStorage and sets the correct class on <html> so there is never a flash of the wrong theme. */}
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;if(t==='dark'||(t===null&&d)){document.documentElement.classList.add('dark');}}catch(e){}})();`,
           }}
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
         />
         <link
           href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined"
@@ -40,9 +40,11 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-surface text-text-primary antialiased">
-        <ThemeProvider>
-          <ToastProvider>{children}</ToastProvider>
-        </ThemeProvider>
+        <NextIntlClientProvider messages={messages}>
+          <ThemeProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </ThemeProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

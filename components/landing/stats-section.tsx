@@ -2,14 +2,8 @@
 
 import { motion, useSpring, useInView, useTransform } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Users, Receipt, Globe, TrendingUp } from "lucide-react";
-
-const stats = [
-  { icon: Users, value: 10000, label: "Active Users", suffix: "+" },
-  { icon: Receipt, value: 50000, label: "Expenses Tracked", suffix: "+" },
-  { icon: Globe, value: 50, label: "Countries", suffix: "+" },
-  { icon: TrendingUp, value: 2, label: "Million USD Tracked", suffix: "M+" },
-];
 
 function StatCounter({
   icon: Icon,
@@ -67,6 +61,15 @@ function StatCounter({
 }
 
 export function StatsSection() {
+  const t = useTranslations("landing.stats");
+
+  const stats = [
+    { icon: Users, value: 10000, label: t("activeUsers"), suffix: "+" },
+    { icon: Receipt, value: 50000, label: t("expensesTracked"), suffix: "+" },
+    { icon: Globe, value: 50, label: t("countries"), suffix: "+" },
+    { icon: TrendingUp, value: 2, label: t("usdTracked"), suffix: "M+" },
+  ];
+
   return (
     <section className="py-24 px-4 sm:px-6 bg-surface">
       <div className="mx-auto max-w-6xl">
@@ -79,13 +82,13 @@ export function StatsSection() {
           className="text-center mb-16"
         >
           <span className="text-sm font-medium text-text-secondary uppercase tracking-wide">
-            Our Impact
+            {t("sectionLabel")}
           </span>
           <h2 className="mt-4 text-3xl font-bold text-text-primary sm:text-4xl">
-            Trusted by thousands worldwide
+            {t("title")}
           </h2>
           <p className="mt-4 max-w-2xl mx-auto text-text-secondary">
-            Join a growing community of users who've simplified their expense tracking.
+            {t("subtitle")}
           </p>
         </motion.div>
 

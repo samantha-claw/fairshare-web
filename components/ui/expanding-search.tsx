@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, X } from "lucide-react";
 import { useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 
 interface ExpandingSearchDockProps {
   onSearch?: (query: string) => void;
@@ -11,8 +12,10 @@ interface ExpandingSearchDockProps {
 
 export function ExpandingSearchDock({
   onSearch,
-  placeholder = "Search...",
+  placeholder,
 }: ExpandingSearchDockProps) {
+  const t = useTranslations("expandingSearch");
+  const resolvedPlaceholder = placeholder ?? t("placeholder");
   const [isExpanded, setIsExpanded] = useState(false);
   const [query, setQuery] = useState("");
 
@@ -46,7 +49,7 @@ export function ExpandingSearchDock({
             exit={{ scale: 0, opacity: 0 }}
             onClick={handleExpand}
             className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-surface transition-colors hover:bg-surface-2"
-            aria-label="Open search"
+            aria-label={t("openSearch")}
           >
             <Search className="h-4 w-4 text-text-secondary" />
           </motion.button>
@@ -72,7 +75,7 @@ export function ExpandingSearchDock({
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder={placeholder}
+                placeholder={resolvedPlaceholder}
                 autoFocus
                 className="h-8 flex-1 bg-transparent pr-2 text-sm text-text-primary outline-none placeholder:text-text-tertiary"
               />
@@ -84,7 +87,7 @@ export function ExpandingSearchDock({
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 className="mr-2 flex h-6 w-6 items-center justify-center rounded-md hover:bg-surface-2 transition-colors"
-                aria-label="Close search"
+                aria-label={t("closeSearch")}
               >
                 <X className="h-3.5 w-3.5 text-text-secondary" />
               </motion.button>

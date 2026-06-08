@@ -2,6 +2,7 @@
 "use client";
 
 import { Check, X, AlertCircle, Info } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { Toast } from "@/hooks/use-toast";
 
 const ICONS = {
@@ -22,13 +23,14 @@ interface ToastContainerProps {
 }
 
 export function ToastContainer({ toasts, onDismiss }: ToastContainerProps) {
+  const t = useTranslations("toastContainer");
   if (toasts.length === 0) return null;
 
   return (
     <div
-      className="fixed right-4 top-4 z-[200] space-y-2"
+      className="fixed end-4 top-4 z-[200] space-y-2"
       role="region"
-      aria-label="Notifications"
+      aria-label={t("regionLabel")}
       aria-live="polite"
     >
       {toasts.map((toast) => (
@@ -41,8 +43,8 @@ export function ToastContainer({ toasts, onDismiss }: ToastContainerProps) {
           <span className="flex-1 max-w-xs">{toast.message}</span>
           <button
             onClick={() => onDismiss(toast.id)}
-            className="ml-2 rounded-full p-0.5 opacity-60 transition-opacity hover:opacity-100"
-            aria-label="Dismiss"
+            className="ms-2 rounded-full p-0.5 opacity-60 transition-opacity hover:opacity-100"
+            aria-label={t("dismiss")}
           >
             <X className="h-3.5 w-3.5" />
           </button>

@@ -28,5 +28,8 @@ export interface RecentExpense {
   created_at: string;
   group_id: string;
   paid_by_profile: { display_name: string; avatar_url: string } | null;
-  expense_group: { name: string } | null;
+  expense_group: { name: string; currency?: string } | null;
+  category?: string;
+  split_type?: string;
+  currency?: string;
 }

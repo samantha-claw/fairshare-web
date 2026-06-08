@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import FocusTrap from "focus-trap-react";
 import { AlertTriangle } from "lucide-react";
 
@@ -14,11 +15,12 @@ interface ConfirmDialogProps {
 
 export function ConfirmDialog({
   message,
-  confirmLabel = "Confirm",
-  cancelLabel = "Cancel",
+  confirmLabel,
+  cancelLabel,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const t = useTranslations();
   const cancelRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -68,7 +70,7 @@ export function ConfirmDialog({
                 id="confirm-dialog-title"
                 className="text-base font-semibold text-text-primary"
               >
-                Are you sure?
+                {t('confirmDialog.title')}
               </h3>
               <p
                 id="confirm-dialog-desc"
@@ -86,14 +88,14 @@ export function ConfirmDialog({
               onClick={onCancel}
               className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-surface-2 focus:outline-none focus:ring-2 focus:ring-gray-300"
             >
-              {cancelLabel}
+              {cancelLabel ?? t('common.cancel')}
             </button>
             <button
               type="button"
               onClick={onConfirm}
               className="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
             >
-              {confirmLabel}
+              {confirmLabel ?? t('common.confirm')}
             </button>
           </div>
         </div>

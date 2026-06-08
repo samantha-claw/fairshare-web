@@ -1,40 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { Users, Wallet, Receipt, QrCode, Bell, TrendingUp, ArrowRight, Check } from "lucide-react";
-
-const features = [
-  {
-    icon: Users,
-    title: "Group Expense Tracking",
-    description: "Create unlimited groups for roommates, trips, or events. Everyone sees the same balances in real-time.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Smart Settlements",
-    description: "Our algorithm calculates the minimum number of transactions to settle all debts. No more payment chains.",
-  },
-  {
-    icon: Receipt,
-    title: "Easy Expense Entry",
-    description: "Add expenses in seconds with descriptions, categories, and custom splits. Split equally or by percentage.",
-  },
-  {
-    icon: QrCode,
-    title: "QR Code Invites",
-    description: "Share a QR code to instantly add members to your group. No more typing emails or usernames.",
-  },
-  {
-    icon: Bell,
-    title: "Real-time Notifications",
-    description: "Get notified when expenses are added or someone settles up. Stay on top of your group activity.",
-  },
-  {
-    icon: Wallet,
-    title: "Balance Dashboard",
-    description: "See at a glance who owes what. Clear visualization of your financial position across all groups.",
-  },
-];
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -58,6 +26,41 @@ const itemVariants = {
 };
 
 export function FeaturesSection() {
+  const t = useTranslations("landing.features");
+
+  const features = [
+    {
+      icon: Users,
+      title: t("items.groupSplitting"),
+      description: t("items.groupSplittingDesc"),
+    },
+    {
+      icon: TrendingUp,
+      title: t("items.smartSettlements"),
+      description: t("items.smartSettlementsDesc"),
+    },
+    {
+      icon: Receipt,
+      title: t("items.easyExpense"),
+      description: t("items.easyExpenseDesc"),
+    },
+    {
+      icon: QrCode,
+      title: t("items.qrInvites"),
+      description: t("items.qrInvitesDesc"),
+    },
+    {
+      icon: Bell,
+      title: t("items.notifications"),
+      description: t("items.notificationsDesc"),
+    },
+    {
+      icon: Wallet,
+      title: t("items.balanceDashboard"),
+      description: t("items.balanceDashboardDesc"),
+    },
+  ];
+
   return (
     <section id="features" className="py-24 px-4 sm:px-6 bg-background">
       <div className="mx-auto max-w-6xl">
@@ -70,14 +73,13 @@ export function FeaturesSection() {
           className="text-center mb-16"
         >
           <span className="text-sm font-medium text-text-secondary uppercase tracking-wide">
-            Features
+            {t("sectionLabel")}
           </span>
           <h2 className="mt-4 text-3xl font-bold text-text-primary sm:text-4xl">
-            Everything you need to split fairly
+            {t("title")}
           </h2>
           <p className="mt-4 max-w-2xl mx-auto text-text-secondary">
-            Built for simplicity. No ads, no premium tiers, no hidden costs. 
-            Just honest expense tracking that works.
+            {t("subtitle")}
           </p>
         </motion.div>
 

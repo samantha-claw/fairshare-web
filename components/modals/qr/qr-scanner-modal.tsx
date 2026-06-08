@@ -4,7 +4,8 @@
 // 📦 IMPORTS
 // ==========================================
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui/modal";
 import {
   X,
@@ -46,6 +47,13 @@ export function QRScannerModal({
   const scannerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const t = useTranslations("qrScannerModal");
+
+  // ── Build handleScannedUrl with stable refs to t() translations ──
+  const notFairShareLink = t("notFairShareLink");
+  const unrecognized = t("unrecognized");
+  const permissionMsg = t("permissionMsg");
+  const failedCamera = t("failedCamera");
 
   // ── Cleanup scanner ──────────────────────────────────
   const stopScanner = useCallback(async () => {
@@ -118,16 +126,16 @@ export function QRScannerModal({
         }
 
         // External / unknown
-        setErrorMessage("This QR code is not a FairShare link.");
+        setErrorMessage(notFairShareLink);
         setState("error");
         setTimeout(() => setState("scanning"), 2500);
       } catch {
-        setErrorMessage("Unrecognized QR code format.");
+        setErrorMessage(unrecognized);
         setState("error");
         setTimeout(() => setState("scanning"), 2500);
       }
     },
-    [onClose, onGroupScanned, router, stopScanner]
+    [onClose, onGroupScanned, router, stopScanner, notFairShareLink, unrecognized]
   );
 
   // ── Start scanner when modal opens ───────────────────
@@ -175,13 +183,11 @@ export function QRScannerModal({
           err?.toString().includes("Permission")
         ) {
           setState("permission_denied");
-          setErrorMessage(
-            "Camera access was denied. Please allow camera access in your browser settings."
-          );
+          setErrorMessage(permissionMsg);
         } else {
           setState("error");
           setErrorMessage(
-            err?.message || "Failed to start camera. Please try again."
+            err?.message || failedCamera
           );
         }
       }
@@ -194,7 +200,7 @@ export function QRScannerModal({
       clearTimeout(timer);
       stopScanner();
     };
-  }, [isOpen, handleScannedUrl, stopScanner]);
+  }, [isOpen, handleScannedUrl, stopScanner, permissionMsg, failedCamera]);
 
   // ── Close handler (stops scanner first) ──────────────
   const handleClose = useCallback(() => {
@@ -203,7 +209,7 @@ export function QRScannerModal({
   }, [onClose, stopScanner]);
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Scan QR Code" maxWidth="sm" position="center">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t("title")} maxWidth="sm" position="center">
       {/* Dark-themed container covers the Modal's white bg */}
       <div className="overflow-hidden bg-gray-950">
         {/* ── Header ── */}
@@ -213,9 +219,9 @@ export function QRScannerModal({
               <QrCode className="h-5 w-5 text-indigo-400" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white">Scan QR Code</h2>
+              <h2 className="text-base font-bold text-white">{t("title")}</h2>
               <p className="text-xs text-text-tertiary">
-                Point your camera at a FairShare QR
+                {t("subtitle")}
               </p>
             </div>
           </div>
@@ -238,11 +244,11 @@ export function QRScannerModal({
           {state === "scanning" && (
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
               <div className="relative h-64 w-64">
-                <div className="absolute left-0 top-0 h-8 w-8 rounded-tl-lg border-l-[3px] border-t-[3px] border-indigo-400" />
-                <div className="absolute right-0 top-0 h-8 w-8 rounded-tr-lg border-r-[3px] border-t-[3px] border-indigo-400" />
-                <div className="absolute bottom-0 left-0 h-8 w-8 rounded-bl-lg border-b-[3px] border-l-[3px] border-indigo-400" />
-                <div className="absolute bottom-0 right-0 h-8 w-8 rounded-br-lg border-b-[3px] border-r-[3px] border-indigo-400" />
-                <div className="absolute left-2 right-2 top-0 h-0.5 animate-[scanline_2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-indigo-400 to-transparent" />
+                <div className="absolute start-0 top-0 h-8 w-8 rounded-tl-lg border-l-[3px] border-t-[3px] border-indigo-400" />
+                <div className="absolute end-0 top-0 h-8 w-8 rounded-tr-lg border-r-[3px] border-t-[3px] border-indigo-400" />
+                <div className="absolute bottom-0 start-0 h-8 w-8 rounded-bl-lg border-b-[3px] border-l-[3px] border-indigo-400" />
+                <div className="absolute bottom-0 end-0 h-8 w-8 rounded-br-lg border-b-[3px] border-r-[3px] border-indigo-400" />
+                <div className="absolute start-2 end-2 top-0 h-0.5 animate-[scanline_2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-indigo-400 to-transparent" />
               </div>
               <div
                 className="absolute inset-0 bg-black/40"
@@ -260,7 +266,7 @@ export function QRScannerModal({
           {state === "initializing" && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-950">
               <Loader2 className="mb-3 h-8 w-8 animate-spin text-indigo-400" />
-              <p className="text-sm text-text-tertiary">Starting camera…</p>
+              <p className="text-sm text-text-tertiary">{t("startingCamera")}</p>
             </div>
           )}
 
@@ -271,7 +277,7 @@ export function QRScannerModal({
                 <CameraOff className="h-8 w-8 text-red-400" />
               </div>
               <h3 className="text-base font-bold text-white">
-                Camera Access Denied
+                {t("permissionDenied")}
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-text-tertiary">
                 {errorMessage}
@@ -280,7 +286,7 @@ export function QRScannerModal({
                 onClick={handleClose}
                 className="mt-5 rounded-xl bg-surface/10 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-surface/20"
               >
-                Close
+                {t("close")}
               </button>
             </div>
           )}
@@ -292,7 +298,7 @@ export function QRScannerModal({
                 <Camera className="h-8 w-8 text-emerald-400" />
               </div>
               <p className="text-sm font-semibold text-emerald-400">
-                QR Code detected!
+                {t("detected")}
               </p>
               <p className="mt-1 max-w-[80%] truncate text-xs text-text-secondary">
                 {scannedValue}
@@ -313,7 +319,7 @@ export function QRScannerModal({
         {/* ── Footer ── */}
         <div className="border-t border-white/10 px-5 py-4">
           <p className="text-center text-xs text-text-secondary">
-            Scan a FairShare group invite or profile QR code
+            {t("footer")}
           </p>
         </div>
       </div>

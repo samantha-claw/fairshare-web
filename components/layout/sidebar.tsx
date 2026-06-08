@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { LayoutDashboard, Users, FolderOpen, Settings, LogOut, Sun, Moon, User, Bell } from "lucide-react";
 import { useTheme } from "@/providers/theme-provider";
 
@@ -14,11 +15,11 @@ interface SidebarProps {
 }
 
 const NAV_ITEMS = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Groups", href: "/dashboard/groups", icon: FolderOpen },
-  { label: "Friends", href: "/dashboard/friends", icon: Users },
-  { label: "Notifications", href: "/dashboard/notifications", icon: Bell },
-  { label: "Settings", href: "/dashboard/settings", icon: Settings },
+  { label: "Dashboard", translationKey: "sidebar.dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Groups", translationKey: "sidebar.groups", href: "/dashboard/groups", icon: FolderOpen },
+  { label: "Friends", translationKey: "sidebar.friends", href: "/dashboard/friends", icon: Users },
+  { label: "Notifications", translationKey: "sidebar.notifications", href: "/dashboard/notifications", icon: Bell },
+  { label: "Settings", translationKey: "sidebar.settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -29,6 +30,7 @@ function isActive(pathname: string, href: string): boolean {
 export function Sidebar({ displayName, avatarUrl, onSignOut, isMobile = false }: SidebarProps) {
   const pathname = usePathname();
   const { isDark, toggle } = useTheme();
+  const t = useTranslations();
   const initials = displayName
     ? displayName
         .split(" ")
@@ -53,13 +55,13 @@ export function Sidebar({ displayName, avatarUrl, onSignOut, isMobile = false }:
             <span className="text-xs font-black text-sidebar-logo-text">FS</span>
           </div>
           <span className="font-bold text-base tracking-tight text-sidebar-active">
-            FairShare
+            {t('common.appName')}
           </span>
         </Link>
 
         {/* ── Nav ── */}
         <nav className="space-y-0.5">
-          {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
+          {NAV_ITEMS.map(({ translationKey, href, icon: Icon }) => {
             const active = isActive(pathname, href);
             return (
               <Link
@@ -72,7 +74,7 @@ export function Sidebar({ displayName, avatarUrl, onSignOut, isMobile = false }:
                 }`}
               >
                 <Icon className="h-4 w-4 flex-shrink-0" />
-                {label}
+                {t(translationKey as any)}
               </Link>
             );
           })}
@@ -91,7 +93,7 @@ export function Sidebar({ displayName, avatarUrl, onSignOut, isMobile = false }:
           }`}
         >
           <User className="h-4 w-4 flex-shrink-0" />
-          <span className="truncate">{displayName || "Profile"}</span>
+          <span className="truncate">{displayName || t('common.profile')}</span>
         </Link>
 
         {/* Theme toggle */}
@@ -104,7 +106,7 @@ export function Sidebar({ displayName, avatarUrl, onSignOut, isMobile = false }:
           ) : (
             <Moon className="h-4 w-4 flex-shrink-0" />
           )}
-          {isDark ? "Light mode" : "Dark mode"}
+          {isDark ? t('common.lightMode') : t('common.darkMode')}
         </button>
 
         {/* Sign out */}
@@ -113,7 +115,7 @@ export function Sidebar({ displayName, avatarUrl, onSignOut, isMobile = false }:
           className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-sidebar-text hover:bg-negative-bg hover:text-negative transition-colors"
         >
           <LogOut className="h-4 w-4 flex-shrink-0" />
-          Sign out
+          {t('sidebar.signOut')}
         </button>
       </div>
     </aside>
