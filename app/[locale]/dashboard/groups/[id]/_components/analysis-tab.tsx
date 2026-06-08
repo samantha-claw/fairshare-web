@@ -281,7 +281,7 @@ export function AnalysisTab({
   const TIME_RANGES_LOCAL = TIME_RANGES.map(r => r.value === "all" ? { ...r, label: t("all") } : r);
   const locale = useLocale();
   const dateLocale = locale === "ar" ? "ar-SA" : "en-US";
-  const [timeRange, setTimeRange] = useState<TimeRange>("all");
+  const [timeRange, setTimeRange] = useState<TimeRange>("week");
 
   // ── Filtered Expenses by Time Range ──
   const filteredExpenses = useMemo(() => {
