@@ -121,7 +121,7 @@ export default function FriendsPage() {
                 {t('friends.title')}
               </h1>
               <p className="text-sm text-text-secondary">
-                {hasFriends ? t('dashboard.connections', { count: f.friends.length }) : "Manage your connections"}
+                {hasFriends ? t('dashboard.connections', { count: f.friends.length }) : t('dashboard.manageConnections')}
                 {f.pendingRequests.length > 0 && ` · ${f.pendingRequests.length} ${t('dashboard.pending')}`}
               </p>
             </div>
@@ -204,7 +204,7 @@ export default function FriendsPage() {
                   {/* Sort Dropdown */}
                   <Select value={sortBy} onValueChange={(v: string) => setSortBy(v as SortOption)}>
                     <SelectTrigger className="w-[130px]">
-                      <SelectValue placeholder="Sort by..." />
+                      <SelectValue placeholder={t('friends.sortBy')} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="name">{t('friends.sortByName')}</SelectItem>
@@ -217,7 +217,7 @@ export default function FriendsPage() {
                     type="button"
                     onClick={toggleSortDirection}
                     className="flex h-8 items-center gap-1 rounded-lg border border-border bg-surface px-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-2 hover:text-text-primary"
-                    title={sortDirection === "asc" ? "Ascending" : "Descending"}
+                    title={sortDirection === "asc" ? t('friends.ascending') : t('friends.descending')}
                   >
                     {sortDirection === "asc" ? (
                       <SortAsc className="h-4 w-4" />

@@ -6,6 +6,7 @@
 import { Link } from "@/i18n/navigation";
 import { Avatar } from "@/components/ui/avatar";
 import { Spinner } from "@/components/ui/spinner";
+import { useTranslations } from "next-intl";
 import { Clock, Check, X, Send } from "lucide-react";
 import { motion } from "framer-motion";
 import type { PendingRequest, OutgoingRequest } from "@/types/friend";
@@ -13,15 +14,17 @@ import type { PendingRequest, OutgoingRequest } from "@/types/friend";
 // ==========================================
 // ⚙️ LOGIC
 // ==========================================
-function timeAgo(dateString: string): string {
+type TimeAgoT = (key: "justNow" | "minutesAgo" | "hoursAgo" | "daysAgo", values: Record<string, number | string>) => string;
+
+function timeAgo(dateString: string, t: TimeAgoT): string {
   const seconds = Math.floor((Date.now() - new Date(dateString).getTime()) / 1000);
-  if (seconds < 60) return "just now";
+  if (seconds < 60) return t("justNow", {});
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 60) return t("minutesAgo", { m: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return t("hoursAgo", { h: hours });
   const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
+  if (days < 30) return t("daysAgo", { d: days });
   return new Date(dateString).toLocaleDateString();
 }
 
@@ -54,6 +57,7 @@ export function PendingRequests({
   onDecline,
   onCancel,
 }: PendingRequestsProps) {
+  const t = useTranslations("pendingRequests");
   const totalCount = incoming.length + outgoing.length;
   if (totalCount === 0 && !loadingPending) return null;
 
@@ -68,7 +72,7 @@ export function PendingRequests({
         <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500/10">
           <Clock className="h-4 w-4 text-amber-600" />
         </div>
-        <h2 className="text-sm font-bold text-text-primary">Pending Requests</h2>
+        <h2 className="text-sm font-bold text-text-primary">{t("title")}</h2>
         {totalCount > 0 && (
           <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-500/10 px-1.5 text-xs font-bold text-amber-600">
             {totalCount}
@@ -87,7 +91,7 @@ export function PendingRequests({
             {incoming.length > 0 && (
               <div>
                 <p className="mb-2 text-xs font-bold uppercase tracking-widest text-text-secondary">
-                  Incoming
+                  {t("incoming")}
                 </p>
                 <div className="space-y-2">
                   {incoming.map((req) => {
@@ -114,7 +118,7 @@ export function PendingRequests({
                             {name}
                           </Link>
                           <p className="truncate text-xs text-text-secondary">
-                            @{req.sender_username} · {timeAgo(req.created_at)}
+                            @{req.sender_username} · {timeAgo(req.created_at, (k, v) => t(k, v as Record<string, number>))}
                           </p>
                         </div>
                         <div className="flex items-center gap-1.5">
@@ -129,7 +133,7 @@ export function PendingRequests({
                             ) : (
                               <Check className="h-3 w-3" />
                             )}
-                            Accept
+                            {t("accept")}
                           </button>
                           {/* Decline Button - Secondary */}
                           <button
@@ -155,7 +159,7 @@ export function PendingRequests({
             {outgoing.length > 0 && (
               <div>
                 <p className="mb-2 text-xs font-bold uppercase tracking-widest text-text-secondary">
-                  Sent by you
+                  {t("sentByYou")}
                 </p>
                 <div className="space-y-2">
                   {outgoing.map((req) => {
@@ -181,7 +185,7 @@ export function PendingRequests({
                           </Link>
                           <div className="flex items-center gap-1 text-xs text-text-secondary">
                             <Send className="h-2.5 w-2.5" />
-                            <span>Sent {timeAgo(req.created_at)}</span>
+                            <span>{t("sentPrefix")} {timeAgo(req.created_at, (k, v) => t(k, v as Record<string, number>))}</span>
                           </div>
                         </div>
                         {/* Cancel Button */}
@@ -195,7 +199,7 @@ export function PendingRequests({
                           ) : (
                             <X className="h-3 w-3" />
                           )}
-                          Cancel
+                          {t("cancel")}
                         </button>
                       </motion.div>
                     );

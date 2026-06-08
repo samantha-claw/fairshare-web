@@ -89,6 +89,9 @@ export function useGroupSettlements(
         setIsSettleModalOpen(false);
         setSettleReceiver("");
         setSettleAmount("");
+        // 🎉 Celebrate the settlement!
+        const { fireSettlementConfetti } = await import("@/lib/confetti");
+        fireSettlementConfetti();
         refetch();
       } catch (err) {
         console.error(err);

@@ -10,6 +10,7 @@ import { formatCurrency } from "@/lib/utils";
 import type { Balance } from "@/types/group";
 import { simplifyDebts } from "@/lib/debt-simplifier";
 import { ArrowDown, TrendingDown, TrendingUp } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 
 // ==========================================
 // 🧩 TYPES
@@ -28,6 +29,8 @@ export function BalancesCard({
   currency,
   currentUserId,
 }: BalancesCardProps) {
+  const t = useTranslations("balances");
+  const locale = useLocale();
   const [view, setView] = useState<"settlements" | "net">("settlements");
 
   const simplifiedDebts = useMemo(() => {
@@ -45,7 +48,7 @@ export function BalancesCard({
       {/* ── Header & Tabs ── */}
       <div className="border-b border-border p-4 sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-sm font-bold text-text-primary">Group Balances</h2>
+          <h2 className="text-sm font-bold text-text-primary">{t("groupBalances")}</h2>
 
           <div className="flex rounded-lg bg-surface-2 p-1 self-start sm:self-auto">
             <button
@@ -56,7 +59,7 @@ export function BalancesCard({
                   : "text-text-secondary hover:text-text-primary"
               }`}
             >
-              Settle Up
+              {t("settleUp")}
             </button>
             <button
               onClick={() => setView("net")}
@@ -66,7 +69,7 @@ export function BalancesCard({
                   : "text-text-secondary hover:text-text-primary"
               }`}
             >
-              Net Balance
+              {t("netBalance")}
             </button>
           </div>
         </div>
@@ -81,10 +84,10 @@ export function BalancesCard({
             {simplifiedDebts.length === 0 ? (
               <div className="rounded-xl border border-dashed border-emerald-200 bg-emerald-50/60 px-4 py-8 text-center">
                 <p className="text-sm font-bold text-emerald-600">
-                  All settled up! 🎉
+                  {t("allSettledUp")}
                 </p>
                 <p className="mt-1 text-xs font-medium text-text-secondary">
-                  No one owes anything.
+                  {t("noOneOwes")}
                 </p>
               </div>
             ) : (
@@ -112,7 +115,7 @@ export function BalancesCard({
                           {debt.from.displayName}
                         </p>
                         <p className="text-[11px] font-medium text-red-500">
-                          Owes
+                          {t("owes")}
                         </p>
                       </div>
                     </div>
@@ -121,7 +124,7 @@ export function BalancesCard({
                     <div className="flex items-center justify-center gap-2 py-1">
                       <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border-light dark:via-border-dark to-transparent" />
                       <div className="flex items-center gap-1.5 rounded-full bg-orange-100 px-3 py-1 text-sm font-black text-orange-700 ring-1 ring-inset ring-orange-200">
-                        {formatCurrency(debt.amount, currency)}
+                        {formatCurrency(debt.amount, currency, locale)}
                         <ArrowDown className="h-3.5 w-3.5" />
                       </div>
                       <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border-light dark:via-border-dark to-transparent" />
@@ -144,7 +147,7 @@ export function BalancesCard({
                           {debt.to.displayName}
                         </p>
                         <p className="text-[11px] font-medium text-emerald-600">
-                          Receives
+                          {t("receives")}
                         </p>
                       </div>
                     </div>
@@ -163,10 +166,10 @@ export function BalancesCard({
             {balances.length === 0 ? (
               <div className="rounded-xl border border-dashed border-border bg-surface-2/60 px-4 py-8 text-center">
                 <p className="text-sm font-bold text-text-primary">
-                  No balances yet
+                  {t("noBalancesYet")}
                 </p>
                 <p className="mt-1 text-xs font-medium text-text-secondary">
-                  Add an expense to see balances.
+                  {t("addExpensePrompt")}
                 </p>
               </div>
             ) : (
@@ -199,7 +202,7 @@ export function BalancesCard({
                       <div className="shrink-0 text-right">
                         {isSettled ? (
                           <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2.5 py-1 text-xs font-semibold text-text-tertiary">
-                            Settled
+                            {t("settled")}
                           </span>
                         ) : (
                           <div className="flex flex-col items-end">
@@ -216,7 +219,8 @@ export function BalancesCard({
                               {isPositive ? "+" : "-"}
                               {formatCurrency(
                                 Math.abs(bal.net_balance),
-                                currency
+                                currency,
+                                locale
                               )}
                             </span>
                             <span
@@ -228,11 +232,11 @@ export function BalancesCard({
                             >
                               {isPositive
                                 ? isCurrentUser
-                                  ? "You are owed"
-                                  : "Is owed"
+                                  ? t("youAreOwed")
+                                  : t("isOwed")
                                 : isCurrentUser
-                                  ? "You owe"
-                                  : "Owes"}
+                                  ? t("youOwe")
+                                  : t("owes")}
                             </span>
                           </div>
                         )}

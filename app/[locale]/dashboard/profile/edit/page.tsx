@@ -3,6 +3,7 @@
 // ==========================================
 // 📦 IMPORTS
 // ==========================================
+import { useTranslations } from "next-intl";
 import { useProfileEdit } from "@/hooks/use-profile-edit";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -237,6 +238,7 @@ function getFallbackAvatar(name: string): string {
 
 export default function EditProfilePage() {
   const e = useProfileEdit();
+  const t = useTranslations("profileEdit");
 
   if (e.loading) return <EditSkeleton />;
 
@@ -262,8 +264,8 @@ export default function EditProfilePage() {
         onClick={e.handleCancel}
         className="mb-6 inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-medium text-text-secondary transition-all hover:bg-surface hover:text-text-primary hover:shadow-sm"
       >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Profile
+        <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
+        {t("backToProfile")}
       </button>
 
       {/* ── Main Form Card ───────────────────────── */}
@@ -283,9 +285,9 @@ export default function EditProfilePage() {
               <Sparkles className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white">Edit Profile</h1>
+              <h1 className="text-xl font-bold text-white">{t("title")}</h1>
               <p className="text-sm text-text-secondary">
-                Update your personal information
+                {t("subtitle")}
               </p>
             </div>
           </div>
@@ -309,7 +311,7 @@ export default function EditProfilePage() {
             type="button"
             onClick={e.triggerFileInput}
             className="group -mt-16 relative rounded-full bg-surface p-2 shadow-xl transition-all duration-200 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-border-border"
-            aria-label="Change profile photo"
+            aria-label={t("changeProfilePhoto")}
           >
             <img
               src={resolvedAvatarSrc}
@@ -334,7 +336,7 @@ export default function EditProfilePage() {
               className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-text-primary transition-all hover:bg-surface-2"
             >
               <Camera className="h-3.5 w-3.5" />
-              Change Photo
+              {t("changePhoto")}
             </button>
 
             {hasPhoto && (
@@ -344,7 +346,7 @@ export default function EditProfilePage() {
                 className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-rose-500 transition-all hover:bg-rose-50"
               >
                 <Trash2 className="h-3.5 w-3.5" />
-                Remove Photo
+                {t("removePhoto")}
               </button>
             )}
           </div>
@@ -375,7 +377,7 @@ export default function EditProfilePage() {
             <div className="mb-6 flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3">
               <Check className="h-4 w-4 flex-shrink-0 text-emerald-500" />
               <p className="text-sm font-medium text-emerald-700">
-                Profile updated successfully!
+                {t("successMessage")}
               </p>
             </div>
           )}
@@ -384,13 +386,13 @@ export default function EditProfilePage() {
             {/* Display Name */}
             <InputField
               fieldName="display_name"
-              label="Display Name"
+              label={t("displayName")}
               icon={Type}
               value={e.formData.display_name}
               onChange={(v) => e.updateField("display_name", v)}
-              placeholder="How others see you"
+              placeholder={t("displayNamePlaceholder")}
               error={e.errors.display_name}
-              hint="This is your public name visible to everyone."
+              hint={t("displayNameHint")}
               required
               maxLength={50}
             />
@@ -398,13 +400,13 @@ export default function EditProfilePage() {
             {/* Username */}
             <InputField
               fieldName="username"
-              label="Username"
+              label={t("username")}
               icon={AtSign}
               value={e.formData.username}
               onChange={(v) => e.updateField("username", v)}
-              placeholder="your_username"
+              placeholder={t("usernamePlaceholder")}
               error={e.errors.username}
-              hint="Lowercase letters, numbers, and underscores only."
+              hint={t("usernameHint")}
               required
               maxLength={30}
             />
@@ -412,11 +414,11 @@ export default function EditProfilePage() {
             {/* Full Name */}
             <InputField
               fieldName="full_name"
-              label="Full Name"
+              label={t("fullName")}
               icon={User}
               value={e.formData.full_name}
               onChange={(v) => e.updateField("full_name", v)}
-              placeholder="Your full name"
+              placeholder={t("fullNamePlaceholder")}
               error={e.errors.full_name}
               maxLength={100}
             />
@@ -424,13 +426,13 @@ export default function EditProfilePage() {
             {/* Bio */}
             <TextAreaField
               fieldName="bio"
-              label="Bio"
+              label={t("bio")}
               icon={FileText}
               value={e.formData.bio}
               onChange={(v) => e.updateField("bio", v)}
-              placeholder="Tell people about yourself…"
+              placeholder={t("bioPlaceholder")}
               error={e.errors.bio}
-              hint="A short description visible on your profile."
+              hint={t("bioHint")}
               maxLength={250}
             />
           </div>
@@ -442,8 +444,7 @@ export default function EditProfilePage() {
           <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-border bg-surface-2/50 px-4 py-3">
             <Shield className="mt-0.5 h-4 w-4 flex-shrink-0 text-text-primary" />
             <p className="text-xs leading-relaxed text-text-primary">
-              Your profile information is stored securely. Only your
-              display name, username, and avatar are publicly visible.
+              {t("securityNote")}
             </p>
           </div>
 
@@ -456,8 +457,8 @@ export default function EditProfilePage() {
                 onClick={e.handleCancel}
                 className="inline-flex items-center gap-2 rounded-2xl border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-text-secondary transition-all duration-200 hover:bg-surface-2"
               >
-                <ArrowLeft className="h-4 w-4" />
-                Cancel
+                <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
+                {t("cancel")}
               </button>
 
               {e.hasChanges && (
@@ -467,7 +468,7 @@ export default function EditProfilePage() {
                   className="inline-flex items-center gap-2 rounded-2xl border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-text-secondary transition-all duration-200 hover:bg-surface-2 hover:text-text-primary"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
-                  Reset
+                  {t("reset")}
                 </button>
               )}
             </div>
@@ -481,17 +482,17 @@ export default function EditProfilePage() {
               {e.saving ? (
                 <>
                   <Spinner className="h-4 w-4" />
-                  Saving…
+                  {t("saving")}
                 </>
               ) : e.saveSuccess ? (
                 <>
                   <Check className="h-4 w-4" />
-                  Saved!
+                  {t("saved")}
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4" />
-                  Save Changes
+                  {t("saveChanges")}
                 </>
               )}
             </button>
@@ -508,7 +509,7 @@ export default function EditProfilePage() {
                 <Image className="h-3.5 w-3.5 text-text-primary" />
               </div>
               <h3 className="text-sm font-bold text-text-primary">
-                Avatar Preview
+                {t("avatarPreview")}
               </h3>
             </div>
 
@@ -518,38 +519,38 @@ export default function EditProfilePage() {
                 <div className="text-center">
                   <img
                     src={resolvedAvatarSrc}
-                    alt="Preview"
+                    alt={t('previewAlt')}
                     className="h-16 w-16 rounded-full object-cover ring-2 ring-white shadow-md"
                     onError={(ev) => {
                       (ev.target as HTMLImageElement).src =
                         getFallbackAvatar(displayName);
                     }}
                   />
-                  <p className="mt-1 text-[10px] text-text-tertiary">Large</p>
+                  <p className="mt-1 text-[10px] text-text-tertiary">{t("large")}</p>
                 </div>
                 <div className="text-center">
                   <img
                     src={resolvedAvatarSrc}
-                    alt="Preview"
+                    alt={t('previewAlt')}
                     className="h-10 w-10 rounded-full object-cover ring-2 ring-white shadow-sm"
                     onError={(ev) => {
                       (ev.target as HTMLImageElement).src =
                         getFallbackAvatar(displayName);
                     }}
                   />
-                  <p className="mt-1 text-[10px] text-text-tertiary">Med</p>
+                  <p className="mt-1 text-[10px] text-text-tertiary">{t("med")}</p>
                 </div>
                 <div className="text-center">
                   <img
                     src={resolvedAvatarSrc}
-                    alt="Preview"
+                    alt={t('previewAlt')}
                     className="h-8 w-8 rounded-full object-cover ring-1 ring-white shadow-sm"
                     onError={(ev) => {
                       (ev.target as HTMLImageElement).src =
                         getFallbackAvatar(displayName);
                     }}
                   />
-                  <p className="mt-1 text-[10px] text-text-tertiary">Sm</p>
+                  <p className="mt-1 text-[10px] text-text-tertiary">{t("sm")}</p>
                 </div>
               </div>
 
@@ -558,7 +559,7 @@ export default function EditProfilePage() {
                 <div className="flex items-center gap-2.5">
                   <img
                     src={resolvedAvatarSrc}
-                    alt="Preview"
+                    alt={t('previewAlt')}
                     className="h-10 w-10 rounded-full object-cover ring-1 ring-gray-200"
                     onError={(ev) => {
                       (ev.target as HTMLImageElement).src =
@@ -567,10 +568,10 @@ export default function EditProfilePage() {
                   />
                   <div>
                     <p className="text-sm font-bold text-text-primary">
-                      {e.formData.display_name || "Display Name"}
+                      {e.formData.display_name || t("defaultDisplayName")}
                     </p>
                     <p className="text-xs text-text-tertiary">
-                      @{e.formData.username || "username"}
+                      @{e.formData.username || t("defaultUsername")}
                     </p>
                   </div>
                 </div>

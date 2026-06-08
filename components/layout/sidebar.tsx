@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { LayoutDashboard, Users, FolderOpen, Settings, LogOut, Sun, Moon, User, Bell } from "lucide-react";
@@ -15,11 +15,11 @@ interface SidebarProps {
 }
 
 const NAV_ITEMS = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Groups", href: "/dashboard/groups", icon: FolderOpen },
-  { label: "Friends", href: "/dashboard/friends", icon: Users },
-  { label: "Notifications", href: "/dashboard/notifications", icon: Bell },
-  { label: "Settings", href: "/dashboard/settings", icon: Settings },
+  { label: "Dashboard", translationKey: "sidebar.dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Groups", translationKey: "sidebar.groups", href: "/dashboard/groups", icon: FolderOpen },
+  { label: "Friends", translationKey: "sidebar.friends", href: "/dashboard/friends", icon: Users },
+  { label: "Notifications", translationKey: "sidebar.notifications", href: "/dashboard/notifications", icon: Bell },
+  { label: "Settings", translationKey: "sidebar.settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -61,7 +61,7 @@ export function Sidebar({ displayName, avatarUrl, onSignOut, isMobile = false }:
 
         {/* ── Nav ── */}
         <nav className="space-y-0.5">
-          {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
+          {NAV_ITEMS.map(({ translationKey, href, icon: Icon }) => {
             const active = isActive(pathname, href);
             return (
               <Link
@@ -74,7 +74,7 @@ export function Sidebar({ displayName, avatarUrl, onSignOut, isMobile = false }:
                 }`}
               >
                 <Icon className="h-4 w-4 flex-shrink-0" />
-                {t(`sidebar.${label.toLowerCase()}`)}
+                {t(translationKey as any)}
               </Link>
             );
           })}

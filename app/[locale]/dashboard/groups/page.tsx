@@ -149,7 +149,7 @@ export default function GroupsPage() {
             placeholder={t('groups.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            aria-label="Search groups"
+            aria-label={t('groups.searchGroupsAria')}
             className="w-full rounded-xl border border-border bg-surface py-2 ps-10 pe-4 text-sm text-text-primary placeholder:text-text-tertiary focus:border-border-2 focus:outline-none"
           />
         </div>
@@ -157,7 +157,7 @@ export default function GroupsPage() {
         {/* Sort Dropdown */}
         <Select value={sortBy} onValueChange={(v: string) => setSortBy(v as SortOption)}>
           <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Sort by..." />
+            <SelectValue placeholder={t('groups.sortBy')} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="name">{t('friends.sortByName')}</SelectItem>
@@ -171,7 +171,7 @@ export default function GroupsPage() {
           type="button"
           onClick={toggleSortDirection}
           className="flex h-9 items-center gap-1.5 rounded-xl border border-border bg-surface px-3 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-2 hover:text-text-primary"
-          title={sortDirection === "asc" ? "Ascending" : "Descending"}
+          title={sortDirection === "asc" ? t('groups.ascending') : t('groups.descending')}
         >
           {sortDirection === "asc" ? (
             <SortAsc className="h-4 w-4" />
@@ -179,7 +179,7 @@ export default function GroupsPage() {
             <SortDesc className="h-4 w-4" />
           )}
           <span className="hidden sm:inline">
-            {sortDirection === "asc" ? "Asc" : "Desc"}
+            {sortDirection === "asc" ? t('groups.asc') : t('groups.desc')}
           </span>
         </button>
       </div>

@@ -41,6 +41,10 @@ export function useGroupExpenses(
   const [isValidSplit, setIsValidSplit] = useState(false);
   const [splitType, setSplitType] = useState<SplitType>("equal");
 
+  /* ── Notes & Receipt State ─────────────────────────── */
+  const [notes, setNotes] = useState<string>("");
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
+
   const openAddExpenseModal = useCallback(() => {
     setEditingExpenseId(null);
     setExpenseName("");
@@ -49,6 +53,8 @@ export function useGroupExpenses(
     setCategory(null);
     setComputedSplits([]);
     setIsValidSplit(false);
+    setNotes("");
+    setReceiptUrl(null);
     setIsExpenseModalOpen(true);
   }, [currentUserId]);
 
@@ -89,6 +95,8 @@ export function useGroupExpenses(
       setExpenseAmount(exp.amount.toString());
       setPaidBy(exp.paid_by);
       setCategory((exp.category as ExpenseCategory) ?? "other");
+      setNotes((exp as any).notes ?? "");
+      setReceiptUrl((exp as any).receipt_url ?? null);
 
       const rawDbSplit = ((exp as any).split_type as string)?.toLowerCase();
       const validSplitType = [
@@ -157,6 +165,8 @@ export function useGroupExpenses(
             _splits: splitsPayload,
             _split_type: validatedExpense.split_type,
             _category: category,
+            _notes: notes,
+            _receipt_url: receiptUrl,
           }
         : {
             _group_id: groupId,
@@ -166,6 +176,8 @@ export function useGroupExpenses(
             _splits: splitsPayload,
             _split_type: validatedExpense.split_type,
             _category: category,
+            _notes: notes,
+            _receipt_url: receiptUrl,
           };
 
       try {
@@ -186,6 +198,8 @@ export function useGroupExpenses(
           setPaidBy("");
           setCategory(null);
           setComputedSplits([]);
+          setNotes("");
+          setReceiptUrl(null);
           refetch();
         }
       } catch (error) {
@@ -255,5 +269,9 @@ export function useGroupExpenses(
     handleDeleteExpense,
     splitType,
     setSplitType,
+    notes,
+    setNotes,
+    receiptUrl,
+    setReceiptUrl,
   };
 }

@@ -13,14 +13,16 @@ const ibmPlexArabic = IBM_Plex_Sans_Arabic({
   variable: "--font-arabic",
 });
 
-export const metadata: Metadata = {
-  title: "FairShare",
-  description: "Financial collaboration made simple",
-  manifest: "/manifest.json",
-  icons: {
-    apple: "/apple-icon.png",
-  },
-};
+export async function generateMetadata({ params: { locale } }: { params: { locale: string } }): Promise<Metadata> {
+  return {
+    title: locale === "ar" ? "FairShare" : "FairShare",
+    description: locale === "ar" ? "أداة بسيطة لتقسيم المصروفات مع الأصدقاء" : "Financial collaboration made simple",
+    manifest: "/manifest.json",
+    icons: {
+      apple: "/apple-icon.png",
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#111111",

@@ -75,6 +75,7 @@ export default function DashboardPage() {
               totalOwedToMe={d.totalOwedToMe}
               totalIOwe={d.totalIOwe}
               groups={d.groups}
+              recentExpenses={d.recentExpenses}
             />
 
             {/* Financial View - Bar chart */}

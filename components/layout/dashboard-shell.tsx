@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
@@ -19,6 +20,7 @@ interface UserProfile {
 }
 
 function ShellSkeleton() {
+  const tCommon = useTranslations("common");
   return (
     <div className="flex min-h-screen w-full items-center justify-center overflow-hidden bg-surface">
       <div className="flex flex-col items-center gap-3">
@@ -27,7 +29,7 @@ function ShellSkeleton() {
         </div>
         <div className="flex items-center gap-2 text-sm text-text-secondary">
           <Spinner className="h-4 w-4" />
-          Loading…
+          {tCommon("loading")}
         </div>
       </div>
     </div>
@@ -37,10 +39,11 @@ function ShellSkeleton() {
 export function DashboardShell({ children }: DashboardShellProps) {
   const router = useRouter();
   const supabase = createClient();
+  const tCommon = useTranslations("common");
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile>({
     id: "",
-    display_name: "User",
+    display_name: "",
     avatar_url: "",
   });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -67,7 +70,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
       if (profileData) {
         setProfile({
           id: user.id,
-          display_name: profileData.display_name || "User",
+          display_name: profileData.display_name || tCommon("someone"),
           avatar_url: profileData.avatar_url || "",
         });
       }

@@ -6,6 +6,7 @@
 import { useState, useCallback } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { useRef } from "react";
+import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui/modal";
 import {
   X,
@@ -51,6 +52,9 @@ export function QRShareModal({
   const [resetting, setResetting] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
   const qrRef = useRef<HTMLDivElement>(null);
+
+  // ── i18n ─────────────────────────────────────────────
+  const t = useTranslations("qrShareModal");
 
   // ── Copy link ────────────────────────────────────────
   const handleCopy = useCallback(async () => {
@@ -106,8 +110,8 @@ export function QRShareModal({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `FairShare — ${title}`,
-          text: subtitle || `Join ${title} on FairShare`,
+          title: t("shareTitle", { name: title }),
+          text: subtitle || t("shareTextFallback", { name: title }),
           url: value,
         });
       } catch {
@@ -116,7 +120,7 @@ export function QRShareModal({
     } else {
       handleCopy();
     }
-  }, [title, subtitle, value, handleCopy]);
+  }, [title, subtitle, value, handleCopy, t]);
 
   // ── Reset token ──────────────────────────────────────
   const handleResetToken = useCallback(async () => {
@@ -200,7 +204,7 @@ export function QRShareModal({
         <div className="mx-6 mt-4 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 transition-all">
           <Check className="h-4 w-4 shrink-0 text-emerald-600" />
           <p className="text-xs font-medium text-emerald-700">
-            Invite link reset! Old links are now invalid.
+            {t("resetSuccess")}
           </p>
         </div>
       )}
@@ -234,7 +238,7 @@ export function QRShareModal({
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-100 bg-red-50/50 py-2.5 text-xs font-semibold text-red-600 transition-all hover:border-red-200 hover:bg-red-50 active:scale-[0.99]"
           >
             <RefreshCw className="h-3.5 w-3.5" />
-            Reset Invite Link
+            {t("resetButton")}
           </button>
         </div>
       )}
@@ -249,11 +253,10 @@ export function QRShareModal({
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-bold text-red-900">
-                  Reset invite link?
+                  {t("resetConfirmTitle")}
                 </p>
                 <p className="mt-0.5 text-xs leading-relaxed text-red-600/80">
-                  This will invalidate all previously shared QR codes and links.
-                  Anyone who hasn&apos;t joined yet will need the new link.
+                  {t("resetConfirmBody")}
                 </p>
               </div>
             </div>
@@ -264,7 +267,7 @@ export function QRShareModal({
                 disabled={resetting}
                 className="flex flex-1 items-center justify-center rounded-xl border border-red-200 bg-surface py-2.5 text-xs font-semibold text-text-secondary transition-colors hover:bg-surface-2 disabled:opacity-50"
               >
-                Cancel
+                {t("resetCancel")}
               </button>
               <button
                 onClick={handleResetToken}
@@ -274,12 +277,12 @@ export function QRShareModal({
                 {resetting ? (
                   <>
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    Resetting…
+                    {t("resetting")}
                   </>
                 ) : (
                   <>
                     <RefreshCw className="h-3.5 w-3.5" />
-                    Yes, Reset
+                    {t("resetConfirm")}
                   </>
                 )}
               </button>
@@ -301,12 +304,12 @@ export function QRShareModal({
           {copied ? (
             <>
               <Check className="h-4 w-4" />
-              Copied!
+              {t("copied")}
             </>
           ) : (
             <>
               <Copy className="h-4 w-4" />
-              Copy Link
+              {t("copyLink")}
             </>
           )}
         </button>
@@ -314,7 +317,7 @@ export function QRShareModal({
         <button
           onClick={handleDownload}
           className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-text-secondary transition-colors hover:bg-gray-200"
-          title="Download QR"
+          title={t("downloadQr")}
         >
           <Download className="h-4 w-4" />
         </button>
@@ -324,7 +327,7 @@ export function QRShareModal({
           className={`flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r ${gradientFrom} ${gradientTo} py-3 text-sm font-semibold text-white shadow-lg transition-all hover:shadow-xl active:scale-[0.98]`}
         >
           <Share2 className="h-4 w-4" />
-          Share
+          {t("share")}
         </button>
       </div>
     </Modal>

@@ -13,8 +13,10 @@
     "@lottiefiles/dotlottie-react": "^0.18.3",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-tabs": "^1.1.13",
+    "@react-pdf/renderer": "^4.5.1",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.95.3",
+    "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -30,15 +32,17 @@
     "react-dom": "18.3.1",
     "react-qr-code": "^2.0.18",
     "recharts": "^3.7.0",
+    "web-push": "^3.6.7",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^20.19.33",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
-      "eslint": "^8.57.0",
-        "eslint-config-next": "14.2.35",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.2.35",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

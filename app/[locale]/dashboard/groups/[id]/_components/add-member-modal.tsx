@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { Modal } from "@/components/ui/modal";
 import { Avatar } from "@/components/ui/avatar";
 import { Spinner } from "@/components/ui/spinner";
+import { useTranslations } from "next-intl";
 import type { InvitableFriend, SearchResult } from "@/types/group";
 
 interface AddMemberModalProps {
@@ -29,6 +30,10 @@ export function AddMemberModal({
   onSearchTermChange,
   onAddMember,
 }: AddMemberModalProps) {
+  const t = useTranslations("groups");
+  const tFriends = useTranslations("friends");
+  const tCommon = useTranslations("common");
+
   const normalizedTerm = searchTerm.trim().toLowerCase();
 
   const filteredFriends = normalizedTerm
@@ -41,11 +46,11 @@ export function AddMemberModal({
     : invitableFriends;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Add Member">
+    <Modal isOpen={isOpen} onClose={onClose} title={t("addMember")}>
       {/* ── Header ── */}
       <div className="border-b border-border px-6 pb-4 pt-6">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-text-primary">Add Member</h3>
+          <h3 className="text-lg font-bold text-text-primary">{t("addMember")}</h3>
           <button
             onClick={onClose}
             className="rounded-md p-1 text-text-tertiary transition-all duration-200 hover:bg-surface-2 hover:text-text-secondary active:scale-95"
@@ -66,7 +71,7 @@ export function AddMemberModal({
           </button>
         </div>
         <p className="mt-1 text-sm text-text-secondary">
-          Search your friends to add them to this group
+          {t("addMemberDescription")}
         </p>
       </div>
 
@@ -90,7 +95,7 @@ export function AddMemberModal({
             </svg>
             <input
               type="text"
-              placeholder="Search friends by name or username…"
+              placeholder={t("searchFriendsPlaceholder")}
               value={searchTerm}
               onChange={(e) => onSearchTermChange(e.target.value)}
               className="block w-full rounded-lg border border-gray-300 bg-surface py-2.5 pl-10 pr-10 text-sm placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -100,7 +105,7 @@ export function AddMemberModal({
               <button
                 onClick={() => onSearchTermChange("")}
                 className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-text-tertiary transition-colors hover:bg-surface-2 hover:text-text-secondary"
-                title="Clear search"
+                title={t("clearSearch")}
               >
                 <svg
                   className="h-4 w-4"
@@ -135,13 +140,13 @@ export function AddMemberModal({
               d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.562.562 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.562.562 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"
             />
           </svg>
-          <h4 className="text-sm font-semibold text-text-primary">Your Friends</h4>
+          <h4 className="text-sm font-semibold text-text-primary">{tFriends("yourFriends")}</h4>
           {!loadingFriends && (
             <span className="text-xs text-text-tertiary">
               —{" "}
               {normalizedTerm
-                ? `${filteredFriends.length} of ${invitableFriends.length} shown`
-                : `${invitableFriends.length} available`}
+                ? t("friendsShown", { filtered: filteredFriends.length, total: invitableFriends.length })
+                : t("friendsAvailable", { count: invitableFriends.length })}
             </span>
           )}
         </div>
@@ -169,22 +174,22 @@ export function AddMemberModal({
               </svg>
             </div>
             <p className="text-sm font-medium text-text-primary">
-              All friends are already members
+              {t("allFriendsMembers")}
             </p>
             <p className="mt-1 text-xs text-text-tertiary">
-              Use the Share / QR button to invite new people
+              {t("useShareQR")}
             </p>
           </div>
         ) : filteredFriends.length === 0 ? (
           <div className="rounded-lg border border-dashed border-border bg-surface-2/50 px-4 py-6 text-center">
             <p className="text-sm text-text-secondary">
-              No friends match &ldquo;{searchTerm}&rdquo;
+              {t("noFriendsMatch", { search: searchTerm })}
             </p>
             <button
               onClick={() => onSearchTermChange("")}
               className="mt-2 text-xs font-medium text-text-primary hover:underline"
             >
-              Clear search
+              {t("clearSearch")}
             </button>
           </div>
         ) : (
@@ -239,7 +244,7 @@ export function AddMemberModal({
                       />
                     </svg>
                   )}
-                  {addingMember === friend.friend_id ? "Adding…" : "Add"}
+                  {addingMember === friend.friend_id ? t("adding") : tCommon("add")}
                 </button>
               </li>
             ))}
@@ -250,10 +255,7 @@ export function AddMemberModal({
         {!loadingFriends && invitableFriends.length > 0 && (
           <div className="mt-5 rounded-lg border border-indigo-100 bg-indigo-50/50 px-4 py-3 text-center">
             <p className="text-xs text-text-primary">
-              💡 Want to add someone who isn&apos;t your friend yet?
-              <br />
-              Use the <span className="font-semibold">Share / QR Code</span>{" "}
-              button in the header to send them an invite link.
+              {t("inviteHint")}
             </p>
           </div>
         )}
@@ -265,7 +267,7 @@ export function AddMemberModal({
           onClick={onClose}
           className="w-full rounded-lg py-2 text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
         >
-          Close
+          {tCommon("close")}
         </button>
       </div>
     </Modal>

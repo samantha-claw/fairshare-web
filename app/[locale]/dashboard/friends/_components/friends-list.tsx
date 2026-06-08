@@ -3,6 +3,7 @@
 // ==========================================
 // 📦 IMPORTS
 // ==========================================
+import { useTranslations } from "next-intl";
 import { FriendCard } from "./friend-card";
 import { Spinner } from "@/components/ui/spinner";
 import { Users } from "lucide-react";
@@ -21,6 +22,8 @@ interface FriendsListProps {
 // 🎨 UI RENDER
 // ==========================================
 export function FriendsList({ friends, loading, onRemoveFriend }: FriendsListProps) {
+  const t = useTranslations("friendsList");
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -35,9 +38,9 @@ export function FriendsList({ friends, loading, onRemoveFriend }: FriendsListPro
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-text-primary/10">
           <Users className="h-8 w-8 text-text-primary" />
         </div>
-        <h3 className="text-base font-bold text-text-primary">No friends yet</h3>
+        <h3 className="text-base font-bold text-text-primary">{t("noFriendsYet")}</h3>
         <p className="mx-auto mt-1 max-w-xs text-sm text-text-secondary">
-          Search for people above and send them a friend request to get started.
+          {t("noFriendsHint")}
         </p>
       </div>
     );

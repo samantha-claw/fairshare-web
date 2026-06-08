@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useProfile } from "@/hooks/use-profile";
 import { Spinner } from "@/components/ui/spinner";
+import { useTranslations } from "next-intl";
 import { User, QrCode } from "lucide-react";
 import { ProfileHeader } from "../_components/profile-header";
 import { ShareProfileModal } from "../_components/share-profile-modal";
@@ -22,6 +23,8 @@ export default function UserProfilePage() {
   const params = useParams();
   const userId = params.id as string;
   const p = useProfile({ userId });
+  const t = useTranslations("profile");
+  const tCommon = useTranslations("common");
 
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
@@ -31,7 +34,7 @@ export default function UserProfilePage() {
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="flex items-center gap-2 text-text-secondary">
           <Spinner className="h-5 w-5" />
-          Loading Profile…
+          {t("loading")}
         </div>
       </div>
     );
@@ -45,15 +48,15 @@ export default function UserProfilePage() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50">
             <User className="h-7 w-7 text-red-400" />
           </div>
-          <h2 className="text-xl font-bold text-text-primary">User Not Found</h2>
+          <h2 className="text-xl font-bold text-text-primary">{t("userNotFound")}</h2>
           <p className="mt-2 max-w-xs text-sm text-text-secondary">
-            {p.error || "This profile doesn't exist or is private."}
+            {p.error || t("notFoundDesc")}
           </p>
           <button
             onClick={p.handleBack}
             className="mt-6 rounded-2xl bg-surface-2 px-5 py-2.5 text-sm font-semibold text-text-primary transition-colors hover:bg-gray-200"
           >
-            Go Back
+            {tCommon("goBack")}
           </button>
         </div>
       </div>
@@ -85,7 +88,7 @@ export default function UserProfilePage() {
               className="inline-flex items-center gap-2 rounded-2xl border border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 px-5 py-2.5 text-sm font-semibold text-purple-700 shadow-sm transition-all hover:shadow-md hover:shadow-purple-500/10 active:scale-[0.98]"
             >
               <QrCode className="h-4 w-4" />
-              My QR Code
+              {t("myQRCode")}
             </button>
           </div>
         )}

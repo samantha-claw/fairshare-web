@@ -1,15 +1,10 @@
 "use client";
 
-// ==========================================
-// 📦 IMPORTS
-// ==========================================
 import { Link } from "@/i18n/navigation";
 import { Avatar } from "@/components/ui/avatar";
+import { useTranslations } from "next-intl";
 import type { Member, Group } from "@/types/group";
 
-// ==========================================
-// 🧩 TYPES
-// ==========================================
 interface MembersCardProps {
   members: Member[];
   group: Group;
@@ -18,9 +13,6 @@ interface MembersCardProps {
   onRemoveMember: (memberId: string, memberName: string) => void;
 }
 
-// ==========================================
-// 🎨 UI RENDER
-// ==========================================
 export function MembersCard({
   members,
   group,
@@ -28,10 +20,13 @@ export function MembersCard({
   onOpenAddModal,
   onRemoveMember,
 }: MembersCardProps) {
+  const t = useTranslations("membersCard");
+  const tCommon = useTranslations("common");
+
   return (
     <section className="rounded-xl border border-border bg-surface p-6 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-text-primary">Members</h2>
+        <h2 className="text-sm font-semibold text-text-primary">{t("title")}</h2>
         {isOwner && (
           <button
             onClick={onOpenAddModal}
@@ -40,7 +35,7 @@ export function MembersCard({
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
-            Add
+            {tCommon("add")}
           </button>
         )}
       </div>
@@ -65,7 +60,7 @@ export function MembersCard({
             </div>
             {m.id === group.owner_id && (
               <span className="shrink-0 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">
-                Owner
+                {t("owner")}
               </span>
             )}
             {isOwner && m.id !== group.owner_id && (
@@ -73,7 +68,7 @@ export function MembersCard({
                 onClick={() => onRemoveMember(m.id, m.display_name || m.username)}
                 className="shrink-0 rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-500 opacity-0 transition-all group-hover:opacity-100 hover:text-red-700"
               >
-                Remove
+                {t("remove")}
               </button>
             )}
           </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import QRCode from "react-qr-code";
+import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui/modal";
 import {
   X,
@@ -28,6 +29,7 @@ export function ShareProfileModal({
   username,
 }: ShareProfileModalProps) {
   const [copied, setCopied] = useState(false);
+  const t = useTranslations("shareProfileModal");
 
   async function handleCopy() {
     try {
@@ -50,8 +52,8 @@ export function ShareProfileModal({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${displayName} on FairShare`,
-          text: `Check out @${username}'s profile on FairShare`,
+          title: t("shareTitle", { name: displayName }),
+          text: t("shareText", { username }),
           url: profileUrl,
         });
       } catch {
@@ -61,7 +63,7 @@ export function ShareProfileModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Share Profile" maxWidth="sm">
+    <Modal isOpen={isOpen} onClose={onClose} title={t("title")} maxWidth="sm">
       {/* Header Gradient */}
       <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 px-6 pb-8 pt-6">
         <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-surface/10 blur-xl" />
@@ -79,7 +81,7 @@ export function ShareProfileModal({
             <QrCode className="h-4 w-4 text-white" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-white">Share Profile</h3>
+            <h3 className="text-base font-bold text-white">{t("title")}</h3>
             <p className="text-xs text-indigo-200">@{username}</p>
           </div>
         </div>
@@ -97,7 +99,7 @@ export function ShareProfileModal({
           />
         </div>
         <p className="mt-3 text-center text-xs text-text-tertiary">
-          Scan to view {displayName}&apos;s profile
+          {t("scanToView", { name: displayName })}
         </p>
       </div>
 
@@ -122,12 +124,12 @@ export function ShareProfileModal({
             {copied ? (
               <>
                 <Check className="h-4 w-4" />
-                Copied!
+                {t("copied")}
               </>
             ) : (
               <>
                 <Copy className="h-4 w-4" />
-                Copy Link
+                {t("copyLink")}
               </>
             )}
           </button>
@@ -139,7 +141,7 @@ export function ShareProfileModal({
                 className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-text-primary to-text-secondary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:shadow-md hover:shadow-indigo-200"
               >
                 <Share2 className="h-4 w-4" />
-                Share
+                {t("share")}
               </button>
             )}
         </div>

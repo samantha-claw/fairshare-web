@@ -7,6 +7,7 @@ import { forwardRef, useImperativeHandle, useRef } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Spinner } from "@/components/ui/spinner";
 import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { Search, X, UserPlus, Clock, AtSign } from "lucide-react";
 import type { SearchResultUser } from "@/types/friend";
 
@@ -34,14 +35,14 @@ export interface AddFriendSearchHandle {
 // ==========================================
 // ⚙️ LOGIC
 // ==========================================
-function resolveDisplayName(user: SearchResultUser): string {
+function resolveDisplayName(user: SearchResultUser, t?: ReturnType<typeof useTranslations>): string {
   if (user.display_name && user.display_name.trim().length > 0) {
     return user.display_name.trim();
   }
   if (user.username && user.username.trim().length > 0) {
     return user.username.trim();
   }
-  return "Unknown User";
+  return t ? t("unknownUser") : "Unknown User";
 }
 
 function resolveUsername(user: SearchResultUser): string {
@@ -72,6 +73,7 @@ export const AddFriendSearch = forwardRef<AddFriendSearchHandle, AddFriendSearch
     ref
   ) {
     const inputRef = useRef<HTMLInputElement>(null);
+    const t = useTranslations("addFriendSearch");
 
     useImperativeHandle(ref, () => ({
       focusSearch: () => {
@@ -91,8 +93,8 @@ export const AddFriendSearch = forwardRef<AddFriendSearchHandle, AddFriendSearch
               <UserPlus className="h-4 w-4 text-text-primary" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-text-primary">Find Friends</h2>
-              <p className="text-xs text-text-secondary">Search by username to connect</p>
+              <h2 className="text-sm font-bold text-text-primary">{t("title")}</h2>
+              <p className="text-xs text-text-secondary">{t("subtitle")}</p>
             </div>
           </div>
         </div>
@@ -106,7 +108,7 @@ export const AddFriendSearch = forwardRef<AddFriendSearchHandle, AddFriendSearch
               type="text"
               value={searchTerm}
               onChange={(e) => onSearchTermChange(e.target.value)}
-              placeholder="Search username…"
+              placeholder={t("placeholder")}
               className="block w-full rounded-xl border border-border bg-surface py-3 pl-11 pr-11 text-sm text-text-primary placeholder-muted-foreground transition-all duration-200 focus:border-border-2 focus:outline-none focus:ring-2 focus:ring-border/30"
             />
             {hasQuery && (
@@ -127,7 +129,7 @@ export const AddFriendSearch = forwardRef<AddFriendSearchHandle, AddFriendSearch
           {searching && (
             <div className="mt-3 flex items-center justify-center gap-2 py-2 text-xs text-text-secondary">
               <Spinner className="h-3.5 w-3.5" />
-              Searching…
+              {t("searching")}
             </div>
           )}
         </div>
@@ -140,14 +142,14 @@ export const AddFriendSearch = forwardRef<AddFriendSearchHandle, AddFriendSearch
                 <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-surface-2">
                   <Search className="h-5 w-5 text-text-secondary" />
                 </div>
-                <p className="text-sm font-medium text-text-primary">No users found</p>
-                <p className="mt-0.5 text-xs text-text-secondary">Try a different username</p>
+                <p className="text-sm font-medium text-text-primary">{t("noUsersFound")}</p>
+                <p className="mt-0.5 text-xs text-text-secondary">{t("tryDifferent")}</p>
               </div>
             ) : (
               <div className="space-y-2 pt-3">
                 {/* Results Count */}
                 <p className="mb-3 text-xs font-bold uppercase tracking-widest text-text-secondary">
-                  {searchResults.length} result{searchResults.length !== 1 && "s"}
+                  {t("resultLabel", { count: searchResults.length })}
                 </p>
 
                 {searchResults.map((user) => {
@@ -155,7 +157,7 @@ export const AddFriendSearch = forwardRef<AddFriendSearchHandle, AddFriendSearch
                   const outgoingId = getOutgoingRequestId(user.id);
                   const isSending = sendingToId === user.id;
                   const isCancelling = outgoingId ? cancellingId === outgoingId : false;
-                  const displayName = resolveDisplayName(user);
+                  const displayName = resolveDisplayName(user, t);
                   const username = resolveUsername(user);
 
                   return (
@@ -196,13 +198,13 @@ export const AddFriendSearch = forwardRef<AddFriendSearchHandle, AddFriendSearch
                             {isCancelling ? (
                               <>
                                 <Spinner className="h-3 w-3" />
-                                <span>Cancelling</span>
+                                <span>{t("cancelling")}</span>
                               </>
                             ) : (
                               <>
                                 <Clock className="h-3 w-3" />
-                                <span className="group-hover:hidden">Pending</span>
-                                <span className="hidden group-hover:inline">Cancel</span>
+                                <span className="group-hover:hidden">{t("pending")}</span>
+                                <span className="hidden group-hover:inline">{t("cancel")}</span>
                               </>
                             )}
                           </button>
@@ -215,12 +217,12 @@ export const AddFriendSearch = forwardRef<AddFriendSearchHandle, AddFriendSearch
                             {isSending ? (
                               <>
                                 <Spinner className="h-3 w-3" />
-                                <span>Sending</span>
+                                <span>{t("sending")}</span>
                               </>
                             ) : (
                               <>
                                 <UserPlus className="h-3 w-3" />
-                                <span>Add Friend</span>
+                                <span>{t("addFriend")}</span>
                               </>
                             )}
                           </button>

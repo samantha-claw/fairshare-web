@@ -4,6 +4,7 @@
 // 📦 IMPORTS
 // ==========================================
 import { Link } from "@/i18n/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import { formatCurrency } from "@/lib/utils";
 import { ArrowUpRight } from "lucide-react";
 import type { ProfileStats, ProfileGroup } from "@/types/profile";
@@ -27,6 +28,9 @@ export function StatsWidgets({
 }: StatsWidgetsProps) {
   if (!isOwnProfile) return null;
 
+  const t = useTranslations("statsWidgets");
+  const locale = useLocale();
+
   return (
     <div className="space-y-6">
       {/* ── Stats Cards — Pure Typography ─────────── */}
@@ -42,7 +46,7 @@ export function StatsWidgets({
           }`}
         >
           <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
-            Net Balance
+            {t("netBalance")}
           </p>
           <p
             className={`mt-2 font-mono text-2xl font-bold sm:text-3xl ${
@@ -55,53 +59,53 @@ export function StatsWidgets({
           >
             {stats.netBalance > 0 && "+"}
             {stats.netBalance < 0 && "−"}
-            {formatCurrency(stats.netBalance)}
+            {formatCurrency(stats.netBalance, undefined, locale)}
           </p>
           <p className="mt-1.5 text-[11px] text-text-tertiary">
             {stats.netBalance > 0
-              ? "You're owed overall"
+              ? t("youAreOwed")
               : stats.netBalance < 0
-              ? "You owe overall"
-              : "All settled up"}
+              ? t("youOweOverall")
+              : t("allSettledUp")}
           </p>
         </div>
 
         {/* Owed To You */}
         <div className="flex flex-col items-center justify-center rounded-2xl border border-emerald-100 bg-surface px-5 py-6 text-center shadow-sm transition-all duration-300 hover:shadow-md">
           <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
-            Owed to You
+            {t("owedToYou")}
           </p>
           <p className="mt-2 font-mono text-2xl font-bold text-emerald-600 sm:text-3xl">
-            +{formatCurrency(stats.totalOwed)}
+            +{formatCurrency(stats.totalOwed, undefined, locale)}
           </p>
           <p className="mt-1.5 text-[11px] text-text-tertiary">
-            From all groups
+            {t("fromAllGroups")}
           </p>
         </div>
 
         {/* You Owe */}
         <div className="flex flex-col items-center justify-center rounded-2xl border border-rose-100 bg-surface px-5 py-6 text-center shadow-sm transition-all duration-300 hover:shadow-md">
           <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
-            You Owe
+            {t("youOwe")}
           </p>
           <p className="mt-2 font-mono text-2xl font-bold text-rose-600 sm:text-3xl">
-            −{formatCurrency(stats.totalOwes)}
+            −{formatCurrency(stats.totalOwes, undefined, locale)}
           </p>
           <p className="mt-1.5 text-[11px] text-text-tertiary">
-            Across all groups
+            {t("acrossAllGroups")}
           </p>
         </div>
 
         {/* Groups */}
         <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-surface px-5 py-6 text-center shadow-sm transition-all duration-300 hover:shadow-md">
           <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
-            Groups
+            {t("groups")}
           </p>
           <p className="mt-2 font-mono text-2xl font-bold text-text-primary sm:text-3xl">
             {stats.totalGroups}
           </p>
           <p className="mt-1.5 text-[11px] text-text-tertiary">
-            Active group{stats.totalGroups !== 1 ? "s" : ""}
+            {t("activeGroups", { count: stats.totalGroups })}
           </p>
         </div>
       </div>
@@ -111,7 +115,7 @@ export function StatsWidgets({
         <div className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
           <div className="mb-5 text-center">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
-              Group Balances
+              {t("groupBalances")}
             </h3>
           </div>
 
@@ -148,7 +152,7 @@ export function StatsWidgets({
                   >
                     {group.net_balance > 0 && "+"}
                     {group.net_balance < 0 && "−"}
-                    {formatCurrency(group.net_balance, group.currency)}
+                    {formatCurrency(group.net_balance, group.currency, locale)}
                   </span>
                   <ArrowUpRight className="h-3.5 w-3.5 text-gray-300 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-indigo-400" />
                 </div>

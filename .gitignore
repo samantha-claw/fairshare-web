@@ -41,3 +41,10 @@ yarn-error.log*
 
 tsconfig.tsbuildinfo
 .next
+
+# Agent configs
+/.claude/
+/.opencode/
+/.specify/
+/AGENTS.md
+/CLAUDE.md

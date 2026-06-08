@@ -6,13 +6,14 @@
 import { Link } from "@/i18n/navigation";
 import { formatCurrency } from "@/lib/utils";
 import { Clock, Zap, Receipt } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import type { ProfileActivity } from "@/types/profile";
 
 // ==========================================
 // ⚙️ LOGIC
 // ==========================================
 
-function getRelativeTime(dateStr: string): string {
+function getRelativeTime(dateStr: string, t: ReturnType<typeof useTranslations>, locale: string): string {
   const now = new Date();
   const then = new Date(dateStr);
   const diff = now.getTime() - then.getTime();
@@ -20,11 +21,11 @@ function getRelativeTime(dateStr: string): string {
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
 
-  if (minutes < 1) return "Just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
-  return then.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  if (minutes < 1) return t("justNow");
+  if (minutes < 60) return t("minutesAgo", { minutes });
+  if (hours < 24) return t("hoursAgo", { hours });
+  if (days < 7) return t("daysAgo", { days });
+  return then.toLocaleDateString(locale, { month: "short", day: "numeric" });
 }
 
 const DOT_COLORS = [
@@ -48,6 +49,10 @@ interface ActivityLogProps {
 // 🎨 UI RENDER
 // ==========================================
 export function ActivityLog({ activities, isOwnProfile }: ActivityLogProps) {
+  const t = useTranslations("profile");
+  const tTime = useTranslations("time");
+  const locale = useLocale();
+
   if (!isOwnProfile) return null;
 
   return (
@@ -56,7 +61,7 @@ export function ActivityLog({ activities, isOwnProfile }: ActivityLogProps) {
         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50">
           <Zap className="h-3.5 w-3.5 text-text-primary" />
         </div>
-        <h3 className="text-sm font-bold text-text-primary">Recent Activity</h3>
+        <h3 className="text-sm font-bold text-text-primary">{t("activityLog")}</h3>
       </div>
 
       {activities.length === 0 ? (
@@ -65,10 +70,10 @@ export function ActivityLog({ activities, isOwnProfile }: ActivityLogProps) {
             <Clock className="h-6 w-6 text-gray-300" />
           </div>
           <p className="text-sm font-medium text-text-secondary">
-            No activity yet
+            {t("noActivity")}
           </p>
           <p className="mt-0.5 text-xs text-text-tertiary">
-            Your expense history will appear here.
+            {t("noHistoryDesc")}
           </p>
         </div>
       ) : (
@@ -112,10 +117,10 @@ export function ActivityLog({ activities, isOwnProfile }: ActivityLogProps) {
                     </div>
                     <div className="flex flex-col items-end gap-0.5">
                       <span className="whitespace-nowrap font-mono text-sm font-bold text-text-primary">
-                        {formatCurrency(activity.amount)}
+                        {formatCurrency(activity.amount, undefined, locale)}
                       </span>
                       <span className="whitespace-nowrap text-[10px] text-text-tertiary">
-                        {getRelativeTime(activity.created_at)}
+                        {getRelativeTime(activity.created_at, tTime, locale)}
                       </span>
                     </div>
                   </div>

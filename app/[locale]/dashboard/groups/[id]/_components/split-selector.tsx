@@ -1,10 +1,11 @@
-// components/split-type-selector.tsx
 "use client";
 
 import { useMemo, useCallback, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
 
 // ─── Types ───
+
 export type SplitType = "equal" | "exact" | "percentage" | "shares";
 
 interface Member {
@@ -34,45 +35,28 @@ interface SplitTypeSelectorProps {
   currency?: string;
 }
 
-// ─── Split type configuration ───
-const SPLIT_TYPES: {
+// ─── Split type configuration (static, labels resolved inside component) ───
+
+const SPLIT_TYPE_VALUES: {
   value: SplitType;
-  label: string;
   icon: string;
-  hint: string;
+  labelKey: string;
+  hintKey: string;
 }[] = [
-  {
-    value: "equal",
-    label: "Equal",
-    icon: "⚖️",
-    hint: "Split equally among selected members",
-  },
-  {
-    value: "exact",
-    label: "Exact",
-    icon: "💰",
-    hint: "Enter exact amount for each person",
-  },
-  {
-    value: "percentage",
-    label: "Percent",
-    icon: "📊",
-    hint: "Enter percentage for each person",
-  },
-  {
-    value: "shares",
-    label: "Shares",
-    icon: "🎯",
-    hint: "Enter share units for each person",
-  },
+  { value: "equal", icon: "⚖️", labelKey: "equal", hintKey: "equalHint" },
+  { value: "exact", icon: "💰", labelKey: "exact", hintKey: "exactHint" },
+  { value: "percentage", icon: "📊", labelKey: "percent", hintKey: "percentHint" },
+  { value: "shares", icon: "🎯", labelKey: "shares", hintKey: "sharesHint" },
 ];
 
 // ─── Helper: get member display name ───
+
 const getName = (m: Member) => m.display_name || m.username;
 
 // ═══════════════════════════════════════
-// ██  SplitTypeSelector Component      ██
+// ██ SplitTypeSelector Component ██
 // ═══════════════════════════════════════
+
 export function SplitTypeSelector({
   splitType,
   onSplitTypeChange,
@@ -85,6 +69,15 @@ export function SplitTypeSelector({
   onComputedSplitsChange,
   currency = "$",
 }: SplitTypeSelectorProps) {
+  const t = useTranslations("splitSelector");
+  const tCommon = useTranslations("common");
+
+  // Build SPLIT_TYPES with translated labels
+  const SPLIT_TYPES = SPLIT_TYPE_VALUES.map((st) => ({
+    ...st,
+    label: t(st.labelKey),
+    hint: t(st.hintKey),
+  }));
 
   // ─── 1) Compute actual amounts per member ───
   const computed = useMemo(() => {
@@ -103,14 +96,12 @@ export function SplitTypeSelector({
         });
         break;
       }
-
       case "exact": {
         members.forEach((m) => {
           results.set(m.id, allocations.get(m.id) ?? 0);
         });
         break;
       }
-
       case "percentage": {
         members.forEach((m) => {
           const pct = allocations.get(m.id) ?? 0;
@@ -118,7 +109,6 @@ export function SplitTypeSelector({
         });
         break;
       }
-
       case "shares": {
         const totalShares = [...allocations.values()].reduce(
           (s, v) => s + (v || 0),
@@ -132,15 +122,18 @@ export function SplitTypeSelector({
         });
         const roundedSum = rounded.reduce((s, v) => s + v, 0);
         const remainder = +((totalAmount - roundedSum).toFixed(2));
-        const remainderIndex = memberIds.findIndex((id) => (allocations.get(id) ?? 0) > 0);
-
+        const remainderIndex = memberIds.findIndex(
+          (id) => (allocations.get(id) ?? 0) > 0
+        );
         memberIds.forEach((id, i) => {
-          results.set(id, i === remainderIndex ? rounded[i] + remainder : rounded[i]);
+          results.set(
+            id,
+            i === remainderIndex ? rounded[i] + remainder : rounded[i]
+          );
         });
         break;
       }
     }
-
     return results;
   }, [splitType, totalAmount, selectedMembers, allocations, members]);
 
@@ -151,7 +144,6 @@ export function SplitTypeSelector({
       (s, v) => s + (v || 0),
       0
     );
-
     let isValid = false;
     let message = "";
     let status: "ok" | "warn" | "error" = "warn";
@@ -160,60 +152,57 @@ export function SplitTypeSelector({
       case "equal":
         isValid = selectedMembers.size > 0;
         message = isValid
-          ? `${currency}${(totalAmount / selectedMembers.size).toFixed(2)}/person`
-          : "Select at least one member";
+          ? `${currency}${(totalAmount / selectedMembers.size).toFixed(2)}/${t("perPerson")}`
+          : t("selectAtLeastOne");
         status = isValid ? "ok" : "warn";
         break;
-
       case "exact":
         if (Math.abs(inputTotal - totalAmount) < 0.01) {
           isValid = true;
-          message = "Fully allocated";
+          message = t("fullyAllocated");
           status = "ok";
         } else if (inputTotal > totalAmount) {
-          message = `Over by ${currency}${(inputTotal - totalAmount).toFixed(2)}`;
+          message = `${t("overBy")} ${currency}${(inputTotal - totalAmount).toFixed(2)}`;
           status = "error";
         } else {
-          message = `${currency}${(totalAmount - inputTotal).toFixed(2)} remaining`;
+          message = `${currency}${(totalAmount - inputTotal).toFixed(2)} ${t("remaining")}`;
           status = "warn";
         }
         break;
-
       case "percentage":
         if (Math.abs(inputTotal - 100) < 0.01) {
           isValid = true;
-          message = "100% allocated";
+          message = t("hundredPercentAllocated");
           status = "ok";
         } else if (inputTotal > 100) {
-          message = `Over by ${(inputTotal - 100).toFixed(1)}%`;
+          message = `${t("overBy")} ${(inputTotal - 100).toFixed(1)}%`;
           status = "error";
         } else {
-          message = `${(100 - inputTotal).toFixed(1)}% remaining`;
+          message = `${(100 - inputTotal).toFixed(1)}% ${t("remaining")}`;
           status = "warn";
         }
         break;
-
       case "shares": {
         const totalShares = inputTotal;
         isValid = totalShares > 0;
         message = isValid
-          ? `${totalShares} shares · ${currency}${(totalAmount / totalShares).toFixed(2)}/share`
-          : "Enter at least one share";
+          ? `${totalShares} ${t("shares")} · ${currency}${(totalAmount / totalShares).toFixed(2)}/${t("share")}`
+          : t("enterAtLeastOneShare");
         status = isValid ? "ok" : "warn";
         break;
       }
     }
 
     const progress =
-      totalAmount > 0 ? Math.min((allocated / totalAmount) * 100, 105) : 0;
-
+      totalAmount > 0
+        ? Math.min((allocated / totalAmount) * 100, 105)
+        : 0;
     return { isValid, message, status, allocated, progress };
-  }, [computed, allocations, splitType, totalAmount, selectedMembers, currency]);
+  }, [computed, allocations, splitType, totalAmount, selectedMembers, currency, t]);
 
   // ─── 3) Send computed results to parent ───
   useEffect(() => {
     if (!onComputedSplitsChange) return;
-
     const splits: ComputedSplit[] = members
       .filter((m) => (computed.get(m.id) ?? 0) > 0)
       .map((m) => ({
@@ -225,7 +214,6 @@ export function SplitTypeSelector({
             : 0,
         shares: allocations.get(m.id) ?? 0,
       }));
-
     onComputedSplitsChange(splits, validation.isValid);
   }, [computed, validation.isValid]);
 
@@ -233,7 +221,6 @@ export function SplitTypeSelector({
   const handleTypeChange = useCallback(
     (type: SplitType) => {
       onSplitTypeChange(type);
-
       if (type === "equal") {
         // Select all members by default
         onSelectedMembersChange(new Set(members.map((m) => m.id)));
@@ -284,7 +271,6 @@ export function SplitTypeSelector({
     warn: "text-amber-600 bg-amber-50",
     error: "text-red-500 bg-red-50",
   };
-
   const barColors = {
     ok: "bg-emerald-500",
     warn: "bg-text-primary",
@@ -292,11 +278,11 @@ export function SplitTypeSelector({
   };
 
   // ═══════════════════════════════════
-  // ██           JSX                 ██
+  // ██ JSX ██
   // ═══════════════════════════════════
+
   return (
     <div className="space-y-3">
-
       {/* ── 1) Split Type Tabs ── */}
       <div className="flex gap-1 rounded-xl bg-surface-2 p-1 overflow-x-auto">
         {SPLIT_TYPES.map((st) => (
@@ -324,7 +310,9 @@ export function SplitTypeSelector({
               className={`h-full rounded-full transition-all duration-500 ${
                 barColors[validation.status]
               }`}
-              style={{ width: `${Math.min(validation.progress, 100)}%` }}
+              style={{
+                width: `${Math.min(validation.progress, 100)}%`,
+              }}
             />
           </div>
           <div
@@ -342,7 +330,7 @@ export function SplitTypeSelector({
       {splitType === "equal" && (
         <div className="flex items-center justify-between px-1">
           <span className="text-xs text-text-secondary">
-            {selectedMembers.size}/{members.length} selected
+            {selectedMembers.size}/{members.length} {t("selected")}
           </span>
           <button
             type="button"
@@ -350,8 +338,8 @@ export function SplitTypeSelector({
             className="text-xs font-medium text-text-primary hover:text-indigo-700"
           >
             {selectedMembers.size === members.length
-              ? "Deselect all"
-              : "Select all"}
+              ? t("deselectAll")
+              : tCommon("selectAll")}
           </button>
         </div>
       )}
@@ -362,7 +350,6 @@ export function SplitTypeSelector({
           const isSelected = selectedMembers.has(m.id);
           const memberAmount = computed.get(m.id) ?? 0;
           const name = getName(m);
-
           return (
             <div
               key={m.id}
@@ -377,10 +364,9 @@ export function SplitTypeSelector({
                   : ""
               }`}
             >
-            {/* Avatar with check badge */}
-            <div className="relative">
-
-           <Avatar src={m.avatar_url} name={name} size="md" />
+              {/* Avatar with check badge */}
+              <div className="relative">
+                <Avatar src={m.avatar_url} name={name} size="md" />
                 {splitType === "equal" && (
                   <div
                     className={`absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full border-2 border-surface text-[8px] transition-all ${
@@ -401,7 +387,8 @@ export function SplitTypeSelector({
                 </p>
                 {memberAmount > 0 && totalAmount > 0 && (
                   <p className="text-xs text-text-tertiary">
-                    {currency}{memberAmount.toFixed(2)}
+                    {currency}
+                    {memberAmount.toFixed(2)}
                     {splitType !== "equal" && splitType !== "exact" && (
                       <span className="ml-1">
                         ({((memberAmount / totalAmount) * 100).toFixed(1)}%)
@@ -413,16 +400,18 @@ export function SplitTypeSelector({
 
               {/* Right side: display amount or input field */}
               {splitType === "equal" ? (
-                isSelected &&
-                totalAmount > 0 && (
+                isSelected && totalAmount > 0 && (
                   <span className="text-sm font-semibold text-text-primary">
-                    {currency}{memberAmount.toFixed(2)}
+                    {currency}
+                    {memberAmount.toFixed(2)}
                   </span>
                 )
               ) : (
                 <div className="flex items-center gap-1.5">
                   {splitType === "exact" && (
-                    <span className="text-xs text-text-tertiary">{currency}</span>
+                    <span className="text-xs text-text-tertiary">
+                      {currency}
+                    </span>
                   )}
                   <input
                     type="number"
@@ -461,32 +450,34 @@ export function SplitTypeSelector({
       {totalAmount > 0 && (
         <div className="flex items-center justify-between rounded-xl bg-surface-2 px-4 py-2.5 text-xs">
           <div className="space-y-0.5">
-            <div className="text-text-tertiary">Allocated</div>
+            <div className="text-text-tertiary">{t("allocated")}</div>
             <div
               className={`font-semibold ${
-                validation.isValid ? "text-emerald-600" : "text-text-secondary"
+                validation.isValid
+                  ? "text-emerald-600"
+                  : "text-text-secondary"
               }`}
             >
-              {currency}{validation.allocated.toFixed(2)}
+              {currency}
+              {validation.allocated.toFixed(2)}
             </div>
           </div>
-
           <div className="h-6 w-px bg-border" />
-
           <div className="space-y-0.5 text-right">
-            <div className="text-text-tertiary">Total</div>
+            <div className="text-text-tertiary">{t("total")}</div>
             <div className="font-semibold text-text-primary">
-              {currency}{totalAmount.toFixed(2)}
+              {currency}
+              {totalAmount.toFixed(2)}
             </div>
           </div>
-
           {validation.allocated < totalAmount - 0.01 && (
             <>
               <div className="h-6 w-px bg-border" />
               <div className="space-y-0.5 text-right">
-                <div className="text-text-tertiary">Remaining</div>
+                <div className="text-text-tertiary">{t("remaining")}</div>
                 <div className="font-semibold text-red-500">
-                  {currency}{(totalAmount - validation.allocated).toFixed(2)}
+                  {currency}
+                  {(totalAmount - validation.allocated).toFixed(2)}
                 </div>
               </div>
             </>

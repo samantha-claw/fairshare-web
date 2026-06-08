@@ -84,7 +84,7 @@ export function useCreateGroup() {
   // Form fields
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [currency, setCurrency] = useState("SDG");
+  const [currency, setCurrency] = useState("USD");
 
   // Friends
   const [friends, setFriends] = useState<Friend[]>([]);

@@ -5,9 +5,10 @@ import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/providers/toast-provider";
 import { DeleteAccountDialog } from "./_components/delete-account-dialog";
-import { Settings, Mail, Lock, AlertTriangle, Loader2, Eye, EyeOff, Check, Shield } from "lucide-react";
+import { Settings, Mail, Lock, AlertTriangle, Loader2, Eye, EyeOff, Check, Shield, Bell } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
+import { NotificationSettings } from "@/components/notification-settings";
 
 // ── Skeleton ────────────────────────────────────────────
 function PageSkeleton() {
@@ -45,6 +46,7 @@ function PasswordInput({
   disabled: boolean;
   ariaDescribedBy?: string;
 }) {
+  const t = useTranslations();
   const [show, setShow] = useState(false);
   return (
     <div className="relative">
@@ -64,7 +66,7 @@ function PasswordInput({
         onClick={() => setShow((s) => !s)}
         aria-pressed={show}
         className="absolute end-3 top-1/2 -translate-y-1/2 text-text-tertiary transition-colors hover:text-text-secondary"
-        aria-label={show ? "Hide password" : "Show password"}
+        aria-label={show ? t("auth.login.hidePassword") : t("auth.login.showPassword")}
       >
         {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
       </button>
@@ -292,7 +294,34 @@ export default function SettingsPage() {
           </motion.section>
 
           {/* ═══════════════════════════════════════════
-              SECTION 2 — Change Password
+              SECTION 2 — Push Notifications
+          ═══════════════════════════════════════════ */}
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm"
+          >
+            <div className="border-b border-border px-6 py-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10">
+                  <Bell className="h-5 w-5 text-blue-500" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-text-primary">{t('notificationSettings.title')}</h2>
+                  <p className="text-xs text-text-secondary">
+                    {t('notificationSettings.inactiveSubtitle')}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="px-6 py-5">
+              <NotificationSettings />
+            </div>
+          </motion.section>
+
+          {/* ═══════════════════════════════════════════
+              SECTION 3 — Change Password
           ═══════════════════════════════════════════ */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}

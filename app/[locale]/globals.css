@@ -200,6 +200,15 @@ html.dark ::selection {
    🎨 RTL SPECIFIC STYLES
    ========================================== */
 [dir="rtl"] {
+  /* Override font-family so the Arabic font is used for the entire RTL page */
+  body,
+  input,
+  textarea,
+  select,
+  button {
+    font-family: var(--font-arabic), Arial, sans-serif;
+  }
+
   /* Ensure Material Icons render correctly in RTL */
   .material-icons-outlined {
     transform: scaleX(1);
@@ -208,5 +217,21 @@ html.dark ::selection {
   /* Flip directional icons that indicate direction/flow */
   .rtl-flip {
     transform: scaleX(-1);
+  }
+
+  /* Improve RTL readability: slightly more line-height for Arabic */
+  body {
+    line-height: 1.65;
+  }
+
+  /* Arabic text should not break in the middle of words awkwardly */
+  body {
+    word-spacing: 0.05em;
+  }
+
+  /* Form elements: keep caret and selection LTR-correct */
+  input,
+  textarea {
+    text-align: start;
   }
 }

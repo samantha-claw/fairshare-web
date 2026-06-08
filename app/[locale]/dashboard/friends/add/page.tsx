@@ -8,6 +8,7 @@ import { useFriends } from "@/hooks/use-friends";
 import { Spinner } from "@/components/ui/spinner";
 import { Avatar } from "@/components/ui/avatar";
 import { FriendsEmptyState } from "@/components/ui/empty-states";
+import { useTranslations } from "next-intl";
 import { ArrowLeft, UserPlus, Search, X, Clock, AtSign, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import type { SearchResultUser } from "@/types/friend";
@@ -73,6 +74,7 @@ function SearchUserCard({
   onSendRequest,
   onCancelRequest,
 }: SearchUserCardProps) {
+  const t = useTranslations("addFriendsPage");
   const displayName = resolveDisplayName(user);
   const username = resolveUsername(user);
   const hasValidUsername = Boolean(username);
@@ -122,7 +124,7 @@ function SearchUserCard({
 
         {/* Username */}
         <p className="text-text-secondary text-sm leading-relaxed line-clamp-1">
-          {hasValidUsername ? `@${username}` : "Username unavailable"}
+          {hasValidUsername ? `@${username}` : t("usernameUnavailable")}
         </p>
 
         {/* Action Button */}
@@ -136,7 +138,7 @@ function SearchUserCard({
               whileTap={{ scale: 0.98 }}
               className="w-full cursor-pointer py-2.5 px-4 rounded-xl font-semibold text-sm transition-all duration-200 border border-border/20 shadow-sm bg-surface-2 text-text-secondary hover:bg-surface hover:text-text-primary flex items-center justify-center gap-2"
             >
-              View Profile
+              {t("viewProfile")}
             </motion.div>
           </Link>
 
@@ -156,8 +158,8 @@ function SearchUserCard({
               ) : (
                 <>
                   <Clock className="h-4 w-4" />
-                  <span className="group-hover:hidden">Pending</span>
-                  <span className="hidden group-hover:inline">Cancel</span>
+                  <span className="group-hover:hidden">{t("pending")}</span>
+                  <span className="hidden group-hover:inline">{t("cancel")}</span>
                 </>
               )}
             </motion.button>
@@ -182,7 +184,7 @@ function SearchUserCard({
               ) : (
                 <>
                   <UserPlus className="h-4 w-4" />
-                  <span>Add</span>
+                  <span>{t("add")}</span>
                 </>
               )}
             </motion.button>
@@ -199,6 +201,7 @@ function SearchUserCard({
 export default function AddFriendsPage() {
   const router = useRouter();
   const f = useFriends();
+  const t = useTranslations("addFriendsPage");
 
   if (f.loading) return <PageSkeleton />;
 
@@ -218,8 +221,8 @@ export default function AddFriendsPage() {
             href="/dashboard/friends"
             className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Friends
+            <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
+            {t("backToFriends")}
           </Link>
 
           <div className="flex items-center gap-4">
@@ -228,10 +231,10 @@ export default function AddFriendsPage() {
             </div>
             <div>
               <h1 className="text-3xl font-black tracking-tight text-text-primary sm:text-4xl">
-                Add Friends
+                {t("title")}
               </h1>
               <p className="text-sm text-text-secondary">
-                Search by username to connect
+                {t("subtitle")}
               </p>
             </div>
           </div>
@@ -250,8 +253,8 @@ export default function AddFriendsPage() {
               type="text"
               value={f.searchTerm}
               onChange={(e) => f.setSearchTerm(e.target.value)}
-              placeholder="Search by username..."
-              aria-label="Search users"
+              placeholder={t("placeholder")}
+              aria-label={t("searchUsers")}
               autoFocus
               className="block w-full rounded-2xl border border-border bg-surface py-4 pl-12 pr-12 text-base text-text-primary placeholder:text-text-tertiary transition-all duration-200 focus:border-border-2 focus:outline-none focus:ring-2 focus:ring-border/30"
             />
@@ -259,7 +262,7 @@ export default function AddFriendsPage() {
               <button
                 type="button"
                 onClick={f.clearSearch}
-                aria-label="Clear search"
+                aria-label={t("clearSearch")}
                 className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-text-secondary transition-colors hover:bg-surface-2 hover:text-text-primary"
               >
                 <X className="h-5 w-5" />
@@ -271,7 +274,7 @@ export default function AddFriendsPage() {
           {f.searching && (
             <div className="mt-4 flex items-center justify-center gap-2 text-sm text-text-secondary">
               <Spinner className="h-4 w-4" />
-              Searching...
+              {t("searching")}
             </div>
           )}
         </motion.div>
@@ -289,17 +292,17 @@ export default function AddFriendsPage() {
                   <Search className="h-8 w-8 text-text-tertiary" />
                 </div>
                 <p className="text-lg font-semibold text-text-primary mb-1">
-                  No users found
+                  {t("noUsersFound")}
                 </p>
                 <p className="text-sm text-text-secondary">
-                  Try a different username
+                  {t("tryDifferent")}
                 </p>
               </div>
             ) : (
               <>
                 {/* Results Count */}
                 <p className="mb-4 text-sm font-medium text-text-secondary">
-                  {f.searchResults.length} result{f.searchResults.length !== 1 ? "s" : ""}
+                  {t("resultLabel", { count: f.searchResults.length })}
                 </p>
 
                 {/* Results Grid */}
@@ -341,10 +344,10 @@ export default function AddFriendsPage() {
               <UserPlus className="h-10 w-10 text-text-tertiary" />
             </div>
             <p className="text-lg font-semibold text-text-primary mb-1">
-              Find your friends
+              {t("findYourFriends")}
             </p>
             <p className="text-sm text-text-secondary max-w-xs">
-              Enter a username above to search for people you know
+              {t("findYourFriendsHint")}
             </p>
           </motion.div>
         )}

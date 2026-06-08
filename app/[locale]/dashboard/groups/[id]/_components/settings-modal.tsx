@@ -3,6 +3,7 @@
 import { Modal } from "@/components/ui/modal";
 import { Spinner } from "@/components/ui/spinner";
 import { formatCurrency } from "@/lib/utils";
+import { useTranslations, useLocale } from "next-intl";
 import type { Group, Member } from "@/types/group";
 
 interface SettingsModalProps {
@@ -36,17 +37,22 @@ export function SettingsModal({
   onDeleteGroup,
   onLeaveGroup,
 }: SettingsModalProps) {
+  const t = useTranslations("groupSettings");
+  const tGroups = useTranslations("groups");
+  const tCommon = useTranslations("common");
+  const locale = useLocale();
+
   const handleClose = () => {
     onDeleteConfirmTextChange("");
     onClose();
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Group Settings">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t("modalTitle")}>
       {/* ── Header ── */}
       <div className="border-b border-border px-6 pb-4 pt-6">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-text-primary">Group Settings</h3>
+          <h3 className="text-lg font-bold text-text-primary">{t("modalTitle")}</h3>
           <button
             onClick={handleClose}
             className="rounded-md p-1 text-text-tertiary hover:bg-surface-2 hover:text-text-secondary"
@@ -72,11 +78,13 @@ export function SettingsModal({
       <div className="px-6 py-6">
         {/* Group Info */}
         <div className="mb-6 rounded-lg border border-border bg-surface-2 p-4">
-          <p className="text-sm text-text-secondary">Group Name</p>
+          <p className="text-sm text-text-secondary">{tGroups("groupNameLabel")}</p>
           <p className="text-lg font-semibold text-text-primary">{group.name}</p>
           <p className="mt-1 text-xs text-text-tertiary">
-            Created {new Date(group.created_at).toLocaleDateString()} ·{" "}
-            {members.length} members
+            {t("createdInfo", {
+              date: new Date(group.created_at).toLocaleDateString(locale),
+              members: members.length,
+            })}
           </p>
         </div>
 
@@ -96,15 +104,13 @@ export function SettingsModal({
                   d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
                 />
               </svg>
-              <h4 className="text-sm font-bold text-red-800">Danger Zone</h4>
+              <h4 className="text-sm font-bold text-red-800">{t("dangerZone")}</h4>
             </div>
             <p className="mb-4 text-xs text-red-700">
-              Deleting this group will permanently remove all expenses,
-              settlements, and member data. This action{" "}
-              <strong>cannot be undone</strong>.
+              {t("deleteWarning")}
             </p>
             <label className="mb-2 block text-xs font-medium text-red-700">
-              Type <strong>&quot;{group.name}&quot;</strong> to confirm:
+              {t("typeToConfirm", { name: group.name })}
             </label>
             <input
               type="text"
@@ -120,10 +126,10 @@ export function SettingsModal({
             >
               {deletingGroup ? (
                 <span className="inline-flex items-center gap-2">
-                  <Spinner className="h-4 w-4" /> Deleting…
+                  <Spinner className="h-4 w-4" /> {t("deleting")}
                 </span>
               ) : (
-                "Delete Group Permanently"
+                t("deletePermanently")
               )}
             </button>
           </div>
@@ -143,7 +149,7 @@ export function SettingsModal({
                   d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
                 />
               </svg>
-              <h4 className="text-sm font-bold text-text-primary">Leave Group</h4>
+              <h4 className="text-sm font-bold text-text-primary">{t("leaveGroup")}</h4>
             </div>
 
             {!canLeave ? (
@@ -162,16 +168,15 @@ export function SettingsModal({
                   />
                 </svg>
                 <p className="text-xs text-amber-800">
-                  You must settle your balances before leaving the group.{" "}
+                  {t("settleFirst")}{" "}
                   {myNetBalance > 0
-                    ? `You are still owed ${formatCurrency(myNetBalance, group.currency)}.`
-                    : `You still owe ${formatCurrency(myNetBalance, group.currency)}.`}
+                    ? t("settleFirstOwed", { amount: formatCurrency(myNetBalance, group.currency, locale) })
+                    : t("settleFirstOwe", { amount: formatCurrency(Math.abs(myNetBalance), group.currency, locale) })}
                 </p>
               </div>
             ) : (
               <p className="mb-4 text-xs text-text-secondary">
-                You can leave this group since your balance is settled. This
-                action cannot be undone.
+                {t("canLeave")}
               </p>
             )}
 
@@ -179,14 +184,14 @@ export function SettingsModal({
               onClick={onLeaveGroup}
               disabled={leavingGroup || !canLeave}
               className="w-full rounded-lg bg-red-600 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-              title={!canLeave ? "Settle your balances first" : undefined}
+              title={!canLeave ? t("settleFirstTitle") : undefined}
             >
               {leavingGroup ? (
                 <span className="inline-flex items-center gap-2">
-                  <Spinner className="h-4 w-4" /> Leaving…
+                  <Spinner className="h-4 w-4" /> {t("leaving")}
                 </span>
               ) : (
-                "Leave Group"
+                t("leaveGroup")
               )}
             </button>
           </div>
@@ -199,7 +204,7 @@ export function SettingsModal({
           onClick={handleClose}
           className="w-full rounded-lg py-2 text-sm font-medium text-text-secondary hover:text-text-primary"
         >
-          Close
+          {tCommon("close")}
         </button>
       </div>
     </Modal>

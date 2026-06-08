@@ -3,15 +3,18 @@
 // ==========================================
 // 📦 IMPORTS
 // ==========================================
+
 import { Link } from "@/i18n/navigation";
 import { Avatar } from "@/components/ui/avatar";
 import { Spinner } from "@/components/ui/spinner";
 import { formatCurrency } from "@/lib/utils";
+import { useTranslations, useLocale } from "next-intl";
 import type { Settlement } from "@/types/group";
 
 // ==========================================
 // 🧩 TYPES
 // ==========================================
+
 interface PendingSettlementsProps {
   settlements: Settlement[];
   currentUser: string | null;
@@ -25,6 +28,7 @@ interface PendingSettlementsProps {
 // ==========================================
 // 🎨 UI RENDER
 // ==========================================
+
 export function PendingSettlements({
   settlements,
   currentUser,
@@ -34,6 +38,10 @@ export function PendingSettlements({
   onReject,
   onDelete,
 }: PendingSettlementsProps) {
+  const t = useTranslations("pendingSettlements");
+  const tCommon = useTranslations("common");
+  const locale = useLocale();
+
   if (settlements.length === 0) return null;
 
   return (
@@ -41,7 +49,7 @@ export function PendingSettlements({
       <div className="mb-4 flex items-center gap-2">
         <span className="text-lg">⏳</span>
         <h2 className="text-sm font-semibold text-amber-800">
-          Pending Settlements ({settlements.length})
+          {t("title")} ({settlements.length})
         </h2>
       </div>
 
@@ -60,23 +68,40 @@ export function PendingSettlements({
                 <Link href={`/dashboard/profile/${s.from_user}`}>
                   <Avatar
                     src={s.from_profile.avatar_url}
-                    name={s.from_profile.display_name || s.from_profile.username}
+                    name={
+                      s.from_profile.display_name || s.from_profile.username
+                    }
                     size="sm"
                   />
                 </Link>
                 <div className="text-sm">
                   <p className="text-text-primary">
-                    <Link href={`/dashboard/profile/${s.from_user}`} className="font-semibold hover:text-text-primary hover:underline">
-                      {isSender ? "You" : s.from_profile.display_name || s.from_profile.username}
+                    <Link
+                      href={`/dashboard/profile/${s.from_user}`}
+                      className="font-semibold hover:text-text-primary hover:underline"
+                    >
+                      {isSender
+                        ? tCommon("you")
+                        : s.from_profile.display_name ||
+                          s.from_profile.username}
                     </Link>
                     {" → "}
-                    <Link href={`/dashboard/profile/${s.to_user}`} className="font-semibold hover:text-text-primary hover:underline">
-                      {isReceiver ? "You" : s.to_profile.display_name || s.to_profile.username}
+                    <Link
+                      href={`/dashboard/profile/${s.to_user}`}
+                      className="font-semibold hover:text-text-primary hover:underline"
+                    >
+                      {isReceiver
+                        ? tCommon("you")
+                        : s.to_profile.display_name ||
+                          s.to_profile.username}
                     </Link>
                   </p>
                   <p className="text-xs text-text-tertiary">
-                    {new Date(s.created_at).toLocaleString("en-US", {
-                      month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
+                    {new Date(s.created_at).toLocaleString(locale === "ar" ? "ar-SA" : "en-US", {
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
                     })}
                   </p>
                 </div>
@@ -84,9 +109,8 @@ export function PendingSettlements({
 
               <div className="flex items-center gap-3">
                 <span className="text-lg font-bold text-text-primary">
-                  {formatCurrency(s.amount, currency)}
+                  {formatCurrency(s.amount, currency, locale)}
                 </span>
-
                 {isReceiver && (
                   <div className="flex items-center gap-1.5">
                     <button
@@ -94,40 +118,62 @@ export function PendingSettlements({
                       disabled={isProcessing}
                       className="inline-flex items-center gap-1 rounded-md bg-green-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      {isProcessing ? <Spinner className="h-3.5 w-3.5" /> : "✅"} Approve
+                      {isProcessing ? (
+                        <Spinner className="h-3.5 w-3.5" />
+                      ) : (
+                        "✅"
+                      )}
+                      {t("approve")}
                     </button>
                     <button
                       onClick={() => onReject(s.id)}
                       disabled={isProcessing}
                       className="inline-flex items-center gap-1 rounded-md border border-border bg-surface px-3 py-1.5 text-xs font-medium text-red-600 shadow-sm transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      {isProcessing ? <Spinner className="h-3.5 w-3.5" /> : "❌"} Reject
+                      {isProcessing ? (
+                        <Spinner className="h-3.5 w-3.5" />
+                      ) : (
+                        "❌"
+                      )}
+                      {t("reject")}
                     </button>
                   </div>
                 )}
-
                 {isSender && (
                   <div className="flex items-center gap-2">
-                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">Pending…</span>
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                      {t("pendingLabel")}
+                    </span>
                     <button
                       onClick={() => onDelete(s.id)}
                       disabled={isProcessing}
                       className="p-1 text-text-tertiary transition-colors hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
-                      title="Cancel request"
+                      title={t("cancelRequest")}
                     >
                       {isProcessing ? (
                         <Spinner className="h-4 w-4" />
                       ) : (
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
                         </svg>
                       )}
                     </button>
                   </div>
                 )}
-
                 {!isSender && !isReceiver && (
-                  <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text-secondary">Pending</span>
+                  <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text-secondary">
+                    {t("pendingLabel")}
+                  </span>
                 )}
               </div>
             </div>
