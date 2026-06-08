@@ -281,7 +281,7 @@ export function OverviewTab({
           {balances.length === 0 ? (
             <div className="rounded-xl border border-dashed border-border bg-surface-2/50 p-8 text-center">
               <p className="text-sm text-text-secondary">
-                No balances yet. Add an expense to see balances.
+                {t("noBalances")}
               </p>
             </div>
           ) : (

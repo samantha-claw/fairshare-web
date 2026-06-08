@@ -52,7 +52,8 @@
     "moreCount": "+{count} آخرين",
     "editTitle": "تعديل \"{name}\"",
     "deleteTitle": "حذف \"{name}\"",
-    "pageOf": "الصفحة {page} من {total}"
+    "pageOf": "الصفحة {page} من {total}",
+    "memberLabel": "عضو {n}"
   },
   "analysisTab": {
     "all": "الكل",
@@ -82,7 +83,9 @@
     "dailyBreakdown": "تفصيل يومي",
     "monthlyOverview": "نظرة شهرية",
     "paid": "مدفوع",
-    "owed": "مستحق"
+    "owed": "مستحق",
+    "you": "أنت",
+    "noDataTitle": "لا توجد بيانات بعد"
   },
   "auth": {
     "login": {
@@ -232,7 +235,8 @@
     "equal": "متساوي",
     "exact": "محدد",
     "percent": "نسبة",
-    "sharesLabel": "حصص"
+    "sharesLabel": "حصص",
+    "hasUnread": "يوجد عناصر غير مقروءة"
   },
   "confirmDialog": {
     "title": "هل أنت متأكد؟",
@@ -329,7 +333,13 @@
     "message": "الرسالة:",
     "stackTrace": "تتبع الخطأ:",
     "digest": "الملخص:",
-    "dashboard": "لوحة التحكم"
+    "dashboard": "لوحة التحكم",
+    "context_page": "هذه الصفحة",
+    "context_dashboard": "لوحة التحكم",
+    "context_friends": "الأصدقاء",
+    "context_groups": "المجموعات",
+    "context_group": "هذه المجموعة",
+    "context_profile": "هذا الملف الشخصي"
   },
   "expandingSearch": {
     "placeholder": "بحث...",
@@ -367,7 +377,8 @@
     "expenseNotFound": "لا توجد مصاريف مطابقة لبحثك",
     "noExpensesTitle": "لا توجد مصروفات بعد",
     "noExpensesDesc": "أضف أول مصروف لك لبدء تتبع إنفاق المجموعة.",
-    "addExpense": "إضافة مصروف"
+    "addExpense": "إضافة مصروف",
+    "viewAll": "عرض جميع المصروفات"
   },
   "floatingActionMenu": {
     "toggleMenu": "تبديل قائمة الإجراءات"
@@ -785,7 +796,8 @@
     "allGroupExpenses": "جميع مصروفات المجموعة",
     "myBalance": "رصيدي",
     "yourNetPosition": "صافي وضعك",
-    "whoOwesWhom": "من يدين لمن"
+    "whoOwesWhom": "من يدين لمن",
+    "noBalances": "لا توجد أرصدة بعد. أضف مصروفاً لرؤية الأرصدة."
   },
   "overviewWidget": {
     "youOwe": "عليك",
@@ -880,7 +892,8 @@
     "oweOverall": "مستحق عليك إجمالاً",
     "owedOverall": "مستحق لك إجمالاً",
     "allSettledUp": "كل شيء متسوّى",
-    "user": "مستخدم"
+    "user": "مستخدم",
+    "notFound": "الملف الشخصي غير موجود"
   },
   "profileEdit": {
     "backToProfile": "العودة إلى الملف الشخصي",
@@ -1159,5 +1172,10 @@
     "deniedHint": "لتفعيلها، انقر على أيقونة القفل في شريط العنوان واسمح بالإشعارات",
     "enableAria": "تفعيل الإشعارات",
     "disableAria": "إيقاف الإشعارات"
+  },
+  "membersCard": {
+    "title": "الأعضاء",
+    "owner": "المالك",
+    "remove": "إزالة"
   }
 }

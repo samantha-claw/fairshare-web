@@ -388,7 +388,7 @@ export function AllExpensesModal({
                             const splitName =
                               split?.profiles?.display_name ||
                               split?.profiles?.full_name ||
-                              `M${i + 1}`;
+                              `${t("memberLabel", { n: i + 1 })}`;
                             const splitAvatar =
                               split?.profiles?.avatar_url || null;
                             return (

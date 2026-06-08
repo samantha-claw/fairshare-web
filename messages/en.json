@@ -44,7 +44,8 @@
     "moreCount": "+{count} more",
     "editTitle": "Edit \"{name}\"",
     "deleteTitle": "Delete \"{name}\"",
-    "pageOf": "Page {page} of {total}"
+    "pageOf": "Page {page} of {total}",
+    "memberLabel": "M{n}"
   },
   "analysisTab": {
     "all": "All",
@@ -73,8 +74,10 @@
     "monthlyOverview": "Monthly overview",
     "paid": "Paid",
     "owed": "Owed",
-    "member": "member",
-    "unknown": "Unknown"
+    "member": "Member",
+    "unknown": "Unknown",
+    "you": "You",
+    "noDataTitle": "No Data Yet"
   },
   "auth": {
     "login": {
@@ -224,7 +227,8 @@
     "exact": "Exact",
     "percent": "Percent",
     "sharesLabel": "Shares",
-    "you": "You"
+    "you": "You",
+    "hasUnread": "Has unread items"
   },
   "confirmDialog": {
     "title": "Are you sure?",
@@ -321,7 +325,13 @@
     "message": "Message:",
     "stackTrace": "Stack Trace:",
     "digest": "Digest:",
-    "dashboard": "Dashboard"
+    "dashboard": "Dashboard",
+    "context_page": "this page",
+    "context_dashboard": "the dashboard",
+    "context_friends": "friends",
+    "context_groups": "groups",
+    "context_group": "this group",
+    "context_profile": "this profile"
   },
   "expandingSearch": {
     "placeholder": "Search...",
@@ -359,7 +369,8 @@
     "expenseNotFound": "No expenses match your filters",
     "noExpensesTitle": "No expenses yet",
     "noExpensesDesc": "Add your first expense to start tracking group spending.",
-    "addExpense": "Add Expense"
+    "addExpense": "Add Expense",
+    "viewAll": "View All Expenses"
   },
   "floatingActionMenu": {
     "toggleMenu": "Toggle action menu"
@@ -773,7 +784,8 @@
     "allGroupExpenses": "All group expenses",
     "myBalance": "My Balance",
     "yourNetPosition": "Your net position",
-    "whoOwesWhom": "Who Owes Whom"
+    "whoOwesWhom": "Who Owes Whom",
+    "noBalances": "No balances yet. Add an expense to see balances."
   },
   "overviewWidget": {
     "youOwe": "You Owe",
@@ -849,7 +861,8 @@
     "removeFriend": "Remove Friend",
     "user": "User",
     "username": "Username",
-    "usernameHint": "Lowercase letters, numbers, and underscores only."
+    "usernameHint": "Lowercase letters, numbers, and underscores only.",
+    "notFound": "Profile Not Found"
   },
   "profileEdit": {
     "backToProfile": "Back to Profile",
@@ -1125,5 +1138,10 @@
     "deniedHint": "To enable, click the lock icon in your address bar and allow notifications",
     "enableAria": "Enable push notifications",
     "disableAria": "Disable push notifications"
+  },
+  "membersCard": {
+    "title": "Members",
+    "owner": "Owner",
+    "remove": "Remove"
   }
 }

@@ -517,8 +517,8 @@ export function AnalysisTab({
           userId,
           name:
             userId === currentUserId
-              ? "You"
-              : memberNames.get(userId) || "Member",
+              ? t("you")
+              : memberNames.get(userId) || t("member"),
           paid: data.paid,
           owed: data.owed,
         };
@@ -569,10 +569,10 @@ export function AnalysisTab({
             </div>
           </div>
           <h3 className="mb-2 text-xl font-semibold text-text-primary">
-            No Data Yet
+            {t("noDataTitle")}
           </h3>
           <p className="text-sm text-text-secondary max-w-sm">
-            t("noDataDesc")
+            {t("noDataDesc")}
           </p>
         </motion.div>
       </div>
@@ -630,7 +630,7 @@ export function AnalysisTab({
           value={
             topSpenders[0]
               ? topSpenders[0].id === currentUserId
-                ? "You"
+                ? t("you")
                 : topSpenders[0].name
               : "—"
           }
@@ -1004,7 +1004,7 @@ export function AnalysisTab({
                       })}{" "}
                       ·{" "}
                       {e.paid_by === currentUserId
-                        ? "You"
+                        ? t("you")
                         : e.profiles?.display_name ||
                           e.profiles?.full_name ||
                           tCommon("unknown")}

@@ -364,7 +364,7 @@ export function ExpensesTab({
                           className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-text-secondary hover:bg-surface-2 transition-colors"
                         >
                           <Pencil className="h-3.5 w-3.5" />
-                          Edit
+                          {tCommon("edit")}
                         </button>
                         <button
                           role="menuitem"
@@ -375,7 +375,7 @@ export function ExpensesTab({
                           className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-negative hover:bg-negative/10 transition-colors"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
-                          Delete
+                          {tCommon("delete")}
                         </button>
                       </motion.div>
                     )}
@@ -395,7 +395,7 @@ export function ExpensesTab({
           onClick={onViewAll}
           className="w-full flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface p-4 text-sm font-medium text-text-secondary transition-all hover:bg-surface-2 hover:text-text-primary"
         >
-          View All Expenses
+          {t("viewAll")}
           {hasMore && (
             <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs font-bold text-text-primary">
               {expenses.length}

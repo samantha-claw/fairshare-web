@@ -64,8 +64,9 @@ export function ProfileHeader({
 }: ProfileHeaderProps) {
   const locale = useLocale();
   const t = useTranslations("profileHeader");
+  const t2 = useTranslations("common");
   const displayName =
-    profile.display_name || profile.full_name || profile.username || "User";
+    profile.display_name || profile.full_name || profile.username || t2("someone");
   const joinDate = new Date(profile.created_at).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US", {
     month: "long",
     year: "numeric",

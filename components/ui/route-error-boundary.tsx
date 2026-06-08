@@ -14,7 +14,7 @@ interface RouteErrorBoundaryProps {
 export function RouteErrorBoundary({
   error,
   reset,
-  context = "this page",
+  context = "page",
 }: RouteErrorBoundaryProps) {
   const t = useTranslations("errors");
 
@@ -22,7 +22,6 @@ export function RouteErrorBoundary({
     console.error(`[${context}] Error:`, error);
   }, [error, context]);
 
-  // شيلنا شرط الـ isDev عشان نظهر الخطأ في كل الحالات مؤقتاً لحد ما نحله
   return (
     <div className="flex min-h-[60vh] items-center justify-center p-6">
       <div className="w-full max-w-2xl rounded-3xl border border-border bg-surface p-8 text-center shadow-lg">
@@ -31,7 +30,7 @@ export function RouteErrorBoundary({
         </div>
         <h2 className="text-xl font-bold text-text-primary">{t("somethingWentWrong")}</h2>
         <p className="mt-2 text-sm text-text-secondary">
-          {t("errorLoading", { context })}
+          {t("errorLoading", { context: t(`context_${context}`) })}
         </p>
 
         {/* 🚨 شاشة كشف التفاصيل (Debugger) 🚨 */}
