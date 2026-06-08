@@ -12,6 +12,8 @@ interface ReceiptUploadProps {
   groupId: string;
 }
 
+const ALLOWED_IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "gif", "webp"];
+
 export function ReceiptUpload({ value, onChange, groupId }: ReceiptUploadProps) {
   const t = useTranslations("expenseModal");
   const [uploading, setUploading] = useState(false);
@@ -58,11 +60,20 @@ export function ReceiptUpload({ value, onChange, groupId }: ReceiptUploadProps) 
       setUploading(true);
       setProgress(10);
 
+      if (!/^[a-zA-Z0-9_-]+$/.test(groupId)) {
+        alert(t("uploadError") || "Group ID contains invalid characters. Only letters, numbers, hyphens, and underscores are allowed.");
+        setUploading(false);
+        return;
+      }
+
       try {
         const compressed = await compressImage(file);
         setProgress(40);
 
-        const ext = file.name.split(".").pop() || "jpg";
+        let ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+        if (!ALLOWED_IMAGE_EXTENSIONS.includes(ext)) {
+          ext = "jpg";
+        }
         const fileName = `${groupId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
         // Dynamic import to avoid SSR issues

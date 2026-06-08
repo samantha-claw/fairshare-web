@@ -44,7 +44,7 @@ const TabsTrigger = React.forwardRef<
       {...props}
     >
       {props.children}
-      {badge !== undefined && (
+      {badge !== undefined && badge !== 0 && (
         <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-text-primary px-1.5 text-xs font-semibold text-surface">
           {badge}
         </span>

@@ -77,8 +77,8 @@ const styles = StyleSheet.create({
   categoryBadge: { backgroundColor: "#EEF2FF", paddingVertical: 2, paddingHorizontal: 6, borderRadius: 4, fontSize: 8, color: BRAND.indigo },
 });
 
-function formatCurrency(amount: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", {
+function formatCurrency(amount: number, currency: string, locale?: string): string {
+  return new Intl.NumberFormat(locale || "en-US", {
     style: "currency", currency: currency || "USD",
     minimumFractionDigits: 2, maximumFractionDigits: 2,
   }).format(Math.abs(amount));
@@ -100,6 +100,7 @@ function formatDateTime(dateStr: string, locale: string): string {
 function t(locale: string, key: string, vars?: Record<string, string | number>): string {
   const en: Record<string, string> = {
     totalExpenses: "Total Expenses",
+    expenseCount: "Expense Count",
     yourBalance: "Your Balance",
     settlements: "Settlements",
     expensesSection: "EXPENSES",
@@ -119,10 +120,14 @@ function t(locale: string, key: string, vars?: Record<string, string | number>):
     paidVerb: "paid",
     unknown: "Unknown",
     createdLabel: "Created",
+    generatedOn: "Generated on {date}",
+    membersCount_singular: "member",
+    membersCount_plural: "members",
   };
 
   const ar: Record<string, string> = {
     totalExpenses: "إجمالي المصاريف",
+    expenseCount: "عدد المصاريف",
     yourBalance: "رصيدك",
     settlements: "التسويات",
     expensesSection: "المصاريف",
@@ -142,6 +147,9 @@ function t(locale: string, key: string, vars?: Record<string, string | number>):
     paidVerb: "دفع",
     unknown: "غير معروف",
     createdLabel: "أُنشئت",
+    generatedOn: "تم الإنشاء في {date}",
+    membersCount_singular: "عضو",
+    membersCount_plural: "أعضاء",
   };
 
   const dict = locale === "ar" ? ar : en;
@@ -214,21 +222,21 @@ export function GroupReportDocument({
             <View style={styles.statCard}>
               <Text style={styles.statLabel}>{t(locale, "totalExpenses")}</Text>
               <Text style={styles.statValue}>
-                {formatCurrency(totalGroupExpenses, group.currency || "USD")}
+                {formatCurrency(totalGroupExpenses, group.currency || "USD", locale)}
               </Text>
             </View>
             <View style={styles.statCard}>
               <Text style={styles.statLabel}>{t(locale, "yourBalance")}</Text>
               {myBalance && myBalance.net_balance >= 0 ? (
-                <Text style={styles.statGreen}>{formatCurrency(myBalance.net_balance, group.currency || "USD")}</Text>
+                <Text style={styles.statGreen}>{formatCurrency(myBalance.net_balance, group.currency || "USD", locale)}</Text>
               ) : myBalance ? (
-                <Text style={styles.statRed}>{formatCurrency(myBalance.net_balance, group.currency || "USD")}</Text>
+                <Text style={styles.statRed}>{formatCurrency(myBalance.net_balance, group.currency || "USD", locale)}</Text>
               ) : (
                 <Text style={styles.statValue}>—</Text>
               )}
             </View>
             <View style={styles.statCard}>
-              <Text style={styles.statLabel}>{t(locale, "totalExpenses")}</Text>
+              <Text style={styles.statLabel}>{t(locale, "expenseCount")}</Text>
               <Text style={styles.statValue}>{expenses.length}</Text>
             </View>
             <View style={styles.statCard}>
@@ -273,9 +281,9 @@ export function GroupReportDocument({
                       <Text style={styles.categoryBadge}>{category.emoji} {category.label}</Text>
                     </View>
                     <Text style={[styles.tableCell, styles.colPaidBy]}>{paidByName}</Text>
-                    <Text style={[styles.tableCellBold, styles.colAmount]}>{formatCurrency(expense.amount, group.currency || "USD")}</Text>
+                    <Text style={[styles.tableCellBold, styles.colAmount]}>{formatCurrency(expense.amount, group.currency || "USD", locale)}</Text>
                     <Text style={[styles.tableCell, styles.colBalance]}>
-                      {currentUserId ? formatCurrency(myShare, group.currency || "USD") : "—"}
+                      {currentUserId ? formatCurrency(myShare, group.currency || "USD", locale) : "—"}
                     </Text>
                   </View>
                 );
@@ -291,7 +299,7 @@ export function GroupReportDocument({
                 </Text>
                 <Text style={[styles.tableCell, styles.colCategory]}></Text>
                 <Text style={[styles.tableCell, styles.colPaidBy]}></Text>
-                <Text style={[styles.tableCellBold, styles.colAmount]}>{formatCurrency(totalGroupExpenses, group.currency || "USD")}</Text>
+                <Text style={[styles.tableCellBold, styles.colAmount]}>{formatCurrency(totalGroupExpenses, group.currency || "USD", locale)}</Text>
                 <Text style={[styles.tableCell, styles.colBalance]}></Text>
               </View>
             </View>
@@ -335,13 +343,13 @@ export function GroupReportDocument({
                             {balance.display_name} {isCurrentUser ? t(locale, "youLabel") : ""}
                           </Text>
                           <Text style={{ fontSize: 8, color: BRAND.slate }}>
-                            {t(locale, "paidLabel")} {formatCurrency(balance.total_paid, group.currency || "USD")} · {t(locale, "owedLabel")}{" "}
-                            {formatCurrency(balance.total_owed, group.currency || "USD")}
+                            {t(locale, "paidLabel")} {formatCurrency(balance.total_paid, group.currency || "USD", locale)} · {t(locale, "owedLabel")}{" "}
+                            {formatCurrency(balance.total_owed, group.currency || "USD", locale)}
                           </Text>
                         </View>
                         <Text style={[styles.balanceAmount, balance.net_balance >= 0 ? styles.balanceAmountGreen : styles.balanceAmountRed]}>
                           {balance.net_balance >= 0 ? "+" : ""}
-                          {formatCurrency(balance.net_balance, group.currency || "USD")}
+                          {formatCurrency(balance.net_balance, group.currency || "USD", locale)}
                         </Text>
                       </View>
                     </View>
@@ -374,7 +382,7 @@ export function GroupReportDocument({
                       </Text>
                     </View>
                     <Text style={styles.settlementAmount}>
-                      {formatCurrency(settlement.amount, group.currency || "USD")}
+                      {formatCurrency(settlement.amount, group.currency || "USD", locale)}
                     </Text>
                     <View style={styles.settlementStatus}>
                       <Text style={[styles.statusBadge, {

@@ -799,7 +799,17 @@
     "myBalance": "رصيدي",
     "yourNetPosition": "صافي وضعك",
     "whoOwesWhom": "من يدين لمن",
-    "noBalances": "لا توجد أرصدة بعد. أضف مصروفاً لرؤية الأرصدة."
+    "noBalances": "لا توجد أرصدة بعد. أضف مصروفاً لرؤية الأرصدة.",
+    "groupBalances": {
+      "title": "أرصدة المجموعة",
+      "subtitle": "من يدين لمن"
+    },
+    "member": {
+      "you": "(أنت)"
+    },
+    "status": {
+      "settled": "مسوى"
+    }
   },
   "overviewWidget": {
     "youOwe": "عليك",

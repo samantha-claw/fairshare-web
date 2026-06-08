@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Link } from "@/i18n/navigation";
 import {
   TrendingDown,
@@ -68,7 +68,7 @@ function AnimatedBalanceCard({
   });
 
   // Animate the number (or a stable value when hidden to keep layout)
-  useMemo(() => {
+  useEffect(() => {
     const controls = animate(springValue, amount, { duration: 2, ease: "easeOut" });
     return () => controls.stop();
   }, [amount, springValue]);
