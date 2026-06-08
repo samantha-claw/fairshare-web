@@ -133,10 +133,17 @@ function sanitizeFileName(name: string): string {
 }
 
 function escapeCSVField(field: string): string {
-  if (field.includes(",") || field.includes('"') || field.includes("\n")) {
-    return `"${field.replace(/"/g, '""')}"`;
+  const neutralizedField = /^\s*[=+\-@]/.test(field) ? `'${field}` : field;
+
+  if (
+    neutralizedField.includes(",") ||
+    neutralizedField.includes('"') ||
+    neutralizedField.includes("\n") ||
+    neutralizedField.includes("\r")
+  ) {
+    return `"${neutralizedField.replace(/"/g, '""')}"`;
   }
-  return field;
+  return neutralizedField;
 }
 
 function downloadBlob(blob: Blob, fileName: string): void {

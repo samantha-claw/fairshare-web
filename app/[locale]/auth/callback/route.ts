@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
+import { routing } from "@/i18n/routing";
 
 function isUniqueViolation(error: unknown): boolean {
   if (!error || typeof error !== "object") return false;
@@ -82,7 +83,10 @@ async function generateUniqueUsername(
 }
 
 export async function GET(request: Request) {
-  const locale = new URL(request.url).pathname.split('/')[1] === 'ar' ? 'ar' : 'en';
+  const pathLocale = new URL(request.url).pathname.split("/")[1];
+  const locale = routing.locales.includes(pathLocale as (typeof routing.locales)[number])
+    ? pathLocale
+    : routing.defaultLocale;
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
 

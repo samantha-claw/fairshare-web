@@ -336,8 +336,8 @@ export function useFriends() {
     const confirmed = await toast.confirm(
       t("friends.removeConfirmTitle"),
       {
-        confirmLabel: t("friends.removeConfirmTitle").includes("remove") ? "Remove" : "Remove",
-        cancelLabel: "Cancel"
+        confirmLabel: t("friends.removeConfirmLabel"),
+        cancelLabel: t("common.cancel")
       }
     );
     if (!confirmed) return;

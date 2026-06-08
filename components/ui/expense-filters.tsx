@@ -99,6 +99,8 @@ export function ExpenseFilters({ expenses, currentUserId, onFilteredChange }: Ex
           />
           {searchQuery && (
             <button
+              type="button"
+              aria-label={t("clearSearch")}
               onClick={() => setSearchQuery("")}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary"
             >
@@ -107,7 +109,9 @@ export function ExpenseFilters({ expenses, currentUserId, onFilteredChange }: Ex
           )}
         </div>
         <button
+          type="button"
           onClick={() => setShowFilters(!showFilters)}
+          aria-label={showFilters ? tCommon("close") : tCommon("filter")}
           className={cn(
             "flex items-center gap-1.5 rounded-xl border px-3 py-2.5 text-sm font-medium transition-all",
             showFilters

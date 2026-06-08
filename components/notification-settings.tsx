@@ -46,12 +46,19 @@ export function NotificationSettings() {
     try {
       if (subscribed) {
         // Unsubscribe
+        const currentSubscription = await getCurrentSubscription();
+        const endpoint = currentSubscription?.endpoint ?? null;
         const success = await unsubscribeFromPush();
         if (success) {
-          setSubscribed(false);
-          setMessage({ type: "success", text: t("disabled") });
-          // Also remove from server
-          await removeSubscriptionFromServer();
+          try {
+            await removeSubscriptionFromServer(endpoint);
+            setSubscribed(false);
+            setMessage({ type: "success", text: t("disabled") });
+          } catch (err) {
+            console.error("[Push] remove from server failed:", err);
+            setSubscribed(false);
+            setMessage({ type: "error", text: t("errorDisable") });
+          }
         } else {
           setMessage({ type: "error", text: t("errorDisable") });
         }
@@ -59,13 +66,23 @@ export function NotificationSettings() {
         // Subscribe
         const subscription = await subscribeToPush();
         if (subscription) {
-          setSubscribed(true);
-          setPermission("granted");
-          setMessage({ type: "success", text: t("enabled") });
-          // Save to server
-          await saveSubscriptionToServer(subscription);
-          // Test notification
-          setTimeout(() => showTestNotification(), 500);
+          try {
+            await saveSubscriptionToServer(subscription);
+            setSubscribed(true);
+            setPermission("granted");
+            setMessage({ type: "success", text: t("enabled") });
+            // Test notification
+            setTimeout(() => showTestNotification(), 500);
+          } catch (err) {
+            console.error("[Push] save to server failed:", err);
+            try {
+              await subscription.unsubscribe();
+            } catch (unsubscribeError) {
+              console.error("[Push] rollback unsubscribe failed:", unsubscribeError);
+            }
+            setSubscribed(false);
+            setMessage({ type: "error", text: t("errorEnable") });
+          }
         } else {
           setMessage({ type: "error", text: t("errorEnable") });
         }
@@ -81,40 +98,36 @@ export function NotificationSettings() {
   }
 
   async function saveSubscriptionToServer(subscription: PushSubscription) {
-    try {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-      const sub = subscription.toJSON();
-      await supabase.from("push_subscriptions").upsert(
-        {
-          user_id: user.id,
-          endpoint: sub.endpoint,
-          p256dh: sub.keys?.p256dh,
-          auth: sub.keys?.auth,
-          user_agent: navigator.userAgent,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id,endpoint" }
-      );
-    } catch (err) {
-      console.error("[Push] save to server failed:", err);
-    }
+    const sub = subscription.toJSON();
+    const { error } = await supabase.from("push_subscriptions").upsert(
+      {
+        user_id: user.id,
+        endpoint: sub.endpoint,
+        p256dh: sub.keys?.p256dh,
+        auth: sub.keys?.auth,
+        user_agent: navigator.userAgent,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id,endpoint" }
+    );
+
+    if (error) throw error;
   }
 
-  async function removeSubscriptionFromServer() {
-    try {
-      const sub = await getCurrentSubscription();
-      if (!sub) return;
-      const supabase = createClient();
-      await supabase
-        .from("push_subscriptions")
-        .delete()
-        .eq("endpoint", sub.endpoint);
-    } catch (err) {
-      console.error("[Push] remove from server failed:", err);
-    }
+  async function removeSubscriptionFromServer(endpoint: string | null) {
+    if (!endpoint) throw new Error("Missing push subscription endpoint");
+
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("push_subscriptions")
+      .delete()
+      .eq("endpoint", endpoint);
+
+    if (error) throw error;
   }
 
   if (!supported) {

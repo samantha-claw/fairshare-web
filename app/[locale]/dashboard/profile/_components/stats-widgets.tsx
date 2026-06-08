@@ -26,10 +26,10 @@ export function StatsWidgets({
   groups,
   isOwnProfile,
 }: StatsWidgetsProps) {
-  if (!isOwnProfile) return null;
-
   const t = useTranslations("statsWidgets");
   const locale = useLocale();
+
+  if (!isOwnProfile) return null;
 
   return (
     <div className="space-y-6">

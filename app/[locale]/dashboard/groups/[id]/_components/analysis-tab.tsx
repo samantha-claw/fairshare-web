@@ -278,7 +278,7 @@ export function AnalysisTab({
   const tCommon = useTranslations("common");
 
   // Replace the ALL_LABEL placeholder with translated text
-  const TIME_RANGES_LOCAL = TIME_RANGES.map(r => r.value === "all" ? { ...r, label: t("all") } : r);
+  const TIME_RANGES_LOCAL = TIME_RANGES.map((r) => (r.value === "all" ? { ...r, label: t("all") } : r));
   const locale = useLocale();
   const dateLocale = locale === "ar" ? "ar-SA" : "en-US";
   const [timeRange, setTimeRange] = useState<TimeRange>("week");
@@ -323,7 +323,7 @@ export function AnalysisTab({
     const topCatInfo = getCategoryInfo(topCat);
 
     return { total, count, avg, topCat: topCatInfo, topCatAmount };
-  }, [filteredExpenses]);
+  }, [filteredExpenses, tCommon]);
 
   // ── Category Breakdown ──
   const categoryData = useMemo(() => {
@@ -392,7 +392,7 @@ export function AnalysisTab({
                 year: "2-digit",
               }),
       }));
-  }, [filteredExpenses, timeRange]);
+  }, [filteredExpenses, timeRange, dateLocale]);
 
   // ── Category Trend (stacked area) ──
   const categoryTrendData = useMemo(() => {
@@ -451,7 +451,7 @@ export function AnalysisTab({
           ),
         }));
     }
-  }, [filteredExpenses, timeRange]);
+  }, [filteredExpenses, timeRange, dateLocale]);
 
   // ── Split Type Distribution ──
   const splitTypeData = useMemo(() => {
@@ -524,7 +524,7 @@ export function AnalysisTab({
         };
       })
       .sort((a, b) => b.paid - a.paid);
-  }, [balances, filteredExpenses, currentUserId]);
+  }, [balances, filteredExpenses, currentUserId, t]);
 
   // ── Top Expenses ──
   const topExpenses = useMemo(() => {
@@ -549,7 +549,7 @@ export function AnalysisTab({
     return [...Array.from(hourMap.entries())]
       .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
       .map(([hour, total]) => ({ hour, total }));
-  }, [filteredExpenses, timeRange]);
+  }, [filteredExpenses, timeRange, dateLocale]);
 
   const trendChartData = timeRange === "24h" ? dailyData : trendData;
 

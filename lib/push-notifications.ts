@@ -41,6 +41,15 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
   }
 }
 
+async function getServiceWorkerRegistration(): Promise<ServiceWorkerRegistration | null> {
+  if (!isPushSupported()) return null;
+
+  const existing = await navigator.serviceWorker.getRegistration("/sw.js");
+  if (existing) return existing;
+
+  return await registerServiceWorker();
+}
+
 /** VAPID public key — must match server's private key */
 const VAPID_PUBLIC_KEY =
   "BJ1Gvvu--HyPIY9P1R39-3Bd2UD0QBRevUveOOvQCFmbIObbw7Y6iW7oPuakUYJ8525fQaBNkXt0FQW-P6bE7Bg";
@@ -53,7 +62,7 @@ export async function subscribeToPush(): Promise<PushSubscription | null> {
     if (perm !== "granted") return null;
   }
 
-  const reg = await navigator.serviceWorker.ready;
+  const reg = await getServiceWorkerRegistration();
   if (!reg) return null;
 
   try {
@@ -80,7 +89,8 @@ export async function subscribeToPush(): Promise<PushSubscription | null> {
 export async function unsubscribeFromPush(): Promise<boolean> {
   if (!isPushSupported()) return false;
   try {
-    const reg = await navigator.serviceWorker.ready;
+    const reg = await getServiceWorkerRegistration();
+    if (!reg) return false;
     const subscription = await reg.pushManager.getSubscription();
     if (subscription) {
       await subscription.unsubscribe();
@@ -98,7 +108,8 @@ export async function unsubscribeFromPush(): Promise<boolean> {
 export async function getCurrentSubscription(): Promise<PushSubscription | null> {
   if (!isPushSupported()) return null;
   try {
-    const reg = await navigator.serviceWorker.ready;
+    const reg = await getServiceWorkerRegistration();
+    if (!reg) return null;
     return await reg.pushManager.getSubscription();
   } catch (err) {
     console.error("[Push] get subscription failed:", err);

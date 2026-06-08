@@ -174,7 +174,7 @@ async function fetchExpensesPage(
       data: [],
       totalCount: 0,
       nextCursor: null,
-      error: "Failed to load expenses. Please try again.",
+      error: t("errorLoadFailed"),
     };
   }
 

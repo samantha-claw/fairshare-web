@@ -17,6 +17,7 @@ export function RouteErrorBoundary({
   context = "page",
 }: RouteErrorBoundaryProps) {
   const t = useTranslations("errors");
+  const isDev = process.env.NODE_ENV !== "production";
 
   useEffect(() => {
     console.error(`[${context}] Error:`, error);
@@ -42,7 +43,7 @@ export function RouteErrorBoundary({
             <p className="font-bold border-b border-red-200 pb-1 mb-2">{t("message")}</p>
             <p className="whitespace-pre-wrap font-mono mb-4 text-sm font-semibold">{error.message}</p>
 
-            {error.stack && (
+            {isDev && error.stack && (
               <>
                 <p className="font-bold border-b border-red-200 pb-1 mb-2">{t("stackTrace")}</p>
                 <pre className="max-h-60 overflow-auto whitespace-pre-wrap font-mono bg-surface p-3 rounded border border-red-100">
@@ -51,7 +52,7 @@ export function RouteErrorBoundary({
               </>
             )}
 
-            {error.digest && (
+            {isDev && error.digest && (
               <p className="mt-4 font-mono text-text-secondary border-t border-red-200 pt-2">
                 {t("digest")} {error.digest}
               </p>

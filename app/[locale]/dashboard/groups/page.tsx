@@ -6,7 +6,7 @@ import { Users, Search, ArrowUpDown, SortAsc, SortDesc } from "lucide-react";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { GroupsBentoGrid } from "@/app/[locale]/dashboard/_components/groups-bento-grid";
 import { GroupsEmptyState } from "@/components/ui/empty-states";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   Select,
   SelectContent,
@@ -47,6 +47,7 @@ export default function GroupsPage() {
   const router = useRouter();
   const { groups, loading, userId } = useDashboard();
   const t = useTranslations();
+  const locale = useLocale();
   
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("name");
@@ -71,7 +72,7 @@ export default function GroupsPage() {
       
       switch (sortBy) {
         case "name":
-          comparison = a.group_name.localeCompare(b.group_name);
+          comparison = a.group_name.localeCompare(b.group_name, locale, { sensitivity: "base" });
           break;
         case "activity": {
           // Use updated_at if available, otherwise fall back to created_at
@@ -91,7 +92,7 @@ export default function GroupsPage() {
     });
     
     return result;
-  }, [groups, trimmedSearchQuery, sortBy, sortDirection]);
+  }, [groups, trimmedSearchQuery, sortBy, sortDirection, locale]);
 
   // Toggle sort direction
   const toggleSortDirection = () => {

@@ -66,13 +66,13 @@ export function DeleteAccountDialog({ username }: DeleteAccountDialogProps) {
           error.message?.includes("CANNOT_DELETE_HAS_DEBT") ||
           error.code === "P0001" // Postgres RAISE EXCEPTION code
         ) {
+          console.error("deleteAccount failed: has debt", error);
           toast.error(
             t("deleteAccount.errors.hasDebt")
           );
         } else {
-          toast.error(
-            `${t("deleteAccount.errors.failed")}: ${error.message || "Something went wrong. Please try again."}`
-          );
+          console.error("deleteAccount failed", error);
+          toast.error(t("deleteAccount.errors.failed"));
         }
         setIsDeleting(false);
         return;

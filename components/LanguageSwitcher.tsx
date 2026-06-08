@@ -2,7 +2,6 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, Link } from "@/i18n/navigation";
-import { Languages } from "lucide-react";
 
 const LOCALES = [
   { code: "en", label: "English", flag: "🇺🇸" },

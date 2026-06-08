@@ -17,7 +17,7 @@ export function formatCurrency(amount: number, currency = "USD", locale = "en-US
     style: "currency",
     currency,
     minimumFractionDigits: 2,
-  }).format(Math.abs(amount));
+  }).format(amount);
 }
 
 export function getAvatarFallback(name: string): string {
@@ -66,9 +66,9 @@ export function getRelativeTime(dateStr: string, locale = "en"): string {
   const days = Math.floor(hours / 24);
 
   if (minutes < 1) return locale === "ar" ? "الآن" : "Just now";
-  if (minutes < 60) return `${minutes}${locale === "ar" ? "د" : "m"} ago`;
-  if (hours < 24) return `${hours}${locale === "ar" ? "س" : "h"} ago`;
-  if (days < 7) return `${days}${locale === "ar" ? "ي" : "d"} ago`;
+  if (minutes < 60) return locale === "ar" ? `منذ ${minutes}د` : `${minutes}m ago`;
+  if (hours < 24) return locale === "ar" ? `منذ ${hours}س` : `${hours}h ago`;
+  if (days < 7) return locale === "ar" ? `منذ ${days}ي` : `${days}d ago`;
   return new Date(dateStr).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US", {
     month: "short",
     day: "numeric",

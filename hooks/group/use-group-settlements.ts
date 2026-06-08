@@ -51,7 +51,7 @@ export function useGroupSettlements(
       const { to_user, amount: validatedAmount } = validation.data;
 
       if (!currentUser) {
-        toast.error(t("settlements.sessionExpired"));
+        toast.error(t("expenses.sessionExpired"));
         return;
       }
 
@@ -95,7 +95,7 @@ export function useGroupSettlements(
         refetch();
       } catch (err) {
         console.error(err);
-        toast.error(t("expenses.unexpectedError"));
+        toast.error(t("friends.unexpectedError"));
       } finally {
         setSubmittingSettle(false);
       }

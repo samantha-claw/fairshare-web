@@ -81,7 +81,7 @@ function formatCurrency(amount: number, currency: string, locale?: string): stri
   return new Intl.NumberFormat(locale || "en-US", {
     style: "currency", currency: currency || "USD",
     minimumFractionDigits: 2, maximumFractionDigits: 2,
-  }).format(Math.abs(amount));
+  }).format(amount);
 }
 
 function formatDate(dateStr: string, locale: string): string {
