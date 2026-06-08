@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, type FormEvent } from "react";
+import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui/modal";
 import type { Member, ExpenseCategory } from "@/types/group";
 import { EXPENSE_CATEGORIES, getCategoryInfo } from "@/types/group";
@@ -10,6 +11,7 @@ import {
   type ComputedSplit,
 } from "./split-selector";
 import type { SplitType } from "@/hooks/group/use-group-expenses";
+import { CategoryIcon } from "@/components/ui/category-icon";
 
 // ─── Props Interface ───
 interface ExpenseModalProps {
@@ -57,7 +59,10 @@ export function ExpenseModal({
   category,
   onCategoryChange,
 }: ExpenseModalProps) {
-  const title = editingExpenseId ? "Edit Expense" : "Add Expense";
+  const t = useTranslations("expenseModal");
+  const tCommon = useTranslations("common");
+
+  const title = editingExpenseId ? t("editTitle") : t("addTitle");
 
   // ─── Split-related internal state ───
   const [splitType, setSplitType] = useState<SelectorSplitType>("equal");
@@ -184,19 +189,19 @@ export function ExpenseModal({
                   {title}
                 </h3>
                 <p className="mt-0.5 text-sm text-text-secondary">
-                  Split among selected members.
+                  {t("splitAmongMembers")}
                 </p>
               </div>
 
               {/* ── Description ── */}
               <div className="mb-3">
                 <label className="mb-1 block text-sm font-medium text-text-primary">
-                  Description
+                  {t("description")}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Dinner"
+                  placeholder={t("descriptionPlaceholder")}
                   className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-text-primary focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   value={expenseName}
                   onChange={(e) => onExpenseNameChange(e.target.value)}
@@ -206,7 +211,7 @@ export function ExpenseModal({
               {/* ── Amount ── */}
               <div className="mb-3">
                 <label className="mb-1 block text-sm font-medium text-text-primary">
-                  Amount
+                  {t("amount")}
                 </label>
                 <input
                   type="number"
@@ -222,10 +227,10 @@ export function ExpenseModal({
               {/* ── Category ── */}
               <div className="mb-3">
                 <label className="mb-1 block text-sm font-medium text-text-primary">
-                  Category
+                  {t("category")}
                   {category === null && (
                     <span className="ml-1.5 text-xs font-normal text-negative">
-                      (required)
+                      ({t("required")})
                     </span>
                   )}
                 </label>
@@ -241,7 +246,7 @@ export function ExpenseModal({
                           : "border-border bg-surface text-text-secondary hover:border-border-2 hover:text-text-primary"
                       }`}
                     >
-                      <span>{cat.emoji}</span>
+                      <CategoryIcon category={cat.value} className="h-3.5 w-3.5" />
                       <span>{cat.label}</span>
                     </button>
                   ))}
@@ -251,7 +256,7 @@ export function ExpenseModal({
               {/* ── Paid By ── */}
               <div className="mb-3">
                 <label className="mb-1 block text-sm font-medium text-text-primary">
-                  Paid by
+                  {t("paidBy")}
                 </label>
                 <div className="relative">
                   <select
@@ -262,11 +267,11 @@ export function ExpenseModal({
                     {members.map((member) => (
                       <option key={member.id} value={member.id}>
                         {member.id === currentUserId
-                          ? "You"
+                          ? tCommon("you")
                           : (member as any).display_name ||
                             (member as any).name ||
                             (member as any).full_name ||
-                            "Unknown"}
+                            tCommon("unknown")}
                       </option>
                     ))}
                   </select>
@@ -296,7 +301,7 @@ export function ExpenseModal({
             {/* ── Split Selector ── */}
             <div className="px-5 py-4 sm:px-6">
               <label className="mb-2 block text-sm font-medium text-text-primary">
-                Split between
+                {t("splitBetween")}
               </label>
               <SplitTypeSelector
                 splitType={splitType}
@@ -340,7 +345,7 @@ export function ExpenseModal({
               onClick={onClose}
               className="flex-1 rounded-xl bg-surface-2 py-3 text-sm font-medium text-text-primary transition-colors hover:bg-border active:bg-border-2"
             >
-              Cancel
+              {tCommon("cancel")}
             </button>
             <button
               type="submit"
@@ -348,10 +353,10 @@ export function ExpenseModal({
               className="flex-1 rounded-xl bg-[#111111] py-3 text-sm font-medium text-white transition-colors hover:bg-[#333333] active:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#F0F0F0] dark:text-[#111111] dark:hover:bg-[#D0D0D0]"
             >
               {submitting
-                ? "Saving…"
+                ? t("saving")
                 : editingExpenseId
-                  ? "Save Changes"
-                  : "Add Expense"}
+                  ? t("saveChanges")
+                  : t("addTitle")}
             </button>
           </div>
         </div>
