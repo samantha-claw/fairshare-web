@@ -411,17 +411,7 @@
     "share": "مشاركة",
     "settings": "الإعدادات",
     "shareTitle": "مشاركة المجموعة عبر QR",
-    "settingsTitle": "إعدادات المجموعة",
-    "export": {
-      "download": "تصدير",
-      "generating": "جارٍ التصدير…",
-      "csvTitle": "المصاريف (CSV)",
-      "csvDesc": "قائمة المصاريف بتنسيق جدول",
-      "pdfTitle": "التقرير الكامل (PDF)",
-      "pdfDesc": "مستند احترافي بجميع التفاصيل",
-      "balancesTitle": "الأرصدة (CSV)",
-      "balancesDesc": "ملخص أرصدة الأعضاء"
-    }
+    "settingsTitle": "إعدادات المجموعة"
   },
   "groupSettings": {
     "modalTitle": "إعدادات المجموعة",
