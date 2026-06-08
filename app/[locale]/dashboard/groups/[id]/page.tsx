@@ -11,6 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FloatingActionMenu } from "@/components/ui/floating-action-menu";
 import { createClient } from "@/lib/supabase/client";
 import { QrCode, Settings, Receipt, Handshake, Plus } from "lucide-react";
+import { ExportButton } from "@/components/export-button";
+import type { GroupExportData } from "@/lib/export";
 
 // ── Hooks ─────────────────────────────────────────
 import {
@@ -161,6 +163,18 @@ export default function GroupDetailsPage() {
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
+            <ExportButton
+              data={{
+                group: data.group,
+                members: data.members,
+                expenses: data.expenses,
+                balances: data.balances,
+                pendingSettlements: data.pendingSettlements,
+                completedSettlements: data.completedSettlements,
+                totalGroupExpenses: data.totalGroupExpenses,
+                currentUserId: data.currentUser,
+              } as GroupExportData}
+            />
             <button
               onClick={() => setIsShareModalOpen(true)}
               className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-text-primary transition-all hover:bg-surface-2"
