@@ -5,14 +5,12 @@
 // ==========================================
 import { useState, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FloatingActionMenu } from "@/components/ui/floating-action-menu";
 import { createClient } from "@/lib/supabase/client";
 import { QrCode, Settings, Receipt, Handshake, Plus } from "lucide-react";
-import { ExportButton } from "@/components/export-button";
-import type { GroupExportData } from "@/lib/export";
 
 // ── Hooks ─────────────────────────────────────────
 import {
@@ -48,7 +46,6 @@ export default function GroupDetailsPage() {
   const groupId = params.id as string;
   const supabase = createClient();
   const t = useTranslations();
-  const locale = useLocale();
 
   /* ── Compose focused hooks ───────────────────────────── */
   const data = useGroupData(groupId);
@@ -164,23 +161,10 @@ export default function GroupDetailsPage() {
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
-            <ExportButton
-              data={{
-                group: data.group,
-                members: data.members,
-                expenses: data.expenses,
-                balances: data.balances,
-                pendingSettlements: data.pendingSettlements,
-                completedSettlements: data.completedSettlements,
-                totalGroupExpenses: data.totalGroupExpenses,
-                currentUserId: data.currentUser,
-                locale,
-              } as GroupExportData}
-            />
             <button
               onClick={() => setIsShareModalOpen(true)}
               className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-text-primary transition-all hover:bg-surface-2"
-              title={t('groupDetail.shareTitle')}
+              title="Share Group via QR"
             >
               <QrCode className="h-4 w-4" />
               <span className="hidden sm:inline">{t('groupDetail.share')}</span>
@@ -188,7 +172,7 @@ export default function GroupDetailsPage() {
             <button
               onClick={() => settingsCtl.setIsSettingsModalOpen(true)}
               className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-text-secondary transition-all hover:bg-surface-2"
-              title={t('groupDetail.settingsTitle')}
+              title="Group Settings"
             >
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">{t('groupDetail.settings')}</span>
@@ -324,10 +308,6 @@ export default function GroupDetailsPage() {
         initialSplits={expenseCtl.computedSplits}
         category={expenseCtl.category}
         onCategoryChange={expenseCtl.setCategory}
-        notes={expenseCtl.notes}
-        onNotesChange={expenseCtl.setNotes}
-        receiptUrl={expenseCtl.receiptUrl}
-        onReceiptUrlChange={expenseCtl.setReceiptUrl}
       />
 
       <SettleModal

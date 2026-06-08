@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef, type FormEvent } from "react";
-import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui/modal";
 import type { Member, ExpenseCategory } from "@/types/group";
 import { EXPENSE_CATEGORIES, getCategoryInfo } from "@/types/group";
@@ -11,12 +10,8 @@ import {
   type ComputedSplit,
 } from "./split-selector";
 import type { SplitType } from "@/hooks/group/use-group-expenses";
-import { CategoryIcon } from "@/components/ui/category-icon";
-import { ReceiptUpload } from "@/components/ui/receipt-upload";
-import { StickyNote, X } from "lucide-react";
 
 // ─── Props Interface ───
-
 interface ExpenseModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -40,10 +35,6 @@ interface ExpenseModalProps {
   initialSplits?: ComputedSplit[];
   category: ExpenseCategory | null;
   onCategoryChange: (cat: ExpenseCategory) => void;
-  notes?: string;
-  onNotesChange?: (notes: string) => void;
-  receiptUrl?: string | null;
-  onReceiptUrlChange?: (url: string | null) => void;
 }
 
 export function ExpenseModal({
@@ -65,15 +56,8 @@ export function ExpenseModal({
   initialSplits = [],
   category,
   onCategoryChange,
-  notes = "",
-  onNotesChange,
-  receiptUrl = null,
-  onReceiptUrlChange,
 }: ExpenseModalProps) {
-  const t = useTranslations("expenseModal");
-  const tCommon = useTranslations("common");
-
-  const title = editingExpenseId ? t("editTitle") : t("addTitle");
+  const title = editingExpenseId ? "Edit Expense" : "Add Expense";
 
   // ─── Split-related internal state ───
   const [splitType, setSplitType] = useState<SelectorSplitType>("equal");
@@ -95,12 +79,15 @@ export function ExpenseModal({
   useEffect(() => {
     if (isOpen && members.length > 0) {
       setSplitType(initialSplitType);
+
       if (initialSplits.length > 0) {
         // Editing — seed from existing split data
         const newAllocations = new Map<string, number>();
         const newSelected = new Set<string>();
+
         initialSplits.forEach((split) => {
           newSelected.add(split.userId);
+
           if (initialSplitType === "percentage") {
             newAllocations.set(split.userId, split.percentage);
           } else if (initialSplitType === "shares") {
@@ -110,6 +97,7 @@ export function ExpenseModal({
             newAllocations.set(split.userId, split.amount);
           }
         });
+
         setSelectedMembers(newSelected);
         setAllocations(newAllocations);
         setComputedSplits(initialSplits);
@@ -142,6 +130,7 @@ export function ExpenseModal({
   useEffect(() => {
     const el = scrollRef.current;
     if (!el || !isOpen) return;
+
     // Defer to allow DOM to paint first
     const raf = requestAnimationFrame(updateShadows);
     el.addEventListener("scroll", updateShadows, { passive: true });
@@ -153,11 +142,28 @@ export function ExpenseModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
+      {/*
+        Fixed layout:
+        ┌──────────────────────────┐
+        │  SCROLLABLE AREA         │  flex-1 overflow-y-auto
+        │  ┌────────────────────┐  │
+        │  │  Header + Inputs   │  │  scrolls naturally
+        │  ├────────────────────┤  │
+        │  │  SplitTypeSelector │  │  scrolls naturally
+        │  └────────────────────┘  │
+        ├──────────────────────────┤
+        │  FIXED BOTTOM (buttons)  │  shrink-0
+        └──────────────────────────┘
+      */}
       <form
         onSubmit={onSubmit}
         className="flex max-h-[85dvh] flex-col sm:max-h-[80dvh]"
       >
+        {/* ═══════════════════════════════════════════════════ */}
+        {/* ██  SINGLE SCROLLABLE AREA — Inputs + Selector   ██ */}
+        {/* ═══════════════════════════════════════════════════ */}
         <div className="relative min-h-0 flex-1 flex flex-col">
+
           {/* ── Top scroll shadow ── */}
           <div
             className={`pointer-events-none absolute inset-x-0 top-0 z-10 h-4 bg-gradient-to-b from-surface to-transparent transition-opacity duration-200 ${
@@ -169,10 +175,7 @@ export function ExpenseModal({
           <div
             ref={scrollRef}
             className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar"
-            style={{
-              WebkitOverflowScrolling: "touch",
-              touchAction: "pan-y",
-            }}
+            style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-y" }}
           >
             {/* ── Header ── */}
             <div className="px-5 pt-5 sm:px-6 sm:pt-6">
@@ -181,19 +184,19 @@ export function ExpenseModal({
                   {title}
                 </h3>
                 <p className="mt-0.5 text-sm text-text-secondary">
-                  {t("splitAmongMembers")}
+                  Split among selected members.
                 </p>
               </div>
 
               {/* ── Description ── */}
               <div className="mb-3">
                 <label className="mb-1 block text-sm font-medium text-text-primary">
-                  {t("description")}
+                  Description
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder={t("descriptionPlaceholder")}
+                  placeholder="e.g. Dinner"
                   className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-text-primary focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   value={expenseName}
                   onChange={(e) => onExpenseNameChange(e.target.value)}
@@ -203,7 +206,7 @@ export function ExpenseModal({
               {/* ── Amount ── */}
               <div className="mb-3">
                 <label className="mb-1 block text-sm font-medium text-text-primary">
-                  {t("amount")}
+                  Amount
                 </label>
                 <input
                   type="number"
@@ -219,10 +222,10 @@ export function ExpenseModal({
               {/* ── Category ── */}
               <div className="mb-3">
                 <label className="mb-1 block text-sm font-medium text-text-primary">
-                  {t("category")}
+                  Category
                   {category === null && (
                     <span className="ml-1.5 text-xs font-normal text-negative">
-                      ({t("required")})
+                      (required)
                     </span>
                   )}
                 </label>
@@ -232,56 +235,23 @@ export function ExpenseModal({
                       key={cat.value}
                       type="button"
                       onClick={() => onCategoryChange(cat.value)}
-                      className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-all ${
+                      className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-all ${
                         category === cat.value
                           ? "border-border-2 bg-surface-2 text-text-primary"
                           : "border-border bg-surface text-text-secondary hover:border-border-2 hover:text-text-primary"
                       }`}
                     >
-                      <CategoryIcon category={cat.value} className="h-3.5 w-3.5" />
+                      <span>{cat.emoji}</span>
                       <span>{cat.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* ── Notes ── */}
-              {onNotesChange && (
-                <div className="mb-3">
-                  <label className="mb-1 flex items-center gap-1.5 text-sm font-medium text-text-primary">
-                    <StickyNote className="h-3.5 w-3.5" />
-                    {t("notes")}
-                    <span className="text-xs font-normal text-text-tertiary">({t("optional")})</span>
-                  </label>
-                  <textarea
-                    maxLength={500}
-                    rows={2}
-                    placeholder={t("notesPlaceholder")}
-                    value={notes}
-                    onChange={(e) => onNotesChange(e.target.value)}
-                    className="w-full resize-none rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                  {notes.length > 0 && (
-                    <p className="mt-0.5 text-right text-[10px] text-text-tertiary">
-                      {notes.length}/500
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* ── Receipt Upload ── */}
-              {onReceiptUrlChange && (
-                <ReceiptUpload
-                  value={receiptUrl}
-                  onChange={onReceiptUrlChange}
-                  groupId={"expense-receipts"}
-                />
-              )}
-
               {/* ── Paid By ── */}
               <div className="mb-3">
                 <label className="mb-1 block text-sm font-medium text-text-primary">
-                  {t("paidBy")}
+                  Paid by
                 </label>
                 <div className="relative">
                   <select
@@ -292,11 +262,11 @@ export function ExpenseModal({
                     {members.map((member) => (
                       <option key={member.id} value={member.id}>
                         {member.id === currentUserId
-                          ? tCommon("you")
+                          ? "You"
                           : (member as any).display_name ||
                             (member as any).name ||
                             (member as any).full_name ||
-                            tCommon("unknown")}
+                            "Unknown"}
                       </option>
                     ))}
                   </select>
@@ -326,7 +296,7 @@ export function ExpenseModal({
             {/* ── Split Selector ── */}
             <div className="px-5 py-4 sm:px-6">
               <label className="mb-2 block text-sm font-medium text-text-primary">
-                {t("splitBetween")}
+                Split between
               </label>
               <SplitTypeSelector
                 splitType={splitType}
@@ -361,7 +331,7 @@ export function ExpenseModal({
         </div>
 
         {/* ═══════════════════════════════════════════ */}
-        {/* ██ FIXED BOTTOM — Action Buttons ██ */}
+        {/* ██  FIXED BOTTOM — Action Buttons         ██ */}
         {/* ═══════════════════════════════════════════ */}
         <div className="shrink-0 border-t border-border bg-surface-2/80 px-5 py-4 sm:px-6">
           <div className="flex gap-3">
@@ -370,7 +340,7 @@ export function ExpenseModal({
               onClick={onClose}
               className="flex-1 rounded-xl bg-surface-2 py-3 text-sm font-medium text-text-primary transition-colors hover:bg-border active:bg-border-2"
             >
-              {tCommon("cancel")}
+              Cancel
             </button>
             <button
               type="submit"
@@ -378,10 +348,10 @@ export function ExpenseModal({
               className="flex-1 rounded-xl bg-[#111111] py-3 text-sm font-medium text-white transition-colors hover:bg-[#333333] active:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#F0F0F0] dark:text-[#111111] dark:hover:bg-[#D0D0D0]"
             >
               {submitting
-                ? t("saving")
+                ? "Saving…"
                 : editingExpenseId
-                ? t("saveChanges")
-                : t("addTitle")}
+                  ? "Save Changes"
+                  : "Add Expense"}
             </button>
           </div>
         </div>
