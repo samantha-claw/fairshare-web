@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { usePathname } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { LayoutDashboard, Users, FolderOpen, Settings, LogOut, Sun, Moon, User, Bell } from "lucide-react";
+import { Globe, LayoutDashboard, Users, FolderOpen, Settings, LogOut, Sun, Moon, User, Bell } from "lucide-react";
 import { useTheme } from "@/providers/theme-provider";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 interface SidebarProps {
   displayName: string;
@@ -95,6 +96,9 @@ export function Sidebar({ displayName, avatarUrl, onSignOut, isMobile = false }:
           <User className="h-4 w-4 flex-shrink-0" />
           <span className="truncate">{displayName || t('common.profile')}</span>
         </Link>
+
+        {/* Language Switcher */}
+        <LanguageSwitcher className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-sidebar-text hover:bg-sidebar-hover hover:text-sidebar-active transition-colors" />
 
         {/* Theme toggle */}
         <button

@@ -10,7 +10,7 @@ import { QRScannerModal } from "@/components/modals/qr/qr-scanner-modal";
 import { JoinGroupConfirmModal } from "@/components/modals/join-group-confirm-modal";
 import { useTheme } from "@/providers/theme-provider";
 import { createClient } from "@/lib/supabase/client";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+
 
 interface HeaderProps {
   displayName: string;
@@ -155,9 +155,6 @@ export function Header({ displayName, avatarUrl, userId, onMobileMenuToggle }: H
 
         {/* Right Actions */}
         <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Language Switcher */}
-          <LanguageSwitcher />
-
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
