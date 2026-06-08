@@ -70,7 +70,7 @@ BEGIN
       LIMIT 1
     ) es_split ON true
     WHERE e.group_id = g.id
-      AND e.paid_by = v_user_id OR es_split.user_id IS NOT NULL
+      AND (e.paid_by = v_user_id OR es_split.user_id IS NOT NULL)
   ) bal ON true
   WHERE gm.user_id = v_user_id;
 

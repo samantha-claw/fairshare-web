@@ -23,9 +23,19 @@ export function NotificationSettings() {
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
+    let mounted = true;
     setSupported(isPushSupported());
     setPermission(getPermissionState());
-    getCurrentSubscription().then((sub) => setSubscribed(!!sub));
+    getCurrentSubscription()
+      .then((sub) => {
+        if (mounted) setSubscribed(!!sub);
+      })
+      .catch((err) => {
+        console.error("Error checking push subscription:", err);
+      });
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   async function handleToggle() {

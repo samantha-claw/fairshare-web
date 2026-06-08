@@ -258,8 +258,8 @@ export function OverviewTab({
               <Users className="w-5 h-5 text-text-primary" />
             </div>
             <div>
-              <h3 className="font-semibold text-text-primary">Group Balances</h3>
-              <p className="text-xs text-text-secondary">Who owes whom</p>
+              <h3 className="font-semibold text-text-primary">{t("groupBalances.title")}</h3>
+              <p className="text-xs text-text-secondary">{t("groupBalances.subtitle")}</p>
             </div>
           </div>
           <button
@@ -312,7 +312,7 @@ export function OverviewTab({
                       <span className="truncate text-sm font-medium text-text-primary">
                         {bal.display_name}
                         {isCurrentUser && (
-                          <span className="text-text-tertiary ml-1">(you)</span>
+                          <span className="text-text-tertiary ml-1">{t("member.you")}</span>
                         )}
                       </span>
                     </Link>
@@ -320,7 +320,7 @@ export function OverviewTab({
                     <div className="shrink-0 text-right">
                       {balIsSettled ? (
                         <span className="inline-flex items-center rounded-full bg-surface-2 px-3 py-1 text-xs font-medium text-text-tertiary">
-                          Settled
+                          {t("status.settled")}
                         </span>
                       ) : showGroupBalances ? (
                         <div className="flex flex-col items-end">

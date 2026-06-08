@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, SlidersHorizontal, X, Calendar, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -77,9 +77,12 @@ export function ExpenseFilters({ expenses, currentUserId, onFilteredChange }: Ex
       return sortAsc ? -cmp : cmp;
     });
 
-    onFilteredChange(result);
     return result;
-  }, [expenses, searchQuery, categoryFilter, payerFilter, sortBy, sortAsc, onFilteredChange]);
+  }, [expenses, searchQuery, categoryFilter, payerFilter, sortBy, sortAsc]);
+
+  useEffect(() => {
+    onFilteredChange(filteredExpenses);
+  }, [filteredExpenses, onFilteredChange]);
 
   return (
     <div className="space-y-2">

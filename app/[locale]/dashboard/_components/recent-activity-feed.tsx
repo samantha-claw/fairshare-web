@@ -26,7 +26,9 @@ function getRelativeTime(dateStr: string, t: ReturnType<typeof useTranslations>,
   if (minutes < 60) return t("minutesAgo", { minutes });
   if (hours < 24) return t("hoursAgo", { hours });
   if (days < 7) return t("daysAgo", { days });
-  return then.toLocaleDateString(locale, { month: "short", day: "numeric" });
+  
+  const mappedLocale = locale === "ar" ? "ar-SA" : "en-US";
+  return then.toLocaleDateString(mappedLocale, { month: "short", day: "numeric" });
 }
 
 const DOT_COLORS = [
