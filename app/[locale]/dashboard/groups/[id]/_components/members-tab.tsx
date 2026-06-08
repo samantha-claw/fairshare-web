@@ -245,10 +245,7 @@ export function MembersTab({
 
       {/* Member Count */}
       <div className="text-center text-sm text-text-tertiary pt-4">
-        {members.length}{" "}
-        {members.length !== 1
-          ? tCommon("member") + "s"
-          : tCommon("member")}
+        {t("memberCount", { count: members.length })}
       </div>
     </div>
   );

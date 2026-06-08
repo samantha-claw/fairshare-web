@@ -77,7 +77,7 @@ html.dark {
   --color-sidebar-hover: var(--sidebar-hover);
   --color-sidebar-logo-text: var(--sidebar-logo-text);
   --color-sidebar-logo-bg: var(--sidebar-logo-bg);
-  --font-sans: var(--font-inter), var(--font-arabic), Arial, Helvetica, sans-serif;
+  --font-sans: var(--font-inter), var(--font-arabic), arial, helvetica, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 

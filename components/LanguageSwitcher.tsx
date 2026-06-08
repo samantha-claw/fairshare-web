@@ -1,30 +1,36 @@
 "use client";
 
+import { Globe } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, Link } from "@/i18n/navigation";
 
 const LOCALES = [
-  { code: "en", label: "English", flag: "🇺🇸" },
-  { code: "ar", label: "العربية", flag: "🇸🇦" },
+  { code: "en", label: "English" },
+  { code: "ar", label: "العربية" },
 ];
+
+const localeColors: Record<string, string> = {
+  en: "text-blue-500",
+  ar: "text-emerald-500",
+};
 
 export function LanguageSwitcher() {
   const locale = useLocale();
   const pathname = usePathname();
   const t = useTranslations("languageSwitcher");
 
-  const currentLocale = LOCALES.find((l) => l.code === locale) ?? LOCALES[0];
   const otherLocale = LOCALES.find((l) => l.code !== locale) ?? LOCALES[1];
+  const colorClass = localeColors[otherLocale.code] ?? "text-text-secondary";
 
   return (
     <Link
       href={pathname}
       locale={otherLocale.code}
-      className="flex h-8 w-8 items-center justify-center rounded-lg text-text-secondary hover:bg-surface-2 hover:text-text-primary transition-colors"
+      className={`flex h-8 w-8 items-center justify-center rounded-lg ${colorClass} hover:bg-surface-2 transition-colors`}
       title={t("switchTo", { language: otherLocale.label })}
       aria-label={t("switchTo", { language: otherLocale.label })}
     >
-      <span className="text-sm">{otherLocale.flag}</span>
+      <Globe className="h-4 w-4" />
     </Link>
   );
 }

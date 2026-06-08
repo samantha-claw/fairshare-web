@@ -398,7 +398,7 @@ export function ExpensesTab({
           {t("viewAll")}
           {hasMore && (
             <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs font-bold text-text-primary">
-              {expenses.length}
+              {filteredExpenses.length}
             </span>
           )}
           <ChevronRight className="h-4 w-4 rtl:rotate-180" />

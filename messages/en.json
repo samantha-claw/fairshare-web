@@ -78,7 +78,10 @@
     "member": "Member",
     "unknown": "Unknown",
     "you": "You",
-    "noDataTitle": "No Data Yet"
+    "noDataTitle": "No Data Yet",
+    "expenseCount": "{count, plural, one {# expense} other {# expenses}}",
+    "inSelectedPeriod": "in selected period",
+    "total_label": "total"
   },
   "auth": {
     "login": {
@@ -378,7 +381,7 @@
     "toggleMenu": "Toggle action menu"
   },
   "friendCard": {
-    "userTagline": "Fairshare user",
+    "userTagline": "FairShare user",
     "followers": "followers",
     "following": "following",
     "viewProfile": "View Profile",
@@ -738,7 +741,8 @@
     "shareGroup": "Share Group",
     "unknownUser": "Unknown User",
     "openMemberActions": "Open member actions",
-    "remove": "Remove"
+    "remove": "Remove",
+    "memberCount": "{count, plural, one {# member} other {# members}}"
   },
   "mobileNav": {
     "home": "Home",

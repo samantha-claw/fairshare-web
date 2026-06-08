@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { Menu, X, ChevronRight, Users, Wallet, Receipt, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export function HeroSection() {
   const tLanding = useTranslations("landing");
@@ -93,6 +94,7 @@ export function HeroSection() {
 
               {/* Desktop CTA */}
               <div className="hidden lg:flex items-center gap-3">
+                <LanguageSwitcher />
                 <Link
                   href="/login"
                   className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"

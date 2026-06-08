@@ -86,7 +86,10 @@
     "paid": "مدفوع",
     "owed": "مستحق",
     "you": "أنت",
-    "noDataTitle": "لا توجد بيانات بعد"
+    "noDataTitle": "لا توجد بيانات بعد",
+    "expenseCount": "{count, plural, one {# مصروف} other {# مصروفات}}",
+    "inSelectedPeriod": "في الفترة المحددة",
+    "total_label": "الإجمالي"
   },
   "auth": {
     "login": {
@@ -758,7 +761,8 @@
     "openMemberActions": "فتح إجراءات العضو",
     "addMember": "إضافة عضو",
     "shareGroup": "مشاركة المجموعة",
-    "remove": "إزالة"
+    "remove": "إزالة",
+    "memberCount": "{count, plural, one {# عضو} other {# أعضاء}}"
   },
   "mobileNav": {
     "home": "الرئيسية",

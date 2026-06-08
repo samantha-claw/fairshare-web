@@ -592,8 +592,8 @@ export function AnalysisTab({
         <div>
           <h2 className="text-lg font-bold text-text-primary">{t("analysisTitle")}</h2>
           <p className="text-xs text-text-secondary">
-            {filteredExpenses.length} expense{filteredExpenses.length !== 1 ? "s" : ""}{" "}
-            {timeRange !== "all" ? "in selected period" : "total"}
+            {t("expenseCount", { count: filteredExpenses.length })}{" "}
+            {timeRange !== "all" ? t("inSelectedPeriod") : t("total_label")}
           </p>
         </div>
         <TimeRangeFilter value={timeRange} onChange={setTimeRange} ranges={TIME_RANGES_LOCAL} />
