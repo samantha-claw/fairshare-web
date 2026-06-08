@@ -324,10 +324,6 @@ export default function GroupDetailsPage() {
         initialSplits={expenseCtl.computedSplits}
         category={expenseCtl.category}
         onCategoryChange={expenseCtl.setCategory}
-        notes={expenseCtl.notes}
-        onNotesChange={expenseCtl.setNotes}
-        receiptUrl={expenseCtl.receiptUrl}
-        onReceiptUrlChange={expenseCtl.setReceiptUrl}
       />
 
       <SettleModal

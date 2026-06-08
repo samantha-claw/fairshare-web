@@ -12,11 +12,8 @@ import {
 } from "./split-selector";
 import type { SplitType } from "@/hooks/group/use-group-expenses";
 import { CategoryIcon } from "@/components/ui/category-icon";
-import { ReceiptUpload } from "@/components/ui/receipt-upload";
-import { StickyNote, X } from "lucide-react";
 
 // ─── Props Interface ───
-
 interface ExpenseModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -40,10 +37,6 @@ interface ExpenseModalProps {
   initialSplits?: ComputedSplit[];
   category: ExpenseCategory | null;
   onCategoryChange: (cat: ExpenseCategory) => void;
-  notes?: string;
-  onNotesChange?: (notes: string) => void;
-  receiptUrl?: string | null;
-  onReceiptUrlChange?: (url: string | null) => void;
 }
 
 export function ExpenseModal({
@@ -65,10 +58,6 @@ export function ExpenseModal({
   initialSplits = [],
   category,
   onCategoryChange,
-  notes = "",
-  onNotesChange,
-  receiptUrl = null,
-  onReceiptUrlChange,
 }: ExpenseModalProps) {
   const t = useTranslations("expenseModal");
   const tCommon = useTranslations("common");
@@ -95,12 +84,15 @@ export function ExpenseModal({
   useEffect(() => {
     if (isOpen && members.length > 0) {
       setSplitType(initialSplitType);
+
       if (initialSplits.length > 0) {
         // Editing — seed from existing split data
         const newAllocations = new Map<string, number>();
         const newSelected = new Set<string>();
+
         initialSplits.forEach((split) => {
           newSelected.add(split.userId);
+
           if (initialSplitType === "percentage") {
             newAllocations.set(split.userId, split.percentage);
           } else if (initialSplitType === "shares") {
@@ -110,6 +102,7 @@ export function ExpenseModal({
             newAllocations.set(split.userId, split.amount);
           }
         });
+
         setSelectedMembers(newSelected);
         setAllocations(newAllocations);
         setComputedSplits(initialSplits);
@@ -142,6 +135,7 @@ export function ExpenseModal({
   useEffect(() => {
     const el = scrollRef.current;
     if (!el || !isOpen) return;
+
     // Defer to allow DOM to paint first
     const raf = requestAnimationFrame(updateShadows);
     el.addEventListener("scroll", updateShadows, { passive: true });
@@ -153,11 +147,28 @@ export function ExpenseModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
+      {/*
+        Fixed layout:
+        ┌──────────────────────────┐
+        │  SCROLLABLE AREA         │  flex-1 overflow-y-auto
+        │  ┌────────────────────┐  │
+        │  │  Header + Inputs   │  │  scrolls naturally
+        │  ├────────────────────┤  │
+        │  │  SplitTypeSelector │  │  scrolls naturally
+        │  └────────────────────┘  │
+        ├──────────────────────────┤
+        │  FIXED BOTTOM (buttons)  │  shrink-0
+        └──────────────────────────┘
+      */}
       <form
         onSubmit={onSubmit}
         className="flex max-h-[85dvh] flex-col sm:max-h-[80dvh]"
       >
+        {/* ═══════════════════════════════════════════════════ */}
+        {/* ██  SINGLE SCROLLABLE AREA — Inputs + Selector   ██ */}
+        {/* ═══════════════════════════════════════════════════ */}
         <div className="relative min-h-0 flex-1 flex flex-col">
+
           {/* ── Top scroll shadow ── */}
           <div
             className={`pointer-events-none absolute inset-x-0 top-0 z-10 h-4 bg-gradient-to-b from-surface to-transparent transition-opacity duration-200 ${
@@ -169,10 +180,7 @@ export function ExpenseModal({
           <div
             ref={scrollRef}
             className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar"
-            style={{
-              WebkitOverflowScrolling: "touch",
-              touchAction: "pan-y",
-            }}
+            style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-y" }}
           >
             {/* ── Header ── */}
             <div className="px-5 pt-5 sm:px-6 sm:pt-6">
@@ -232,7 +240,7 @@ export function ExpenseModal({
                       key={cat.value}
                       type="button"
                       onClick={() => onCategoryChange(cat.value)}
-                      className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-all ${
+                      className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-all ${
                         category === cat.value
                           ? "border-border-2 bg-surface-2 text-text-primary"
                           : "border-border bg-surface text-text-secondary hover:border-border-2 hover:text-text-primary"
@@ -244,39 +252,6 @@ export function ExpenseModal({
                   ))}
                 </div>
               </div>
-
-              {/* ── Notes ── */}
-              {onNotesChange && (
-                <div className="mb-3">
-                  <label className="mb-1 flex items-center gap-1.5 text-sm font-medium text-text-primary">
-                    <StickyNote className="h-3.5 w-3.5" />
-                    {t("notes")}
-                    <span className="text-xs font-normal text-text-tertiary">({t("optional")})</span>
-                  </label>
-                  <textarea
-                    maxLength={500}
-                    rows={2}
-                    placeholder={t("notesPlaceholder")}
-                    value={notes}
-                    onChange={(e) => onNotesChange(e.target.value)}
-                    className="w-full resize-none rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                  {notes.length > 0 && (
-                    <p className="mt-0.5 text-right text-[10px] text-text-tertiary">
-                      {notes.length}/500
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* ── Receipt Upload ── */}
-              {onReceiptUrlChange && (
-                <ReceiptUpload
-                  value={receiptUrl}
-                  onChange={onReceiptUrlChange}
-                  groupId={"expense-receipts"}
-                />
-              )}
 
               {/* ── Paid By ── */}
               <div className="mb-3">
@@ -361,7 +336,7 @@ export function ExpenseModal({
         </div>
 
         {/* ═══════════════════════════════════════════ */}
-        {/* ██ FIXED BOTTOM — Action Buttons ██ */}
+        {/* ██  FIXED BOTTOM — Action Buttons         ██ */}
         {/* ═══════════════════════════════════════════ */}
         <div className="shrink-0 border-t border-border bg-surface-2/80 px-5 py-4 sm:px-6">
           <div className="flex gap-3">
@@ -380,8 +355,8 @@ export function ExpenseModal({
               {submitting
                 ? t("saving")
                 : editingExpenseId
-                ? t("saveChanges")
-                : t("addTitle")}
+                  ? t("saveChanges")
+                  : t("addTitle")}
             </button>
           </div>
         </div>
