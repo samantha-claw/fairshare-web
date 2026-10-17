@@ -34,6 +34,8 @@ function JoinGroupContent() {
         const nextQuery =
           groupId && inviteToken
             ? `/join?id=${encodeURIComponent(groupId)}&token=${encodeURIComponent(inviteToken)}`
+            : groupId
+            ? `/join?id=${encodeURIComponent(groupId)}`
             : "/dashboard/groups";
         router.replace(`/login?next=${encodeURIComponent(nextQuery)}`);
         return;
@@ -58,7 +60,7 @@ function JoinGroupContent() {
             <Loader2 className="h-7 w-7 animate-spin text-indigo-600" />
           </div>
           <p className="text-sm font-medium text-text-secondary">
-            {t("verifyingLink")}
+            {t("verifyingToken")}
           </p>
         </div>
       </div>
@@ -69,7 +71,7 @@ function JoinGroupContent() {
     return null;
   }
 
-  if (!groupId || !inviteToken) {
+  if (!groupId) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
         <div className="w-full max-w-md rounded-2xl border border-border bg-surface p-6 text-center shadow-lg">
@@ -77,10 +79,10 @@ function JoinGroupContent() {
             <ShieldAlert className="h-7 w-7 text-red-500" />
           </div>
           <h1 className="text-lg font-bold text-text-primary">
-            {t("invalidLinkTitle")}
+            {t("invalidInvite")}
           </h1>
           <p className="mt-2 text-sm text-text-secondary">
-            {t("invalidTokenError")}
+            {t("invalidTokenMsg")}
           </p>
           <button
             onClick={() => router.push("/dashboard/groups")}
@@ -100,7 +102,7 @@ function JoinGroupContent() {
         isOpen={true}
         onClose={() => router.push("/dashboard/groups")}
         groupId={groupId}
-        inviteToken={inviteToken}
+        token={inviteToken}
       />
     </div>
   );

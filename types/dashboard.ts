@@ -1,12 +1,3 @@
-// ==========================================
-// 📦 IMPORTS
-// ==========================================
-// (none — pure type definitions)
-
-// ==========================================
-// 🧩 TYPES
-// ==========================================
-
 export interface Profile {
   display_name: string;
   avatar_url: string;
@@ -17,6 +8,8 @@ export interface GroupBalance {
   group_name: string;
   currency: string;
   net_balance: number;
+  total_paid?: number;
+  total_owed?: number;
   owner_id: string;
   created_at: string;
 }

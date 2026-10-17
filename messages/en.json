@@ -622,7 +622,9 @@
         "notifications": "Real-time Notifications",
         "notificationsDesc": "Get notified when expenses are added or someone settles up. Stay on top of your group activity.",
         "balanceDashboard": "Balance Dashboard",
-        "balanceDashboardDesc": "See at a glance who owes what. Clear visualization of your financial position across all groups."
+        "balanceDashboardDesc": "See at a glance who owes what. Clear visualization of your financial position across all groups.",
+        "transactionHistory": "Transaction History",
+        "noAds": "No Ads, Ever"
       }
     },
     "howItWorks": {

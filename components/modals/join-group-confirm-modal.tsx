@@ -27,6 +27,7 @@ interface JoinGroupConfirmModalProps {
   onClose: () => void;
   groupId: string;
   token?: string | null;
+  inviteToken?: string | null;
 }
 
 interface GroupInfo {
@@ -53,8 +54,10 @@ export function JoinGroupConfirmModal({
   isOpen,
   onClose,
   groupId,
-  token = null,
+  token: tokenProp = null,
+  inviteToken = null,
 }: JoinGroupConfirmModalProps) {
+  const token = tokenProp ?? inviteToken ?? null;
   const t = useTranslations("joinGroupConfirmModal");
   const [state, setState] = useState<ModalState>("loading");
   const [groupInfo, setGroupInfo] = useState<GroupInfo | null>(null);
