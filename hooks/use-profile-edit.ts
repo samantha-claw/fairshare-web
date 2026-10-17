@@ -19,6 +19,7 @@ interface ProfileFormData {
   full_name: string;
   avatar_url: string;
   bio: string;
+  is_public: boolean;
 }
 
 interface FormErrors {
@@ -27,6 +28,7 @@ interface FormErrors {
   full_name?: string;
   avatar_url?: string;
   bio?: string;
+  is_public?: string;
   general?: string;
 }
 
@@ -51,6 +53,7 @@ export function useProfileEdit() {
     full_name: "",
     avatar_url: "",
     bio: "",
+    is_public: true,
   });
 
   const [formData, setFormData] = useState<ProfileFormData>({
@@ -59,6 +62,7 @@ export function useProfileEdit() {
     full_name: "",
     avatar_url: "",
     bio: "",
+    is_public: true,
   });
 
   /* ── Avatar File State ───────────────────────────── */
@@ -66,6 +70,18 @@ export function useProfileEdit() {
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
   const [avatarRemoved, setAvatarRemoved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  /* ── Timeout Cleanup ─────────────────────────────── */
+  const saveSuccessTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveSuccessTimeoutRef.current) {
+        clearTimeout(saveSuccessTimeoutRef.current);
+      }
+    };
+  }, []);
 
   /* ── Derived ─────────────────────────────────────── */
 
@@ -75,6 +91,7 @@ export function useProfileEdit() {
     formData.full_name !== originalData.full_name ||
     formData.avatar_url !== originalData.avatar_url ||
     formData.bio !== originalData.bio ||
+    formData.is_public !== originalData.is_public ||
     avatarFile !== null ||
     avatarRemoved;
 
@@ -93,7 +110,7 @@ if (!user || authError) {
 setUserId(user.id);
       const { data, error } = await supabase
         .from("profiles")
-        .select("display_name, username, full_name, avatar_url, bio")
+        .select("display_name, username, full_name, avatar_url, bio, is_public")
         .eq("id", user.id)
         .single();
 
@@ -106,6 +123,7 @@ setUserId(user.id);
           full_name: data.full_name || "",
           avatar_url: data.avatar_url || "",
           bio: data.bio || "",
+          is_public: data.is_public ?? true,
         };
         setFormData(profileData);
         setOriginalData(profileData);
@@ -134,7 +152,7 @@ setUserId(user.id);
 
   /* ── Field Update ────────────────────────────────── */
 
-  function updateField(field: keyof ProfileFormData, value: string) {
+  function updateField(field: keyof ProfileFormData, value: string | boolean) {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
     // Clear field error on change
@@ -245,6 +263,7 @@ setUserId(user.id);
       full_name: formData.full_name.trim(),
       bio: formData.bio.trim(),
       avatar_url: formData.avatar_url.trim(),
+      is_public: formData.is_public,
     };
   }
 
@@ -371,6 +390,7 @@ setUserId(user.id);
           full_name: normalized.full_name,
           avatar_url: finalAvatarUrl,
           bio: normalized.bio,
+          is_public: normalized.is_public,
           updated_at: new Date().toISOString(),
         })
         .eq("id", userId);
@@ -384,6 +404,7 @@ setUserId(user.id);
         full_name: normalized.full_name,
         avatar_url: finalAvatarUrl,
         bio: normalized.bio,
+        is_public: normalized.is_public,
       };
       setOriginalData(updatedData);
       setFormData(updatedData);
@@ -402,7 +423,10 @@ setUserId(user.id);
       setSaveSuccess(true);
 
       // Auto-clear success after delay
-      setTimeout(() => setSaveSuccess(false), 4000);
+      if (saveSuccessTimeoutRef.current) {
+        clearTimeout(saveSuccessTimeoutRef.current);
+      }
+      saveSuccessTimeoutRef.current = setTimeout(() => setSaveSuccess(false), 4000);
     } catch (err: any) {
       console.error("Save error:", err);
       setErrors({

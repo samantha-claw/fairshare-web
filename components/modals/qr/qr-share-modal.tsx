@@ -7,6 +7,7 @@ import { useState, useCallback } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { useRef } from "react";
 import { useTranslations } from "next-intl";
+import { useToast } from "@/hooks/use-toast";
 import { Modal } from "@/components/ui/modal";
 import {
   X,
@@ -55,6 +56,7 @@ export function QRShareModal({
 
   // ── i18n ─────────────────────────────────────────────
   const t = useTranslations("qrShareModal");
+  const toast = useToast();
 
   // ── Copy link ────────────────────────────────────────
   const handleCopy = useCallback(async () => {
@@ -133,10 +135,11 @@ export function QRShareModal({
       setTimeout(() => setResetSuccess(false), 3000);
     } catch (err) {
       console.error("Reset token error:", err);
+      toast.error(t("resetTokenFailed"));
     } finally {
       setResetting(false);
     }
-  }, [onResetToken]);
+  }, [onResetToken, toast, t]);
 
   // ── Close handler ────────────────────────────────────
   // If reset confirm is showing, dismiss it first instead of closing the modal

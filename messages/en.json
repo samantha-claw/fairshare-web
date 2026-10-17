@@ -898,6 +898,11 @@
     "successMessage": "Profile updated successfully!",
     "changeProfilePhoto": "Change profile photo",
     "avatarPreview": "Avatar Preview",
+    "profilePrivacy": "Profile Privacy",
+    "publicLabel": "Public",
+    "publicDescription": "Anyone can see your profile and activity",
+    "privateLabel": "Private",
+    "privateDescription": "Only friends and group members can see your profile",
     "large": "Large",
     "med": "Med",
     "sm": "Sm",
@@ -948,7 +953,8 @@
     "copyLink": "Copy Link",
     "copied": "Copied!",
     "downloadQr": "Download QR",
-    "share": "Share"
+    "share": "Share",
+    "resetTokenFailed": "Failed to reset invite link"
   },
   "quickActions": {
     "createGroup": "Create Group",
@@ -1118,7 +1124,9 @@
       "validationError": "Validation error",
       "createFailed": "Failed to record settlement",
       "markFailed": "Failed to mark settlement",
-      "deleteFailed": "Failed to delete settlement"
+      "deleteFailed": "Failed to delete settlement",
+      "approveFailed": "Failed to approve settlement",
+      "rejectFailed": "Failed to reject settlement"
     },
     "members": {
       "addFailed": "Failed to add member",

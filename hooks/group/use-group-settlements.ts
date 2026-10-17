@@ -3,9 +3,10 @@
 import { useState, useCallback, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { validate } from "@/lib/validate";
 import { settlementSchema } from "@/lib/validations";
+import { formatCurrency } from "@/lib/utils";
 
 /**
  * Manages the settle-up modal and all settlement actions
@@ -14,11 +15,13 @@ import { settlementSchema } from "@/lib/validations";
 export function useGroupSettlements(
   groupId: string,
   currentUser: string | null,
-  refetch: () => void
+  refetch: () => void,
+  balances?: { user_id: string; net_balance: number }[]
 ) {
   const supabase = createClient();
   const toast = useToast();
   const t = useTranslations("toasts");
+  const locale = useLocale();
 
   /* ── Modal state ─────────────────────────────────────── */
   const [isSettleModalOpen, setIsSettleModalOpen] = useState(false);
@@ -55,36 +58,58 @@ export function useGroupSettlements(
         return;
       }
 
+      // Calculate what the current user owes the recipient
+      const currentUserBalance = balances?.find(b => b.user_id === currentUser);
+      const recipientBalance = balances?.find(b => b.user_id === to_user);
+
+      // Current user's net_balance is their overall balance
+      // If current user has negative balance and recipient has positive,
+      // and they're in a simplified debt relationship, calculate the owed amount
+      let owed = 0;
+      if (currentUserBalance && recipientBalance) {
+        // Simplified: if I have negative balance and they have positive,
+        // the amount I owe them is proportional to their share of total credits
+        const myDebt = currentUserBalance.net_balance < 0 ? Math.abs(currentUserBalance.net_balance) : 0;
+        const theirCredit = recipientBalance.net_balance > 0 ? recipientBalance.net_balance : 0;
+
+        // Simple heuristic: if I'm in debt and they're owed, assume I owe them up to the minimum
+        if (myDebt > 0 && theirCredit > 0) {
+          owed = Math.min(myDebt, theirCredit);
+        }
+      }
+
+      // Overpay confirmation dialog
+      if (owed > 0 && validatedAmount > owed + 0.01) {
+        const overpay = validatedAmount - owed;
+        const confirmed = await toast.confirm(
+          `You currently owe approximately ${formatCurrency(owed, "USD", locale)} but you're paying ${formatCurrency(validatedAmount, "USD", locale)}. The extra ${formatCurrency(overpay, "USD", locale)} will become a credit — they will owe you. Continue?`,
+          { confirmLabel: "Yes, Continue", cancelLabel: "Cancel" }
+        );
+        if (!confirmed) {
+          setSubmittingSettle(false);
+          return;
+        }
+      }
+
       setSubmittingSettle(true);
 
       try {
-        const { error: insertError } = await supabase
-          .from("settlements")
-          .insert({
-            group_id: groupId,
-            from_user: currentUser,
-            to_user: to_user,
-            amount: validatedAmount,
-            status: "pending",
-            notes: "Settle up",
-            created_by: currentUser,
-          });
+        // Call the create_settlement RPC instead of direct insert
+        const { data: settlementId, error: rpcError } = await supabase.rpc(
+          "create_settlement",
+          {
+            _group_id: groupId,
+            _to_user: to_user,
+            _amount: validatedAmount,
+            _notes: "Settle up",
+          }
+        );
 
-        if (insertError) {
-        toast.error(t("settlements.createFailed"));
+        if (rpcError) {
+          console.error("RPC error:", rpcError);
+          toast.error(rpcError.message || t("settlements.createFailed"));
           return;
         }
-
-        await supabase.from("activity_log").insert({
-          group_id: groupId,
-          user_id: currentUser,
-          action: "settlement_initiated",
-          metadata: {
-            amount: validatedAmount,
-            to_user: to_user,
-            type: "settlement",
-          },
-        });
 
         setIsSettleModalOpen(false);
         setSettleReceiver("");
@@ -105,8 +130,11 @@ export function useGroupSettlements(
       currentUser,
       settleReceiver,
       settleAmount,
+      balances,
       supabase,
       refetch,
+      toast,
+      t,
     ]
   );
 
@@ -126,11 +154,12 @@ export function useGroupSettlements(
         refetch();
       } catch (err) {
         console.error(err);
+        toast.error(t("settlements.approveFailed"));
       } finally {
         setProcessingSettlementId(null);
       }
     },
-    [currentUser, supabase, refetch]
+    [currentUser, supabase, refetch, toast, t]
   );
 
   const handleRejectSettlement = useCallback(
@@ -159,11 +188,12 @@ export function useGroupSettlements(
         refetch();
       } catch (err) {
         console.error(err);
+        toast.error(t("settlements.rejectFailed"));
       } finally {
         setProcessingSettlementId(null);
       }
     },
-    [currentUser, supabase, refetch]
+    [currentUser, supabase, refetch, toast, t]
   );
 
   const handleDeleteSettlement = useCallback(
@@ -204,11 +234,12 @@ export function useGroupSettlements(
         refetch();
       } catch (err) {
         console.error(err);
+        toast.error(t("settlements.deleteFailed"));
       } finally {
         setProcessingSettlementId(null);
       }
     },
-    [groupId, currentUser, supabase, refetch]
+    [groupId, currentUser, supabase, refetch, toast, t]
   );
 
   return {

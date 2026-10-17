@@ -58,7 +58,7 @@ export default function GroupDetailsPage() {
     data.refetch,
     data.currentUser || ""
   );
-  const settleCtl = useGroupSettlements(groupId, data.currentUser, data.refetch);
+  const settleCtl = useGroupSettlements(groupId, data.currentUser, data.refetch, data.balances);
   const memberCtl = useGroupMembers(groupId, data.members, data.refetch);
   const settingsCtl = useGroupSettings(
     groupId,

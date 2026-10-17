@@ -913,6 +913,11 @@
     "successMessage": "تم تحديث الملف الشخصي بنجاح!",
     "changeProfilePhoto": "تغيير صورة الملف الشخصي",
     "avatarPreview": "معاينة الصورة الرمزية",
+    "profilePrivacy": "خصوصية الملف الشخصي",
+    "publicLabel": "عام",
+    "publicDescription": "يمكن لأي شخص رؤية ملفك الشخصي ونشاطك",
+    "privateLabel": "خاص",
+    "privateDescription": "يمكن للأصدقاء وأعضاء المجموعة فقط رؤية ملفك الشخصي",
     "large": "كبير",
     "med": "متوسط",
     "sm": "صغير",
@@ -963,7 +968,8 @@
     "copyLink": "نسخ الرابط",
     "copied": "تم النسخ!",
     "downloadQr": "تحميل رمز QR",
-    "share": "مشاركة"
+    "share": "مشاركة",
+    "resetTokenFailed": "فشل إعادة تعيين رابط الدعوة"
   },
   "quickActions": {
     "createGroup": "إنشاء مجموعة",
@@ -1133,7 +1139,9 @@
       "validationError": "خطأ في التحقق",
       "createFailed": "فشل تسجيل التسوية",
       "markFailed": "فشل تحديث التسوية",
-      "deleteFailed": "فشل حذف التسوية"
+      "deleteFailed": "فشل حذف التسوية",
+      "approveFailed": "فشل الموافقة على التسوية",
+      "rejectFailed": "فشل رفض التسوية"
     },
     "members": {
       "addFailed": "فشل إضافة العضو",

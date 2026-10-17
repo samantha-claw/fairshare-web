@@ -65,6 +65,7 @@ export const profileEditSchema = z.object({
     .max(250, "Bio must be under 250 characters.")
     .optional(),
   avatar_url: z.string().optional(),
+  is_public: z.boolean().optional(),
 });
 
 // ── Groups ────────────────────────────────────────────────────

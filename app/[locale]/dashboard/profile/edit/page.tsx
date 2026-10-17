@@ -21,6 +21,8 @@ import {
   Shield,
   Camera,
   Trash2,
+  Globe,
+  Lock,
 } from "lucide-react";
 
 // ==========================================
@@ -435,6 +437,81 @@ export default function EditProfilePage() {
               hint={t("bioHint")}
               maxLength={250}
             />
+
+            {/* ── Privacy Toggle ─────────────────────── */}
+            <div>
+              <label className="mb-2 flex items-center justify-between">
+                <span className="flex items-center gap-1.5 text-sm font-semibold text-text-primary">
+                  {t("profilePrivacy")}
+                </span>
+              </label>
+
+              <div className="space-y-3">
+                {/* Public Option */}
+                <button
+                  type="button"
+                  onClick={() => e.updateField("is_public", true)}
+                  className={`w-full rounded-2xl border p-4 text-left transition-all duration-200 ${
+                    e.formData.is_public
+                      ? "border-text-primary bg-surface-2/50 ring-2 ring-text-primary/20"
+                      : "border-border bg-surface-2/30 hover:border-text-tertiary"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`mt-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 transition-all ${
+                      e.formData.is_public
+                        ? "border-text-primary bg-text-primary"
+                        : "border-border bg-surface"
+                    }`}>
+                      {e.formData.is_public && (
+                        <div className="h-2 w-2 rounded-full bg-white" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <Globe className="h-4 w-4 text-text-primary" />
+                        <span className="font-semibold text-text-primary">{t("publicLabel")}</span>
+                      </div>
+                      <p className="mt-1 text-xs text-text-secondary">
+                        {t("publicDescription")}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Private Option */}
+                <button
+                  type="button"
+                  onClick={() => e.updateField("is_public", false)}
+                  className={`w-full rounded-2xl border p-4 text-left transition-all duration-200 ${
+                    !e.formData.is_public
+                      ? "border-text-primary bg-surface-2/50 ring-2 ring-text-primary/20"
+                      : "border-border bg-surface-2/30 hover:border-text-tertiary"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`mt-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 transition-all ${
+                      !e.formData.is_public
+                        ? "border-text-primary bg-text-primary"
+                        : "border-border bg-surface"
+                    }`}>
+                      {!e.formData.is_public && (
+                        <div className="h-2 w-2 rounded-full bg-white" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <Lock className="h-4 w-4 text-text-primary" />
+                        <span className="font-semibold text-text-primary">{t("privateLabel")}</span>
+                      </div>
+                      <p className="mt-1 text-xs text-text-secondary">
+                        {t("privateDescription")}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* ── Divider ──────────────────────────── */}
