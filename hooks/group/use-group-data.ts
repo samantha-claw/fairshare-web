@@ -3,6 +3,10 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import {
+  computeGroupBalances,
+  syncAndReadGroupBalancesTable,
+} from "@/lib/balance-sync";
 import type {
   Group,
   Member,
@@ -13,12 +17,12 @@ import type {
 } from "@/types/group";
 
 /**
- * Core data hook — fetches ALL group data via a single
- * `get_group_details` RPC call instead of 7 separate queries.
+ * Core data hook — fetches ALL group data via `get_group_details` RPC
+ * and ensures `public.balances` is synchronized and used as the source of truth.
  */
 export function useGroupData(groupId: string) {
   const router = useRouter();
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
 
   /* ── State ───────────────────────────────────────────── */
   const [loading, setLoading] = useState(true);
@@ -34,80 +38,109 @@ export function useGroupData(groupId: string) {
   // Track initial load so refetches don't flash the full-page spinner
   const initialLoadDone = useRef(false);
 
-/* ── Single RPC fetch ────────────────────────────────── */
-const fetchData = useCallback(async () => {
-  if (!initialLoadDone.current) setLoading(true);
-  setError(null);
+  /* ── Single RPC fetch + Authoritative Balance Table Sync ── */
+  const fetchData = useCallback(async () => {
+    if (!initialLoadDone.current) setLoading(true);
+    setError(null);
 
-  try {
-    // 1. Auth guard
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    try {
+      // 1. Auth guard
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
 
-    if (!user || authError) {
-      router.replace("/login");
-      return;
+      if (!user || authError) {
+        router.replace("/login");
+        return;
+      }
+      setCurrentUser(user.id);
+
+      // 2. Single RPC fetch
+      const { data, error: rpcError } = await supabase.rpc("get_group_details", {
+        p_group_id: groupId,
+      });
+
+      if (rpcError) throw rpcError;
+
+      if (!data || !data.group) {
+        setError("Group not found.");
+        return;
+      }
+
+      // 3. Hydrate state
+      setGroup(data.group as Group);
+
+      const hydratedMembers: Member[] = (data.members || []).map((m: any) => {
+        const uid = m.id || m.user_id;
+        return {
+          ...m,
+          id: uid,
+          user_id: uid,
+          profiles: m.profiles || {
+            username: m.username,
+            full_name: m.full_name,
+            display_name: m.display_name,
+            avatar_url: m.avatar_url,
+          },
+        };
+      });
+      setMembers(hydratedMembers);
+
+      const hydratedExpenses: Expense[] = (data.expenses as Expense[]) || [];
+      setExpenses(hydratedExpenses);
+
+      const mapSettlements = (arr: any[]): Settlement[] => {
+        return (arr || []).map((s) => ({
+          ...s,
+          from_profile: s.from_profile,
+          to_profile: s.to_profile,
+          profiles_from: s.from_profile,
+          profiles_to: s.to_profile,
+        }));
+      };
+
+      const hydratedPending = mapSettlements(data.pending_settlements);
+      const hydratedCompleted = mapSettlements(data.completed_settlements);
+
+      setPendingSettlements(hydratedPending);
+      setCompletedSettlements(hydratedCompleted);
+
+      // 4. Compute exact balances from all group expenses & settlements,
+      // synchronize `public.balances`, and read back from `public.balances`
+      const computedBalances = computeGroupBalances(
+        hydratedMembers,
+        hydratedExpenses,
+        hydratedCompleted
+      );
+
+      // Set immediate balances while DB table sync completes
+      setBalances(
+        computedBalances.length > 0
+          ? computedBalances
+          : ((data.balances as Balance[]) || [])
+      );
+
+      const tableBalances = await syncAndReadGroupBalancesTable(
+        supabase,
+        groupId,
+        hydratedMembers,
+        computedBalances
+      );
+      setBalances(tableBalances);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch group data."
+      );
+    } finally {
+      setLoading(false);
+      initialLoadDone.current = true;
     }
-    setCurrentUser(user.id);
+  }, [supabase, groupId, router]);
 
-    // 2. Single RPC — replaces 7 separate queries
-    const { data, error: rpcError } = await supabase.rpc("get_group_details", {
-      p_group_id: groupId,
-    });
-
-    if (rpcError) throw rpcError;
-
-    if (!data || !data.group) {
-      setError("Group not found.");
-      return;
-    }
-
-    // 3. Hydrate state
-    setGroup(data.group as Group);
-
-    setMembers(
-      (data.members || []).map((m: any) => ({
-        ...m,
-        profiles: m.profiles || {
-          username: m.username,
-          full_name: m.full_name,
-          display_name: m.display_name,
-          avatar_url: m.avatar_url,
-        },
-      }))
-    );
-
-    setExpenses((data.expenses as Expense[]) || []);
-    setBalances((data.balances as Balance[]) || []);
-
-    // إصلاح تعارض واجهة المستخدم (UI Shape Mismatch) للتسويات
-    const mapSettlements = (arr: any[]) => {
-      return (arr || []).map((s) => ({
-        ...s,
-        // نقوم بنسخ البيانات للأماكن التي قد تتوقعها واجهة المستخدم القديمة
-        // لضمان عدم حدوث TypeError: Cannot read properties of undefined
-        from_profile: s.from_profile,
-        to_profile: s.to_profile,
-        profiles_from: s.from_profile, 
-        profiles_to: s.to_profile,
-      }));
-    };
-
-    setPendingSettlements(mapSettlements(data.pending_settlements));
-    setCompletedSettlements(mapSettlements(data.completed_settlements));
-  } catch (err) {
-    setError(err instanceof Error ? err.message : "Failed to fetch group data.");
-  } finally {
-    setLoading(false);
-    initialLoadDone.current = true;
-  }
-}, [supabase, groupId, router]);
-
-useEffect(() => {
-  fetchData();
-}, [fetchData]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   /* ── Derived values ──────────────────────────────────── */
   const isOwner = currentUser === group?.owner_id;
@@ -119,7 +152,7 @@ useEffect(() => {
 
   const myBalance = balances.find((b) => b.user_id === currentUser);
   const myNetBalance = myBalance?.net_balance ?? 0;
-  const canLeave = myNetBalance === 0;
+  const canLeave = Math.abs(myNetBalance) < 0.01;
 
   const totalGroupExpenses = useMemo(
     () => expenses.reduce((sum, e) => sum + Number(e.amount), 0),
@@ -130,7 +163,10 @@ useEffect(() => {
     () =>
       [
         ...expenses.map((e) => ({ ...e, type: "expense" as const })),
-        ...completedSettlements.map((s) => ({ ...s, type: "settlement" as const })),
+        ...completedSettlements.map((s) => ({
+          ...s,
+          type: "settlement" as const,
+        })),
       ].sort(
         (a, b) =>
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()

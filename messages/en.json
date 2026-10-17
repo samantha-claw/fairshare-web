@@ -990,7 +990,17 @@
     "dangerZone": "Danger Zone",
     "dangerSubtitle": "Irreversible and destructive actions",
     "deleteAccount": "Delete Account",
-    "deleteAccountDesc": "Permanently anonymize your profile, remove you from groups, and delete your auth credentials. This cannot be undone."
+    "deleteAccountDesc": "Permanently anonymize your profile, remove you from groups, and delete your auth credentials. This cannot be undone.",
+    "emailRequired": "Email required. Please enter a new email address.",
+    "emailAlreadyCurrent": "That is already your current email address.",
+    "emailInvalid": "Invalid email. Please enter a valid email address.",
+    "emailUpdateFailed": "Email update failed: {error}",
+    "emailConfirmationSent": "Confirmation sent. Check your old and new email inboxes to confirm the change.",
+    "passwordTooShort": "Password must be at least 8 characters long.",
+    "passwordsDoNotMatch": "Passwords do not match.",
+    "passwordUpdateFailed": "Password update failed: {error}",
+    "passwordUpdatedSuccess": "Password updated successfully.",
+    "unexpectedError": "Unexpected error. Please try again."
   },
   "settleModal": {
     "title": "Settle Up",
@@ -1107,7 +1117,10 @@
       "validationError": "Validation error",
       "createFailed": "Failed to create expense",
       "deleteFailed": "Failed to delete the expense.",
-      "sessionExpired": "Session expired. Please refresh."
+      "sessionExpired": "Session expired. Please refresh.",
+      "deleteConfirm": "Delete \"{name}\"? This will recalculate all balances.",
+      "deleteConfirmAction": "Delete",
+      "deleteCancelAction": "Cancel"
     },
     "groupSettings": {
       "nameMismatch": "Please type the group name exactly to confirm deletion.",
@@ -1126,7 +1139,15 @@
       "markFailed": "Failed to mark settlement",
       "deleteFailed": "Failed to delete settlement",
       "approveFailed": "Failed to approve settlement",
-      "rejectFailed": "Failed to reject settlement"
+      "rejectFailed": "Failed to reject settlement",
+      "overpayConfirm": "You currently owe approximately {owed} but you're paying {paying}. The extra {overpay} will become a credit — they will owe you. Continue?",
+      "confirmContinue": "Yes, Continue",
+      "cancel": "Cancel",
+      "rejectConfirm": "Reject this settlement?",
+      "reject": "Reject",
+      "cancelConfirm": "Cancel this settlement request?",
+      "cancelRequest": "Cancel Request",
+      "keep": "Keep"
     },
     "members": {
       "addFailed": "Failed to add member",

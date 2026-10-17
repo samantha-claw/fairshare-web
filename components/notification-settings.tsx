@@ -99,27 +99,49 @@ export function NotificationSettings() {
 
   async function saveSubscriptionToServer(subscription: PushSubscription) {
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return;
 
     const sub = subscription.toJSON();
-    const { error } = await supabase.from("push_subscriptions").upsert(
-      {
-        user_id: user.id,
-        endpoint: sub.endpoint,
-        p256dh: sub.keys?.p256dh,
-        auth: sub.keys?.auth,
-        user_agent: navigator.userAgent,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id,endpoint" }
-    );
+    const payload = {
+      user_id: user.id,
+      endpoint: sub.endpoint,
+      p256dh: sub.keys?.p256dh ?? "",
+      auth: sub.keys?.auth ?? "",
+      user_agent: navigator.userAgent,
+      updated_at: new Date().toISOString(),
+    };
 
-    if (error) throw error;
+    const { error } = await supabase
+      .from("push_subscriptions")
+      .upsert(payload, { onConflict: "user_id,endpoint" });
+
+    if (error) {
+      // Retry without user_agent if column is missing
+      if (error.message?.includes("user_agent")) {
+        const { user_agent: _ua, ...fallbackPayload } = payload;
+        const { error: retryErr } = await supabase
+          .from("push_subscriptions")
+          .upsert(fallbackPayload, { onConflict: "user_id,endpoint" });
+        if (!retryErr) return;
+      }
+      // If table is not yet migrated in Supabase, keep local browser subscription active
+      if (
+        error.code === "42P01" ||
+        error.code === "PGRST205" ||
+        error.message?.includes("push_subscriptions")
+      ) {
+        console.warn("[Push] push_subscriptions table not yet migrated:", error.message);
+        return;
+      }
+      throw error;
+    }
   }
 
   async function removeSubscriptionFromServer(endpoint: string | null) {
-    if (!endpoint) throw new Error("Missing push subscription endpoint");
+    if (!endpoint) return;
 
     const supabase = createClient();
     const { error } = await supabase
@@ -127,7 +149,14 @@ export function NotificationSettings() {
       .delete()
       .eq("endpoint", endpoint);
 
-    if (error) throw error;
+    if (
+      error &&
+      error.code !== "42P01" &&
+      error.code !== "PGRST205" &&
+      !error.message?.includes("push_subscriptions")
+    ) {
+      throw error;
+    }
   }
 
   if (!supported) {

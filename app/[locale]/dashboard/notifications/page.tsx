@@ -2,28 +2,42 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Bell, Check, UserPlus, HandCoins, Receipt, Users, Loader2 } from "lucide-react";
+import {
+  Bell,
+  Check,
+  UserPlus,
+  HandCoins,
+  Receipt,
+  Users,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ar as arLocale, enUS as enLocale } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { useRouter } from "@/i18n/navigation";
-import { EmptyState, AgentSplitIllustration } from "@/components/ui/empty-states";
-import { useTranslations } from "next-intl";
-import { useLocale } from "next-intl";
+import {
+  EmptyState,
+  AgentSplitIllustration,
+} from "@/components/ui/empty-states";
+import { useTranslations, useLocale } from "next-intl";
+import { resolveNotificationHref } from "@/components/notification-bell";
 
 interface Notification {
   id: string;
   user_id: string;
   type: string;
   title: string;
-  message: string;
+  message?: string;
+  body?: string;
+  data?: Record<string, any> | null;
+  metadata?: Record<string, any> | null;
+  group_id?: string | null;
+  reference_id?: string | null;
   is_read: boolean;
   created_at: string;
   actor_id: string | null;
   actor: { display_name: string | null; avatar_url: string | null } | null;
 }
 
-// ── Skeleton ────────────────────────────────────────────
 function PageSkeleton() {
   return (
     <div className="min-h-screen bg-surface">
@@ -43,29 +57,31 @@ function PageSkeleton() {
   );
 }
 
-// ── Get Icon by Type ─────────────────────────────────────
 function getIcon(type: string, className = "h-4 w-4") {
-  switch (type) {
-    case "friend_request":
-      return <UserPlus className={`${className} text-blue-500`} />;
-    case "settlement":
-      return <HandCoins className={`${className} text-amber-500`} />;
-    case "expense":
-      return <Receipt className={`${className} text-positive`} />;
-    case "group":
-      return <Users className={`${className} text-purple-500`} />;
-    default:
-      return <Bell className={`${className} text-text-secondary`} />;
+  const normalized = String(type || "").toLowerCase();
+  if (normalized.includes("friend")) {
+    return <UserPlus className={`${className} text-blue-500`} />;
   }
+  if (normalized.includes("settlement")) {
+    return <HandCoins className={`${className} text-amber-500`} />;
+  }
+  if (normalized.includes("expense")) {
+    return <Receipt className={`${className} text-positive`} />;
+  }
+  if (normalized.includes("group")) {
+    return <Users className={`${className} text-purple-500`} />;
+  }
+  return <Bell className={`${className} text-text-secondary`} />;
 }
 
-// ── Notification Card ────────────────────────────────────
 function NotificationCard({
   notification,
   onMarkAsRead,
+  onNavigate,
 }: {
   notification: Notification;
   onMarkAsRead: (id: string) => void;
+  onNavigate: (notification: Notification) => void;
 }) {
   const t = useTranslations();
   const locale = useLocale();
@@ -74,10 +90,19 @@ function NotificationCard({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`flex items-start gap-4 rounded-2xl border p-4 transition-all ${
+      onClick={() => onNavigate(notification)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onNavigate(notification);
+        }
+      }}
+      className={`flex cursor-pointer items-start gap-4 rounded-2xl border p-4 transition-all hover:bg-surface-2/60 ${
         notification.is_read
           ? "border-border bg-surface"
-          : "border-border bg-surface"
+          : "border-indigo-500/30 bg-indigo-500/5"
       }`}
     >
       {/* Icon */}
@@ -87,19 +112,29 @@ function NotificationCard({
 
       {/* Content */}
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold text-text-primary">{notification.title}</p>
-        <p className="mt-1 text-sm text-text-secondary line-clamp-2">{notification.message}</p>
+        <p className="text-sm font-semibold text-text-primary">
+          {notification.title}
+        </p>
+        <p className="mt-1 text-sm text-text-secondary line-clamp-2">
+          {notification.message || notification.body}
+        </p>
         <p className="mt-2 text-xs text-text-tertiary">
-          {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: dateLocale })}
+          {formatDistanceToNow(new Date(notification.created_at), {
+            addSuffix: true,
+            locale: dateLocale,
+          })}
         </p>
       </div>
 
       {/* Mark as Read Button */}
       {!notification.is_read && (
         <button
-          onClick={() => onMarkAsRead(notification.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onMarkAsRead(notification.id);
+          }}
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface-2 text-text-secondary transition-colors hover:bg-positive-bg hover:text-positive"
-          title={t('notifications.markAsRead')}
+          title={t("notifications.markAsRead")}
         >
           <Check className="h-4 w-4" />
         </button>
@@ -108,18 +143,15 @@ function NotificationCard({
   );
 }
 
-// ── Page ─────────────────────────────────────────────────
 export default function NotificationsPage() {
   const router = useRouter();
   const t = useTranslations();
-  const locale = useLocale();
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
 
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
 
-  // Fetch user and notifications
   useEffect(() => {
     let cancelled = false;
 
@@ -162,12 +194,11 @@ export default function NotificationsPage() {
     };
   }, [supabase, router]);
 
-  // Subscribe to realtime notifications
   useEffect(() => {
     if (!userId) return;
 
     const channel = supabase
-      .channel("realtime-notifications-page")
+      .channel(`realtime-notifications-page-${userId}`)
       .on(
         "postgres_changes",
         {
@@ -187,9 +218,11 @@ export default function NotificationsPage() {
     };
   }, [userId, supabase]);
 
-  // Mark single notification as read
   const markAsRead = async (id: string) => {
-    const { error } = await supabase.from("notifications").update({ is_read: true }).eq("id", id);
+    const { error } = await supabase
+      .from("notifications")
+      .update({ is_read: true })
+      .eq("id", id);
     if (!error) {
       setNotifications((prev) =>
         prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
@@ -199,7 +232,16 @@ export default function NotificationsPage() {
     }
   };
 
-  // Mark all as read
+  const handleNavigate = async (notif: Notification) => {
+    if (!notif.is_read) {
+      await markAsRead(notif.id);
+    }
+    const targetHref = resolveNotificationHref(notif);
+    if (targetHref !== "/dashboard/notifications") {
+      router.push(targetHref);
+    }
+  };
+
   const markAllAsRead = async () => {
     if (!userId) return;
     const previous = notifications;
@@ -224,7 +266,6 @@ export default function NotificationsPage() {
   return (
     <div className="min-h-screen bg-surface pb-20 md:pb-10">
       <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-        {/* ── Back Button & Header ─────────────────────── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -238,30 +279,30 @@ export default function NotificationsPage() {
               </div>
               <div>
                 <h1 className="text-3xl font-black tracking-tight text-text-primary sm:text-4xl">
-                  {t('notifications.title')}
+                  {t("notifications.title")}
                 </h1>
                 <p className="text-sm text-text-secondary">
                   {unreadCount > 0
-                    ? t('notifications.unread', { count: unreadCount })
-                    : t('notifications.allCaughtUp')}
+                    ? t("notifications.unread", { count: unreadCount })
+                    : t("notifications.allCaughtUp")}
                 </p>
               </div>
             </div>
 
-            {/* Mark All Read Button */}
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
                 className="flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2 text-sm font-medium text-text-secondary transition-all hover:bg-surface-2 hover:text-text-primary"
               >
                 <Check className="h-4 w-4" />
-                <span className="hidden sm:inline">{t('notifications.markAllRead')}</span>
+                <span className="hidden sm:inline">
+                  {t("notifications.markAllRead")}
+                </span>
               </button>
             )}
           </div>
         </motion.div>
 
-        {/* ── Notifications List ────────────────────────── */}
         {notifications.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
@@ -270,9 +311,11 @@ export default function NotificationsPage() {
             className="flex flex-col items-center justify-center py-16"
           >
             <EmptyState
-              illustration={<AgentSplitIllustration pose="relaxed" className="h-32 w-32" />}
-              title={t('emptyStates.notifications.title')}
-              description={t('emptyStates.notifications.description')}
+              illustration={
+                <AgentSplitIllustration pose="relaxed" className="h-32 w-32" />
+              }
+              title={t("emptyStates.notifications.title")}
+              description={t("emptyStates.notifications.description")}
               className="border-none bg-transparent shadow-none"
             />
           </motion.div>
@@ -285,7 +328,11 @@ export default function NotificationsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
-                <NotificationCard notification={notif} onMarkAsRead={markAsRead} />
+                <NotificationCard
+                  notification={notif}
+                  onMarkAsRead={markAsRead}
+                  onNavigate={handleNavigate}
+                />
               </motion.div>
             ))}
           </div>

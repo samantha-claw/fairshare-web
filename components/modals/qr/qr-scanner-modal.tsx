@@ -79,12 +79,17 @@ export function QRScannerModal({
 
       try {
         const parsed = new URL(url);
-        const pathname = parsed.pathname;
+        const rawPathname = parsed.pathname;
+        const pathname = rawPathname.replace(/^\/(en|ar)(?=\/|$)/, "") || "/";
         const searchParams = parsed.searchParams;
 
         // Group join link
-        if (pathname === "/join" && searchParams.has("id")) {
-          const groupId = searchParams.get("id")!;
+        if (
+          pathname === "/join" &&
+          (searchParams.has("id") || searchParams.has("joinGroupId"))
+        ) {
+          const groupId = (searchParams.get("id") ||
+            searchParams.get("joinGroupId"))!;
           const token = searchParams.get("token");
 
           stopScanner();
@@ -94,8 +99,8 @@ export function QRScannerModal({
               onGroupScanned(groupId, token);
             } else {
               const joinUrl = token
-                ? `/join?id=${groupId}&token=${token}`
-                : `/join?id=${groupId}`;
+                ? `/join?id=${encodeURIComponent(groupId)}&token=${encodeURIComponent(token)}`
+                : `/join?id=${encodeURIComponent(groupId)}`;
               router.push(joinUrl);
             }
           }, 800);

@@ -3,7 +3,7 @@
 // ==========================================
 // 📦 IMPORTS
 // ==========================================
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { Spinner } from "@/components/ui/spinner";
@@ -73,6 +73,19 @@ export default function GroupDetailsPage() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isAllExpensesModalOpen, setIsAllExpensesModalOpen] = useState(false);
   const [localToken, setLocalToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const tabParam = new URLSearchParams(window.location.search).get("tab");
+    if (
+      tabParam &&
+      ["overview", "expenses", "settle", "activity", "analysis", "members"].includes(
+        tabParam
+      )
+    ) {
+      setActiveTab(tabParam);
+    }
+  }, []);
 
   /* ── Reset invite token ──────────────────────────────── */
   const handleResetToken = useCallback(async () => {

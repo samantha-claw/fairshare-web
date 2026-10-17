@@ -13,17 +13,12 @@ import type {
   ProfileStats,
 } from "@/types/profile";
 
-// ==========================================
-// 🧩 TYPES
-// ==========================================
-
 interface UseProfileOptions {
   userId?: string;
 }
 
 type FriendshipDirection = "incoming" | "outgoing" | null;
 
-// Local row interfaces for type safety
 interface GroupRowFragment {
   id: string;
   name: string;
@@ -43,9 +38,13 @@ interface ExpensePaidRow {
 
 interface ExpenseSplitRow {
   amount: number | string;
-  expenses: {
-    group_id: string;
-  };
+  expenses:
+    | {
+        group_id: string;
+      }
+    | Array<{
+        group_id: string;
+      }>;
 }
 
 interface SettlementRow {
@@ -75,7 +74,7 @@ const createDefaultStats = (): ProfileStats => ({
 export function useProfile(options: UseProfileOptions = {}) {
   const { userId: targetUserId } = options;
   const router = useRouter();
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
   const toast = useToast();
   const t = useTranslations("toasts");
 
@@ -206,63 +205,165 @@ export function useProfile(options: UseProfileOptions = {}) {
         if (!memberships || memberships.length === 0) {
           resetFinancialState();
         } else {
-          const typedMemberships = memberships as GroupMemberRow[];
+          const typedMemberships = (memberships as unknown as GroupMemberRow[]).filter(
+            (m) => m.groups
+          );
           const groupIds = typedMemberships.map((m) => m.group_id);
 
-          const { data: expensesPaid } = await supabase
-            .from("expenses")
-            .select("group_id, amount")
-            .in("group_id", groupIds)
-            .eq("paid_by", uid);
+          const [
+            { data: expensesPaid },
+            { data: mySplits },
+            { data: settlementsSent },
+            { data: settlementsReceived },
+            { data: existingBalanceRows },
+          ] = await Promise.all([
+            supabase
+              .from("expenses")
+              .select("group_id, amount")
+              .in("group_id", groupIds)
+              .eq("paid_by", uid),
+            supabase
+              .from("expense_splits")
+              .select("amount, expenses!inner(group_id)")
+              .eq("user_id", uid),
+            supabase
+              .from("settlements")
+              .select("group_id, amount")
+              .in("group_id", groupIds)
+              .eq("from_user", uid)
+              .in("status", ["completed", "approved"]),
+            supabase
+              .from("settlements")
+              .select("group_id, amount")
+              .in("group_id", groupIds)
+              .eq("to_user", uid)
+              .in("status", ["completed", "approved"]),
+            supabase
+              .from("balances")
+              .select("id, group_id, total_paid, total_owed, net_balance")
+              .eq("user_id", uid)
+              .in("group_id", groupIds),
+          ]);
+
           const typedExpensesPaid = (expensesPaid || []) as ExpensePaidRow[];
-
-          const { data: mySplits } = await supabase
-            .from("expense_splits")
-            .select("amount, expenses(group_id)")
-            .eq("user_id", uid);
           const typedMySplits = (mySplits || []) as ExpenseSplitRow[];
-
-          const { data: settlementsSent } = await supabase
-            .from("settlements")
-            .select("group_id, amount")
-            .in("group_id", groupIds)
-            .eq("from_user", uid)
-            .eq("status", "completed");
           const typedSettlementsSent = (settlementsSent || []) as SettlementRow[];
-
-          const { data: settlementsReceived } = await supabase
-            .from("settlements")
-            .select("group_id, amount")
-            .in("group_id", groupIds)
-            .eq("to_user", uid)
-            .eq("status", "completed");
           const typedSettlementsReceived = (settlementsReceived || []) as SettlementRow[];
 
-          const processedGroups: ProfileGroup[] = typedMemberships.map(
-            (m) => {
-              const g = m.groups;
-              const paidExp = typedExpensesPaid
-                .filter((e) => e.group_id === g.id)
-                .reduce((s, e) => s + Number(e.amount), 0);
-              const paidSet = typedSettlementsSent
-                .filter((s) => s.group_id === g.id)
-                .reduce((s, e) => s + Number(e.amount), 0);
-              const owedExp = typedMySplits
-                .filter((s) => s.expenses.group_id === g.id)
-                .reduce((s, e) => s + Number(e.amount), 0);
-              const owedSet = typedSettlementsReceived
-                .filter((s) => s.group_id === g.id)
-                .reduce((s, e) => s + Number(e.amount), 0);
-
-              return {
-                group_id: g.id,
-                group_name: g.name,
-                currency: g.currency || "USD",
-                net_balance: paidExp + paidSet - (owedExp + owedSet),
-                created_at: g.created_at,
-              };
+          const existingByGroup = new Map<
+            string,
+            { id?: string; total_paid: number; total_owed: number; net_balance: number }
+          >();
+          for (const row of existingBalanceRows ?? []) {
+            if (!existingByGroup.has(row.group_id)) {
+              existingByGroup.set(row.group_id, {
+                id: row.id,
+                total_paid: Number(row.total_paid) || 0,
+                total_owed: Number(row.total_owed) || 0,
+                net_balance: Number(row.net_balance) || 0,
+              });
             }
-          );
+          }
+
+          const nowIso = new Date().toISOString();
+          const toInsert: any[] = [];
+          const updatePromises: PromiseLike<unknown>[] = [];
+
+          for (const m of typedMemberships) {
+            const g = m.groups;
+            const paidExp = typedExpensesPaid
+              .filter((e) => e.group_id === g.id)
+              .reduce((s, e) => s + Number(e.amount), 0);
+            const paidSet = typedSettlementsSent
+              .filter((s) => s.group_id === g.id)
+              .reduce((s, e) => s + Number(e.amount), 0);
+            const owedExp = typedMySplits
+              .filter((s) => {
+                const expGroup = Array.isArray(s.expenses)
+                  ? s.expenses[0]?.group_id
+                  : s.expenses?.group_id;
+                return expGroup === g.id;
+              })
+              .reduce((s, e) => s + Number(e.amount), 0);
+            const owedSet = typedSettlementsReceived
+              .filter((s) => s.group_id === g.id)
+              .reduce((s, e) => s + Number(e.amount), 0);
+
+            const total_paid = Math.round((paidExp + paidSet) * 100) / 100;
+            const total_owed = Math.round((owedExp + owedSet) * 100) / 100;
+            const rawNet = Math.round((total_paid - total_owed) * 100) / 100;
+            const net_balance = Object.is(rawNet, -0) ? 0 : rawNet;
+
+            const existing = existingByGroup.get(g.id);
+            if (!existing) {
+              toInsert.push({
+                group_id: g.id,
+                user_id: uid,
+                total_paid,
+                total_owed,
+                net_balance,
+                updated_at: nowIso,
+              });
+              existingByGroup.set(g.id, { total_paid, total_owed, net_balance });
+            } else if (
+              Math.abs(existing.total_paid - total_paid) > 0.005 ||
+              Math.abs(existing.total_owed - total_owed) > 0.005 ||
+              Math.abs(existing.net_balance - net_balance) > 0.005
+            ) {
+              const query = supabase.from("balances").update({
+                total_paid,
+                total_owed,
+                net_balance,
+                updated_at: nowIso,
+              });
+              updatePromises.push(
+                existing.id
+                  ? query.eq("id", existing.id)
+                  : query.eq("group_id", g.id).eq("user_id", uid)
+              );
+              existingByGroup.set(g.id, {
+                id: existing.id,
+                total_paid,
+                total_owed,
+                net_balance,
+              });
+            }
+          }
+
+          if (toInsert.length > 0) {
+            await supabase.from("balances").insert(toInsert);
+          }
+          if (updatePromises.length > 0) {
+            await Promise.allSettled(updatePromises);
+          }
+
+          // Read back from the synchronized `public.balances` table
+          const { data: syncedBalances } = await supabase
+            .from("balances")
+            .select("group_id, total_paid, total_owed, net_balance")
+            .eq("user_id", uid)
+            .in("group_id", groupIds);
+
+          const finalBalanceMap = new Map<string, number>();
+          for (const b of syncedBalances ?? []) {
+            finalBalanceMap.set(b.group_id, Number(b.net_balance) || 0);
+          }
+
+          const processedGroups: ProfileGroup[] = typedMemberships.map((m) => {
+            const g = m.groups;
+            const net_balance =
+              finalBalanceMap.get(g.id) ??
+              existingByGroup.get(g.id)?.net_balance ??
+              0;
+
+            return {
+              group_id: g.id,
+              group_name: g.name,
+              currency: g.currency || "USD",
+              net_balance,
+              created_at: g.created_at,
+            };
+          });
 
           setGroups(processedGroups);
 
@@ -279,10 +380,10 @@ export function useProfile(options: UseProfileOptions = {}) {
 
           setStats({
             totalGroups: typedMemberships.length,
-            totalExpensesPaid: totalPaid,
-            totalOwed,
-            totalOwes,
-            netBalance: totalOwed - totalOwes,
+            totalExpensesPaid: Math.round(totalPaid * 100) / 100,
+            totalOwed: Math.round(totalOwed * 100) / 100,
+            totalOwes: Math.round(totalOwes * 100) / 100,
+            netBalance: Math.round((totalOwed - totalOwes) * 100) / 100,
           });
 
           const { data: recentExpenses } = await supabase
@@ -294,7 +395,7 @@ export function useProfile(options: UseProfileOptions = {}) {
             .eq("paid_by", user.id)
             .order("created_at", { ascending: false })
             .limit(10);
-          const typedRecentExpenses = (recentExpenses || []) as RecentExpenseRow[];
+          const typedRecentExpenses = (recentExpenses || []) as unknown as RecentExpenseRow[];
 
           setActivities(
             typedRecentExpenses.map((e) => ({

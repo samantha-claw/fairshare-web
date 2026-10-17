@@ -213,8 +213,11 @@ export function useGroupExpenses(
   const handleDeleteExpense = useCallback(
     async (expenseId: string, name: string) => {
       const confirmed = await toast.confirm(
-        `Delete "${name}"? This will recalculate all balances.`,
-        { confirmLabel: "Delete", cancelLabel: "Cancel" }
+        t("expenses.deleteConfirm", { name }),
+        {
+          confirmLabel: t("expenses.deleteConfirmAction"),
+          cancelLabel: t("expenses.deleteCancelAction"),
+        }
       );
       if (!confirmed) return;
 
@@ -229,7 +232,7 @@ export function useGroupExpenses(
         refetch();
       }
     },
-    [supabase, refetch, toast]
+    [supabase, refetch, toast, t]
   );
 
   return {

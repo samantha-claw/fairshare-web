@@ -1005,7 +1005,17 @@
     "dangerZone": "منطقة خطرة",
     "dangerSubtitle": "إجراءات لا رجعة فيها ومدمّرة",
     "deleteAccount": "حذف الحساب",
-    "deleteAccountDesc": "إخفاء هويتك نهائياً، وإزالتك من المجموعات، وحذف بيانات المصادقة. هذا الإجراء لا يمكن التراجع عنه."
+    "deleteAccountDesc": "إخفاء هويتك نهائياً، وإزالتك من المجموعات، وحذف بيانات المصادقة. هذا الإجراء لا يمكن التراجع عنه.",
+    "emailRequired": "البريد الإلكتروني مطلوب. يرجى إدخال عنوان بريد إلكتروني جديد.",
+    "emailAlreadyCurrent": "هذا هو عنوان بريدك الإلكتروني الحالي بالفعل.",
+    "emailInvalid": "بريد إلكتروني غير صالح. يرجى إدخال عنوان بريد إلكتروني صحيح.",
+    "emailUpdateFailed": "فشل تحديث البريد الإلكتروني: {error}",
+    "emailConfirmationSent": "تم إرسال التأكيد. تحقق من بريدك الإلكتروني القديم والجديد لتأكيد التغيير.",
+    "passwordTooShort": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.",
+    "passwordsDoNotMatch": "كلمتا المرور غير متطابقتين.",
+    "passwordUpdateFailed": "فشل تحديث كلمة المرور: {error}",
+    "passwordUpdatedSuccess": "تم تحديث كلمة المرور بنجاح.",
+    "unexpectedError": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى."
   },
   "settleModal": {
     "title": "تسوية",
@@ -1122,7 +1132,10 @@
       "validationError": "خطأ في التحقق",
       "createFailed": "فشل إنشاء المصروف",
       "deleteFailed": "فشل حذف المصروف.",
-      "sessionExpired": "انتهت الجلسة. يرجى التحديث."
+      "sessionExpired": "انتهت الجلسة. يرجى التحديث.",
+      "deleteConfirm": "حذف \"{name}\"؟ سيتم إعادة حساب جميع الأرصدة.",
+      "deleteConfirmAction": "حذف",
+      "deleteCancelAction": "إلغاء"
     },
     "groupSettings": {
       "nameMismatch": "يرجى كتابة اسم المجموعة بالضبط للتأكيد.",
@@ -1141,7 +1154,15 @@
       "markFailed": "فشل تحديث التسوية",
       "deleteFailed": "فشل حذف التسوية",
       "approveFailed": "فشل الموافقة على التسوية",
-      "rejectFailed": "فشل رفض التسوية"
+      "rejectFailed": "فشل رفض التسوية",
+      "overpayConfirm": "أنت تدين حاليًا بحوالي {owed} ولكنك تدفع {paying}. المبلغ الإضافي {overpay} سيصبح رصيدًا لصالحك — سيدينون لك به. هل تريد المتابعة؟",
+      "confirmContinue": "نعم، متابعة",
+      "cancel": "إلغاء",
+      "rejectConfirm": "هل تريد رفض هذه التسوية؟",
+      "reject": "رفض",
+      "cancelConfirm": "هل تريد إلغاء طلب التسوية هذا؟",
+      "cancelRequest": "إلغاء الطلب",
+      "keep": "إبقاء"
     },
     "members": {
       "addFailed": "فشل إضافة العضو",

@@ -2,11 +2,60 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Bell, Check, UserPlus, HandCoins, Receipt, Users, X } from "lucide-react";
+import {
+  Bell,
+  UserPlus,
+  HandCoins,
+  Receipt,
+  Users,
+  X,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ar as arLocale, enUS as enLocale } from "date-fns/locale";
 import { useLocale, useTranslations } from "next-intl";
-import { EmptyState, AgentSplitIllustration } from "@/components/ui/empty-states";
+import { useRouter } from "@/i18n/navigation";
+import {
+  EmptyState,
+  AgentSplitIllustration,
+} from "@/components/ui/empty-states";
+
+export function resolveNotificationHref(notif: any): string {
+  const type = String(notif?.type || "").toLowerCase();
+  const payload =
+    notif?.data && typeof notif.data === "object"
+      ? notif.data
+      : notif?.metadata && typeof notif.metadata === "object"
+      ? notif.metadata
+      : {};
+
+  const groupId =
+    payload.group_id ||
+    payload.groupId ||
+    notif?.group_id ||
+    (type.includes("group") ? notif?.reference_id : null);
+
+  if (type.includes("friend")) {
+    return "/dashboard/friends";
+  }
+
+  if (type.includes("settlement") && groupId) {
+    return `/dashboard/groups/${groupId}?tab=settle`;
+  }
+
+  if (type.includes("expense") && groupId) {
+    return `/dashboard/groups/${groupId}?tab=expenses`;
+  }
+
+  if (groupId) {
+    return `/dashboard/groups/${groupId}`;
+  }
+
+  if (notif?.actor_id) {
+    return `/dashboard/profile/${notif.actor_id}`;
+  }
+
+  return "/dashboard/notifications";
+}
 
 export function NotificationBell({ userId }: { userId: string }) {
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -14,11 +63,11 @@ export function NotificationBell({ userId }: { userId: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const locale = useLocale();
+  const router = useRouter();
   const dateLocale = locale === "ar" ? arLocale : enLocale;
   const t = useTranslations("notificationBell");
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
 
-  // جلب الإشعارات
   const fetchNotifications = async () => {
     const { data, error } = await supabase
       .from("notifications")
@@ -32,14 +81,18 @@ export function NotificationBell({ userId }: { userId: string }) {
     }
   };
 
-  // الاستماع للإشعارات اللحظية
   useEffect(() => {
     fetchNotifications();
     const channel = supabase
-      .channel("realtime-notifications")
+      .channel(`realtime-notifications-${userId}`)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${userId}`,
+        },
         (payload: { new: any }) => {
           setNotifications((prev) => [payload.new, ...prev]);
           setUnreadCount((prev) => prev + 1);
@@ -49,12 +102,14 @@ export function NotificationBell({ userId }: { userId: string }) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId]);
+  }, [userId, supabase]);
 
-  // إغلاق القائمة لما تدوس بره
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -62,28 +117,48 @@ export function NotificationBell({ userId }: { userId: string }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // تحديد كل الإشعارات كمقروءة
   const markAllAsRead = async () => {
     if (unreadCount === 0) return;
-    await supabase.from("notifications").update({ is_read: true }).eq("user_id", userId).eq("is_read", false);
+    await supabase
+      .from("notifications")
+      .update({ is_read: true })
+      .eq("user_id", userId)
+      .eq("is_read", false);
     setUnreadCount(0);
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
   };
 
-  // اختيار أيقونة الإشعار بناءً على نوعه
-  const getIcon = (type: string) => {
-    switch (type) {
-      case "friend_request":
-        return <UserPlus className="h-4 w-4 text-blue-500" />;
-      case "settlement":
-        return <HandCoins className="h-4 w-4 text-amber-500" />;
-      case "expense":
-        return <Receipt className="h-4 w-4 text-emerald-500" />;
-      case "group":
-        return <Users className="h-4 w-4 text-purple-500" />;
-      default:
-        return <Bell className="h-4 w-4 text-text-secondary" />;
+  const handleNotificationClick = async (notif: any) => {
+    setIsOpen(false);
+    if (!notif.is_read && notif.id) {
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notif.id ? { ...n, is_read: true } : n))
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+      await supabase
+        .from("notifications")
+        .update({ is_read: true })
+        .eq("id", notif.id);
     }
+    const targetHref = resolveNotificationHref(notif);
+    router.push(targetHref);
+  };
+
+  const getIcon = (type: string) => {
+    const normalized = String(type || "").toLowerCase();
+    if (normalized.includes("friend")) {
+      return <UserPlus className="h-4 w-4 text-blue-500" />;
+    }
+    if (normalized.includes("settlement")) {
+      return <HandCoins className="h-4 w-4 text-amber-500" />;
+    }
+    if (normalized.includes("expense")) {
+      return <Receipt className="h-4 w-4 text-emerald-500" />;
+    }
+    if (normalized.includes("group")) {
+      return <Users className="h-4 w-4 text-purple-500" />;
+    }
+    return <Bell className="h-4 w-4 text-text-secondary" />;
   };
 
   return (
@@ -107,11 +182,9 @@ export function NotificationBell({ userId }: { userId: string }) {
 
       {/* ── Dropdown Modal ── */}
       {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-border bg-surface shadow-xl sm:w-96">
+        <div className="absolute end-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-border bg-surface shadow-xl sm:w-96">
           <div className="flex items-center justify-between border-b border-border bg-surface-2/50 dark:bg-gray-800/50 px-4 py-3">
-            <h3 className="font-semibold text-text-primary">
-              {t("title")}
-            </h3>
+            <h3 className="font-semibold text-text-primary">{t("title")}</h3>
             <div className="flex items-center gap-2">
               {unreadCount > 0 && (
                 <button
@@ -134,7 +207,12 @@ export function NotificationBell({ userId }: { userId: string }) {
             {notifications.length === 0 ? (
               <div className="p-4">
                 <EmptyState
-                  illustration={<AgentSplitIllustration pose="relaxed" className="h-28 w-28" />}
+                  illustration={
+                    <AgentSplitIllustration
+                      pose="relaxed"
+                      className="h-28 w-28"
+                    />
+                  }
                   title={t("emptyTitle")}
                   description={t("emptyDescription")}
                   className="border-none bg-transparent py-4 shadow-none"
@@ -146,9 +224,11 @@ export function NotificationBell({ userId }: { userId: string }) {
                   <button
                     key={notif.id}
                     type="button"
-                    onClick={() => setIsOpen(false)}
-                    className={`flex w-full items-start gap-3 p-4 text-left transition-colors hover:bg-surface-2 dark:hover:bg-gray-800 ${
-                      !notif.is_read ? "bg-text-primary/5 dark:bg-text-primary/10" : ""
+                    onClick={() => handleNotificationClick(notif)}
+                    className={`flex w-full items-start gap-3 p-4 text-start transition-colors hover:bg-surface-2 dark:hover:bg-gray-800 ${
+                      !notif.is_read
+                        ? "bg-text-primary/5 dark:bg-text-primary/10"
+                        : ""
                     }`}
                   >
                     <div className="mt-1 shrink-0 rounded-full bg-surface-2 dark:bg-gray-800 p-2">
@@ -159,10 +239,13 @@ export function NotificationBell({ userId }: { userId: string }) {
                         {notif.title}
                       </p>
                       <p className="text-xs text-text-secondary line-clamp-2">
-                        {notif.message}
+                        {notif.message || notif.body}
                       </p>
                       <p className="text-[10px] text-text-secondary">
-                        {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: dateLocale })}
+                        {formatDistanceToNow(new Date(notif.created_at), {
+                          addSuffix: true,
+                          locale: dateLocale,
+                        })}
                       </p>
                     </div>
                   </button>

@@ -130,16 +130,16 @@ export default function SettingsPage() {
       e.preventDefault();
       const trimmed = newEmail.trim().toLowerCase();
       if (!trimmed) {
-        toast.error("Email required. Please enter a new email address.");
+        toast.error(t("settings.emailRequired"));
         return;
       }
       if (trimmed === userEmail.toLowerCase()) {
-        toast.error("That is already your current email address.");
+        toast.error(t("settings.emailAlreadyCurrent"));
         return;
       }
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(trimmed)) {
-        toast.error("Invalid email. Please enter a valid email address.");
+        toast.error(t("settings.emailInvalid"));
         return;
       }
       setIsUpdatingEmail(true);
@@ -148,18 +148,18 @@ export default function SettingsPage() {
           email: trimmed,
         });
         if (error) {
-          toast.error(`Email update failed: ${error.message}`);
+          toast.error(t("settings.emailUpdateFailed", { error: error.message }));
         } else {
-          toast.success("Confirmation sent. Check your old and new email inboxes to confirm the change.");
+          toast.success(t("settings.emailConfirmationSent"));
           setNewEmail("");
         }
       } catch {
-        toast.error("Unexpected error. Please try again.");
+        toast.error(t("settings.unexpectedError"));
       } finally {
         setIsUpdatingEmail(false);
       }
     },
-    [newEmail, userEmail, supabase, toast]
+    [newEmail, userEmail, supabase, toast, t]
   );
 
   // ── Password update handler ─────────────────────
@@ -167,11 +167,11 @@ export default function SettingsPage() {
     async (e: React.FormEvent) => {
       e.preventDefault();
       if (newPassword.length < 8) {
-        toast.error("Password must be at least 8 characters long.");
+        toast.error(t("settings.passwordTooShort"));
         return;
       }
       if (newPassword !== confirmPassword) {
-        toast.error("Passwords do not match.");
+        toast.error(t("settings.passwordsDoNotMatch"));
         return;
       }
       setIsUpdatingPassword(true);
@@ -180,19 +180,19 @@ export default function SettingsPage() {
           password: newPassword,
         });
         if (error) {
-          toast.error(`Password update failed: ${error.message}`);
+          toast.error(t("settings.passwordUpdateFailed", { error: error.message }));
         } else {
-          toast.success("Password updated successfully.");
+          toast.success(t("settings.passwordUpdatedSuccess"));
           setNewPassword("");
           setConfirmPassword("");
         }
       } catch {
-        toast.error("Unexpected error. Please try again.");
+        toast.error(t("settings.unexpectedError"));
       } finally {
         setIsUpdatingPassword(false);
       }
     },
-    [newPassword, confirmPassword, supabase, toast]
+    [newPassword, confirmPassword, supabase, toast, t]
   );
 
   // ── Loading state ───────────────────────────────

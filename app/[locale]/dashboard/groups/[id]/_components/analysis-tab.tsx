@@ -551,7 +551,8 @@ export function AnalysisTab({
       .map(([hour, total]) => ({ hour, total }));
   }, [filteredExpenses, timeRange, dateLocale]);
 
-  const trendChartData = timeRange === "24h" ? dailyData : trendData;
+  const trendChartData: Array<{ hour?: string; period?: string; label?: string; total: number }> =
+    timeRange === "24h" ? dailyData : trendData;
 
   // ── Empty State ──
   if (expenses.length === 0) {

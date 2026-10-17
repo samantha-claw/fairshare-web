@@ -18,7 +18,7 @@ export function useGroupSettlements(
   refetch: () => void,
   balances?: { user_id: string; net_balance: number }[]
 ) {
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
   const toast = useToast();
   const t = useTranslations("toasts");
   const locale = useLocale();
@@ -32,11 +32,14 @@ export function useGroupSettlements(
     string | null
   >(null);
 
-  const openSettleUpModal = useCallback((recipientId?: string, amount?: number) => {
-    setSettleReceiver(recipientId ?? "");
-    setSettleAmount(amount != null ? String(amount) : "");
-    setIsSettleModalOpen(true);
-  }, []);
+  const openSettleUpModal = useCallback(
+    (recipientId?: string, amount?: number) => {
+      setSettleReceiver(recipientId ?? "");
+      setSettleAmount(amount != null ? String(amount) : "");
+      setIsSettleModalOpen(true);
+    },
+    []
+  );
 
   const handleInitiateSettlement = useCallback(
     async (e: FormEvent) => {
@@ -59,20 +62,20 @@ export function useGroupSettlements(
       }
 
       // Calculate what the current user owes the recipient
-      const currentUserBalance = balances?.find(b => b.user_id === currentUser);
-      const recipientBalance = balances?.find(b => b.user_id === to_user);
+      const currentUserBalance = balances?.find(
+        (b) => b.user_id === currentUser
+      );
+      const recipientBalance = balances?.find((b) => b.user_id === to_user);
 
-      // Current user's net_balance is their overall balance
-      // If current user has negative balance and recipient has positive,
-      // and they're in a simplified debt relationship, calculate the owed amount
       let owed = 0;
       if (currentUserBalance && recipientBalance) {
-        // Simplified: if I have negative balance and they have positive,
-        // the amount I owe them is proportional to their share of total credits
-        const myDebt = currentUserBalance.net_balance < 0 ? Math.abs(currentUserBalance.net_balance) : 0;
-        const theirCredit = recipientBalance.net_balance > 0 ? recipientBalance.net_balance : 0;
+        const myDebt =
+          currentUserBalance.net_balance < 0
+            ? Math.abs(currentUserBalance.net_balance)
+            : 0;
+        const theirCredit =
+          recipientBalance.net_balance > 0 ? recipientBalance.net_balance : 0;
 
-        // Simple heuristic: if I'm in debt and they're owed, assume I owe them up to the minimum
         if (myDebt > 0 && theirCredit > 0) {
           owed = Math.min(myDebt, theirCredit);
         }
@@ -82,8 +85,15 @@ export function useGroupSettlements(
       if (owed > 0 && validatedAmount > owed + 0.01) {
         const overpay = validatedAmount - owed;
         const confirmed = await toast.confirm(
-          `You currently owe approximately ${formatCurrency(owed, "USD", locale)} but you're paying ${formatCurrency(validatedAmount, "USD", locale)}. The extra ${formatCurrency(overpay, "USD", locale)} will become a credit — they will owe you. Continue?`,
-          { confirmLabel: "Yes, Continue", cancelLabel: "Cancel" }
+          t("settlements.overpayConfirm", {
+            owed: formatCurrency(owed, "USD", locale),
+            paying: formatCurrency(validatedAmount, "USD", locale),
+            overpay: formatCurrency(overpay, "USD", locale),
+          }),
+          {
+            confirmLabel: t("settlements.confirmContinue"),
+            cancelLabel: t("settlements.cancel"),
+          }
         );
         if (!confirmed) {
           setSubmittingSettle(false);
@@ -94,27 +104,65 @@ export function useGroupSettlements(
       setSubmittingSettle(true);
 
       try {
-        // Call the create_settlement RPC instead of direct insert
-        const { data: settlementId, error: rpcError } = await supabase.rpc(
-          "create_settlement",
-          {
-            _group_id: groupId,
-            _to_user: to_user,
-            _amount: validatedAmount,
-            _notes: "Settle up",
-          }
-        );
+        // Call the create_settlement RPC; fall back to direct insert if RPC is not yet created
+        const { error: rpcError } = await supabase.rpc("create_settlement", {
+          _group_id: groupId,
+          _to_user: to_user,
+          _amount: validatedAmount,
+          _notes: "Settle up",
+        });
 
         if (rpcError) {
-          console.error("RPC error:", rpcError);
-          toast.error(rpcError.message || t("settlements.createFailed"));
-          return;
+          const isMissingRpc =
+            rpcError.code === "PGRST202" ||
+            rpcError.message?.includes("create_settlement");
+
+          if (isMissingRpc) {
+            const { data: inserted, error: insertError } = await supabase
+              .from("settlements")
+              .insert({
+                group_id: groupId,
+                from_user: currentUser,
+                to_user,
+                amount: Math.round(validatedAmount * 100) / 100,
+                status: "pending",
+              })
+              .select("id")
+              .single();
+
+            if (insertError) {
+              console.error("Settlement insert error:", insertError);
+              toast.error(insertError.message || t("settlements.createFailed"));
+              return;
+            }
+
+            // Best-effort notification to recipient
+            try {
+              await supabase.from("notifications").insert({
+                user_id: to_user,
+                type: "settlement_request",
+                title: "Settlement Request",
+                body: `A payment of $${validatedAmount.toFixed(2)} was recorded for your approval.`,
+                data: {
+                  group_id: groupId,
+                  settlement_id: inserted?.id,
+                  from_user: currentUser,
+                  amount: validatedAmount,
+                },
+              });
+            } catch {
+              // Ignore notification insert error if restricted by RLS
+            }
+          } else {
+            console.error("RPC error:", rpcError);
+            toast.error(rpcError.message || t("settlements.createFailed"));
+            return;
+          }
         }
 
         setIsSettleModalOpen(false);
         setSettleReceiver("");
         setSettleAmount("");
-        // 🎉 Celebrate the settlement!
         const { fireSettlementConfetti } = await import("@/lib/confetti");
         fireSettlementConfetti();
         refetch();
@@ -135,6 +183,7 @@ export function useGroupSettlements(
       refetch,
       toast,
       t,
+      locale,
     ]
   );
 
@@ -166,13 +215,10 @@ export function useGroupSettlements(
     async (settlementId: string) => {
       if (!currentUser) return;
 
-      const confirmed = await toast.confirm(
-        "Reject this settlement?",
-        {
-          confirmLabel: "Reject",
-          cancelLabel: "Cancel"
-        }
-      );
+      const confirmed = await toast.confirm(t("settlements.rejectConfirm"), {
+        confirmLabel: t("settlements.reject"),
+        cancelLabel: t("settlements.cancel"),
+      });
       if (!confirmed) return;
 
       setProcessingSettlementId(settlementId);
@@ -200,13 +246,10 @@ export function useGroupSettlements(
     async (settlementId: string) => {
       if (!currentUser) return;
 
-      const confirmed = await toast.confirm(
-        "Cancel this settlement request?",
-        {
-          confirmLabel: "Cancel Request",
-          cancelLabel: "Keep"
-        }
-      );
+      const confirmed = await toast.confirm(t("settlements.cancelConfirm"), {
+        confirmLabel: t("settlements.cancelRequest"),
+        cancelLabel: t("settlements.keep"),
+      });
       if (!confirmed) return;
 
       setProcessingSettlementId(settlementId);
@@ -224,12 +267,16 @@ export function useGroupSettlements(
           return;
         }
 
-        await supabase.from("activity_log").insert({
-          group_id: groupId,
-          user_id: currentUser,
-          action: "settlement_deleted",
-          metadata: { settlement_id: settlementId },
-        });
+        try {
+          await supabase.from("activity_log").insert({
+            group_id: groupId,
+            user_id: currentUser,
+            action: "settlement_deleted",
+            details: { settlement_id: settlementId },
+          });
+        } catch {
+          // Ignore optional activity_log insert errors
+        }
 
         refetch();
       } catch (err) {
@@ -248,6 +295,7 @@ export function useGroupSettlements(
     settleReceiver,
     setSettleReceiver,
     settleAmount,
+    settleAmountSetter: setSettleAmount,
     setSettleAmount,
     submittingSettle,
     processingSettlementId,
